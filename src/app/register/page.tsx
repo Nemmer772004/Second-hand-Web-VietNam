@@ -6,6 +6,7 @@ import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -16,6 +17,9 @@ const registerFormSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters.'),
   email: z.string().email('Please enter a valid email address.'),
   password: z.string().min(8, 'Password must be at least 8 characters.'),
+  agree: z.boolean().default(false).refine((val) => val === true, {
+    message: "You must agree to the privacy policy.",
+  }),
 });
 
 type RegisterFormValues = z.infer<typeof registerFormSchema>;
@@ -25,7 +29,7 @@ export default function RegisterPage() {
   const router = useRouter();
   const form = useForm<RegisterFormValues>({
     resolver: zodResolver(registerFormSchema),
-    defaultValues: { name: '', email: '', password: '' },
+    defaultValues: { name: '', email: '', password: '', agree: false },
   });
 
   const onSubmit = async (data: RegisterFormValues) => {
@@ -42,7 +46,9 @@ export default function RegisterPage() {
       toast({
         variant: 'destructive',
         title: 'Registration Failed',
-        description: error.message,
+        description: error.code === 'auth/email-already-in-use' 
+          ? 'This email address is already in use.'
+          : 'An unexpected error occurred. Please try again.',
       });
     }
   };
@@ -95,6 +101,30 @@ export default function RegisterPage() {
                     <Input type="password" placeholder="••••••••" {...field} />
                   </FormControl>
                   <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="agree"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                  <FormControl>
+                    <Checkbox
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                  <div className="space-y-1 leading-none">
+                    <FormLabel>
+                      I agree to the{' '}
+                      <Link href="/privacy-policy" className="font-medium text-primary hover:underline">
+                        Privacy Policy
+                      </Link>
+                      .
+                    </FormLabel>
+                    <FormMessage />
+                  </div>
                 </FormItem>
               )}
             />
