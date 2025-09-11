@@ -29,8 +29,8 @@ const ProductCard = ({ product }: ProductCardProps) => {
   const isWishlisted = wishlist.some(item => item.id === product.id);
 
   const handleWishlistToggle = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Ngăn sự kiện click lan ra thẻ Link bên ngoài
     e.preventDefault();
-    e.stopPropagation();
     if (isWishlisted) {
       removeFromWishlist(product.id);
       toast({
@@ -44,9 +44,9 @@ const ProductCard = ({ product }: ProductCardProps) => {
     }
   };
 
-  const handleDialogTriggerClick = (e: React.MouseEvent) => {
+  const handleDialogClick = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Ngăn sự kiện click lan ra thẻ Link bên ngoài
     e.preventDefault();
-    e.stopPropagation();
   }
 
   const formatPrice = (price: number) => {
@@ -54,8 +54,8 @@ const ProductCard = ({ product }: ProductCardProps) => {
   }
 
   return (
-    <div className="group relative flex flex-col shadow-sm hover:shadow-lg transition-shadow duration-300 rounded-lg bg-card overflow-hidden">
-      <Link href={`/products/${product.id}`} className="block relative w-full aspect-square overflow-hidden bg-secondary">
+    <Link href={`/products/${product.id}`} className="group relative flex flex-col shadow-sm hover:shadow-lg transition-shadow duration-300 rounded-lg bg-card overflow-hidden no-underline">
+      <div className="relative w-full aspect-square overflow-hidden bg-secondary">
           <Image
             src={product.images[0]}
             alt={product.name}
@@ -86,10 +86,10 @@ const ProductCard = ({ product }: ProductCardProps) => {
         >
           <Heart className={cn("h-5 w-5 text-foreground", isWishlisted && "fill-rose-500 text-rose-500")} />
         </Button>
-      </Link>
+      </div>
       <div className="p-4 flex flex-col flex-1">
-        <h3 className="text-sm font-medium text-foreground">
-            <Link href={`/products/${product.id}`} className="hover:underline">{product.name}</Link>
+        <h3 className="text-sm font-medium text-foreground hover:underline">
+            {product.name}
         </h3>
         <div className="flex items-center mt-1">
           <div className="flex items-center">
@@ -119,7 +119,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
         </div>
         <Dialog>
           <DialogTrigger asChild>
-            <Button variant="outline" size="sm" className="mt-2 w-full">Định Giá Nhanh</Button>
+            <Button variant="outline" size="sm" className="mt-2 w-full" onClick={handleDialogClick}>Định Giá Nhanh</Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
@@ -136,7 +136,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
           </DialogContent>
         </Dialog>
       </div>
-    </div>
+    </Link>
   );
 };
 
