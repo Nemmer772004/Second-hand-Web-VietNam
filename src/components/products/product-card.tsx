@@ -14,7 +14,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
   return (
     <div className="group relative flex flex-col">
       <div className="relative w-full aspect-square overflow-hidden rounded-lg bg-secondary">
-        <Link href={`/products/${product.category}/${product.id}`}>
+        <Link href={`/products/${product.id}`}>
           <Image
             src={product.images[0]}
             alt={product.name}
@@ -23,17 +23,19 @@ const ProductCard = ({ product }: ProductCardProps) => {
             className="w-full h-full object-cover object-center transition-opacity duration-300 group-hover:opacity-0"
             data-ai-hint={product.hint}
           />
-          <Image
-            src={product.images[1]}
-            alt={`${product.name} alternate view`}
-            width={400}
-            height={400}
-            className="w-full h-full object-cover object-center absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
-            data-ai-hint={product.hint}
-          />
+          {product.images.length > 1 && (
+            <Image
+                src={product.images[1]}
+                alt={`${product.name} alternate view`}
+                width={400}
+                height={400}
+                className="w-full h-full object-cover object-center absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+                data-ai-hint={product.hint}
+            />
+          )}
         </Link>
         {product.isNew && (
-          <Badge className="absolute top-2 right-2" style={{ backgroundColor: '#FF5252' }}>New</Badge>
+          <Badge variant="destructive" className="absolute top-2 right-2">New</Badge>
         )}
         <Button variant="ghost" size="icon" className="absolute top-2 left-2 bg-background/50 hover:bg-background/80" aria-label="Add to wishlist">
           <Heart className="h-5 w-5 text-foreground" />
@@ -41,7 +43,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
       </div>
       <div className="mt-4 flex flex-col flex-1">
         <h3 className="text-sm font-medium text-foreground">
-          <Link href={`/products/${product.category}/${product.id}`}>
+          <Link href={`/products/${product.id}`}>
             <span aria-hidden="true" className="absolute inset-0" />
             {product.name}
           </Link>
@@ -53,7 +55,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
                 key={i}
                 className={cn(
                   'h-4 w-4',
-                  i < Math.round(product.rating) ? 'text-yellow-400 fill-yellow-400' : 'text-muted-foreground'
+                  i < Math.round(product.rating) ? 'text-yellow-400 fill-yellow-400' : 'text-muted-foreground/30'
                 )}
               />
             ))}

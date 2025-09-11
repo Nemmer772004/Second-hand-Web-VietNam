@@ -61,16 +61,26 @@ const SiteHeader = () => {
           <NavigationMenu className="hidden md:flex">
             <NavigationMenuList>
               <NavigationMenuItem>
-                <NavigationMenuTrigger>Products</NavigationMenuTrigger>
+                <Link href="/products" legacyBehavior passHref>
+                  <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                    Products
+                  </NavigationMenuLink>
+                </Link>
+              </NavigationMenuItem>
+              <NavigationMenuItem>
+                <NavigationMenuTrigger>Categories</NavigationMenuTrigger>
                 <NavigationMenuContent>
                   <div className="grid w-[600px] grid-cols-3 gap-4 p-4">
                     <div className="col-span-1 flex flex-col">
-                      <h3 className="font-headline text-lg mb-2">Categories</h3>
+                      <h3 className="font-headline text-lg mb-2">Shop by Category</h3>
                       {productCategories.map((category) => (
                         <NavigationMenuLink asChild key={category.name}>
                           <Link href={category.href} className="p-2 rounded-md hover:bg-accent block text-sm">{category.name}</Link>
                         </NavigationMenuLink>
                       ))}
+                       <NavigationMenuLink asChild>
+                          <Link href="/products" className="p-2 mt-2 rounded-md bg-secondary text-secondary-foreground font-medium block text-sm">View All Products</Link>
+                        </NavigationMenuLink>
                     </div>
                     <div className="col-span-2 relative h-full w-full overflow-hidden rounded-md">
                       <Image
@@ -149,10 +159,13 @@ const MobileNav = ({ closeMenu }: { closeMenu: () => void }) => {
       </div>
       <nav className="flex-1 overflow-y-auto p-4">
         <ul className="flex flex-col gap-2">
+           <li>
+            <Link href="/products" className="block py-2 font-medium" onClick={closeMenu}>Products</Link>
+          </li>
           <li>
             <details>
               <summary className="flex items-center justify-between py-2 font-medium cursor-pointer list-none">
-                Products <ChevronDown className="h-4 w-4 transition-transform duration-200" />
+                Categories <ChevronDown className="h-4 w-4 transition-transform duration-200" />
               </summary>
               <ul className="pl-4 mt-2 space-y-2">
                 {productCategories.map((category) => (
