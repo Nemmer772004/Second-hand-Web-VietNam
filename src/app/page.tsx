@@ -14,7 +14,7 @@ import ProductCard from '@/components/products/product-card';
 import { Input } from '@/components/ui/input';
 
 export default function Home() {
-  const newProducts = products.slice(0, 8);
+  const featuredProducts = products.slice(0, 8);
 
   return (
     <div className="flex flex-col gap-16 sm:gap-24 md:gap-32">
@@ -22,8 +22,10 @@ export default function Home() {
         <Carousel
           opts={{
             loop: true,
+            delay: 5000,
           }}
           className="w-full"
+          autoplay={5000}
         >
           <CarouselContent>
             {heroSlides.map((slide, index) => (
@@ -37,7 +39,7 @@ export default function Home() {
                     priority={index === 0}
                     data-ai-hint={slide.hint}
                   />
-                  <div className="absolute inset-0 bg-black/40" />
+                  <div className="absolute inset-0 bg-black/50" />
                   <div className="absolute inset-0 flex flex-col items-center justify-center text-center text-primary-foreground p-4">
                     <h1 id="hero-heading" className="font-headline text-4xl md:text-6xl lg:text-7xl font-bold drop-shadow-lg">
                       {slide.title}
@@ -60,13 +62,13 @@ export default function Home() {
         </Carousel>
       </section>
 
-      <section aria-labelledby="new-products-heading" className="container mx-auto px-4">
+      <section aria-labelledby="featured-products-heading" className="container mx-auto px-4">
         <div className="text-center">
-          <h2 id="new-products-heading" className="font-headline text-3xl md:text-4xl font-bold">Sản Phẩm Mới</h2>
-          <p className="mt-2 text-lg text-muted-foreground">Khám phá bộ sưu tập đồ nội thất thủ công mới nhất của chúng tôi.</p>
+          <h2 id="featured-products-heading" className="font-headline text-3xl md:text-4xl font-bold">Sản Phẩm Đồ Cũ Nổi Bật</h2>
+          <p className="mt-2 text-lg text-muted-foreground">Khám phá các sản phẩm đã qua sử dụng, được kiểm tra kỹ lưỡng với giá tốt nhất.</p>
         </div>
-        <div className="mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-10">
-          {newProducts.map((product) => (
+        <div className="mt-12 grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-10">
+          {featuredProducts.map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}
         </div>
@@ -77,16 +79,16 @@ export default function Home() {
         </div>
       </section>
       
-      <section aria-labelledby="brand-intro-heading" className="relative h-[500px] bg-fixed bg-cover bg-center" style={{backgroundImage: "url('https://picsum.photos/seed/brandintro/1920/1080')"}} data-ai-hint="showroom background">
+      <section aria-labelledby="brand-intro-heading" className="relative h-[500px] bg-fixed bg-cover bg-center" style={{backgroundImage: "url('https://picsum.photos/seed/brandintro/1920/1080')"}} data-ai-hint="second-hand warehouse">
         <div className="absolute inset-0 bg-secondary/80" />
         <div className="relative h-full flex items-center justify-center">
           <div className="text-center p-8 max-w-3xl bg-background/90 rounded-lg shadow-xl mx-4">
-            <h2 id="brand-intro-heading" className="font-headline text-3xl md:text-4xl font-bold">Kiến Tạo Ngôi Nhà Từ Năm 1999</h2>
+            <h2 id="brand-intro-heading" className="font-headline text-3xl md:text-4xl font-bold">Hơn 10 Năm Kinh Nghiệm</h2>
             <p className="mt-4 text-lg text-muted-foreground">
-              Với hơn hai thập kỷ kinh nghiệm, Home Harmony mang đến cho bạn những món đồ nội thất kết hợp giữa thiết kế vượt thời gian và cuộc sống hiện đại. Cam kết của chúng tôi về chất lượng và tính bền vững là trọng tâm của mọi thứ chúng tôi tạo ra.
+              Với hơn một thập kỷ trong ngành, chúng tôi tự hào là đơn vị thu mua và thanh lý đồ cũ uy tín tại Hà Nội. Cam kết của chúng tôi về giá cả minh bạch, chất lượng và tái sử dụng vì môi trường là trọng tâm của mọi hoạt động.
             </p>
             <Button asChild size="lg" className="mt-6">
-              <Link href="/about">Tìm Hiểu Thêm Về Chúng Tôi</Link>
+              <Link href="/about">Tìm Hiểu Thêm</Link>
             </Button>
           </div>
         </div>
@@ -94,8 +96,8 @@ export default function Home() {
 
       <section aria-labelledby="inspiration-heading" className="container mx-auto px-4">
         <div className="text-center">
-          <h2 id="inspiration-heading" className="font-headline text-3xl md:text-4xl font-bold">Tìm Cảm Hứng Của Bạn</h2>
-          <p className="mt-2 text-lg text-muted-foreground">Khám phá các ý tưởng thiết kế được tuyển chọn cho mọi căn phòng trong nhà bạn.</p>
+          <h2 id="inspiration-heading" className="font-headline text-3xl md:text-4xl font-bold">Góc Cảm Hứng</h2>
+          <p className="mt-2 text-lg text-muted-foreground">Ý tưởng setup nhà hàng, quán ăn từ những món đồ cũ chất lượng.</p>
         </div>
         <Carousel
           opts={{
@@ -107,7 +109,7 @@ export default function Home() {
             {inspirationCategories.map((category, index) => (
               <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/3">
                 <Link href={category.href} className="group block">
-                  <div className="overflow-hidden rounded-lg">
+                  <div className="overflow-hidden rounded-lg shadow-lg">
                     <Image
                       src={category.image}
                       alt={category.name}
@@ -130,8 +132,8 @@ export default function Home() {
 
       <section aria-labelledby="newsletter-heading" className="bg-secondary">
         <div className="container mx-auto px-4 py-16 text-center">
-           <h2 id="newsletter-heading" className="font-headline text-3xl font-bold">Luôn Cập Nhật</h2>
-           <p className="mt-2 text-lg text-muted-foreground">Đăng ký nhận bản tin của chúng tôi để nhận các ưu đãi độc quyền và mẹo thiết kế.</p>
+           <h2 id="newsletter-heading" className="font-headline text-3xl font-bold">Đừng Bỏ Lỡ Hàng Tốt</h2>
+           <p className="mt-2 text-lg text-muted-foreground">Đăng ký để nhận thông tin về các sản phẩm mới về và chương trình khuyến mãi đặc biệt.</p>
            <form className="mt-6 max-w-md mx-auto flex gap-2">
             <div className="relative flex-grow">
               <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />

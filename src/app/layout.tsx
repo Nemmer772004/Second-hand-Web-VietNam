@@ -8,8 +8,8 @@ import { AuthProvider } from '@/context/auth-context';
 import { WishlistProvider } from '@/context/wishlist-context';
 
 export const metadata: Metadata = {
-  title: 'Home Harmony',
-  description: 'Khám phá đồ nội thất được tuyển chọn cho ngôi nhà của bạn.',
+  title: 'Đồ Cũ Thiên Tiến - Mua Bán Đồ Cũ Giá Tốt',
+  description: 'Chuyên thu mua và thanh lý đồ cũ, thiết bị nhà hàng, điện lạnh, văn phòng tại Hà Nội. Giá cao, uy tín, chuyên nghiệp.',
 };
 
 export default function RootLayout({
@@ -22,7 +22,7 @@ export default function RootLayout({
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=PT+Sans:wght@400;700&display=swap" rel="stylesheet" />
+        <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700&family=Roboto:wght@400;700&display=swap" rel="stylesheet" />
       </head>
       <body className="font-body antialiased">
         <AuthProvider>

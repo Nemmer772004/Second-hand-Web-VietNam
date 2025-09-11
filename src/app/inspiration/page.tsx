@@ -23,7 +23,7 @@ export default function InspirationPage() {
       toast({
         variant: 'destructive',
         title: 'Vui lòng nhập mô tả',
-        description: 'Hãy cho chúng tôi biết về phong cách bạn đang tìm kiếm.',
+        description: 'Hãy cho chúng tôi biết về ý tưởng của bạn.',
       });
       return;
     }
@@ -43,25 +43,25 @@ export default function InspirationPage() {
   };
   
   const galleryImages = [
-    { src: "https://picsum.photos/seed/gallery1/600/800", alt: "Thiết kế phòng khách tối giản", hint: "minimalist living room" },
-    { src: "https://picsum.photos/seed/gallery2/600/800", alt: "Góc đọc sách ấm cúng", hint: "cozy reading nook" },
-    { src: "https://picsum.photos/seed/gallery3/600/800", alt: "Phòng ngủ phong cách boho", hint: "bohemian bedroom" },
-    { src: "https://picsum.photos/seed/gallery4/600/800", alt: "Phòng ăn sang trọng", hint: "luxury dining room" },
-    { src: "https://picsum.photos/seed/gallery5/600/800", alt: "Nội thất gỗ tự nhiên", hint: "natural wood furniture" },
-    { src: "https://picsum.photos/seed/gallery6/600/800", alt: "Không gian làm việc tại nhà", hint: "home office space" },
+    { src: "https://picsum.photos/seed/gallery1/600/800", alt: "Setup quán cafe với bàn ghế cũ", hint: "cafe setup used furniture" },
+    { src: "https://picsum.photos/seed/gallery2/600/800", alt: "Bếp nhà hàng sử dụng thiết bị inox cũ", hint: "restaurant kitchen used equipment" },
+    { src: "https://picsum.photos/seed/gallery3/600/800", alt: "Văn phòng làm việc với nội thất thanh lý", hint: "office used furniture" },
+    { src: "https://picsum.photos/seed/gallery4/600/800", alt: "Quầy bar độc đáo từ gỗ tái chế", hint: "recycled wood bar" },
+    { src: "https://picsum.photos/seed/gallery5/600/800", alt: "Tủ mát trưng bày trong cửa hàng tiện lợi", hint: "convenience store cooler" },
+    { src: "https://picsum.photos/seed/gallery6/600/800", alt: "Không gian quán ăn nhỏ ấm cúng", hint: "cozy small restaurant" },
   ];
 
   return (
     <div className="flex flex-col gap-16 sm:gap-24 py-12">
       <section className="container mx-auto px-4 text-center">
-        <h1 className="font-headline text-4xl md:text-5xl font-bold">Tìm Cảm Hứng Của Bạn</h1>
+        <h1 className="font-headline text-4xl md:text-5xl font-bold">Góc Cảm Hứng</h1>
         <p className="mt-4 max-w-3xl mx-auto text-lg text-muted-foreground">
-          Khám phá những không gian được tuyển chọn và khám phá phong cách của bạn. Từ chủ nghĩa tối giản hiện đại đến sự ấm cúng mộc mạc, hãy để chúng tôi giúp bạn hình dung về ngôi nhà mơ ước của mình.
+          Khám phá các ý tưởng setup nhà hàng, văn phòng và không gian sống từ những sản phẩm đã qua sử dụng. Biến đồ cũ thành không gian mới đầy sáng tạo và tiết kiệm.
         </p>
       </section>
 
       <section className="container mx-auto px-4">
-        <h2 className="font-headline text-3xl md:text-4xl font-bold text-center mb-12">Bộ Sưu Tập Thiết Kế</h2>
+        <h2 className="font-headline text-3xl md:text-4xl font-bold text-center mb-12">Ý Tưởng Setup</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
           {inspirationCategories.map((category) => (
             <div key={category.name} className="group relative rounded-lg overflow-hidden shadow-lg">
@@ -88,19 +88,19 @@ export default function InspirationPage() {
         <div className="container mx-auto px-4 py-24">
             <div className="max-w-2xl mx-auto text-center">
                 <Sparkles className="mx-auto h-12 w-12 text-primary" />
-                <h2 className="font-headline text-3xl md:text-4xl font-bold mt-4">Cần một gợi ý?</h2>
+                <h2 className="font-headline text-3xl md:text-4xl font-bold mt-4">Trợ Lý Thiết Kế AI</h2>
                 <p className="mt-2 text-lg text-muted-foreground">
-                    Hãy mô tả phong cách, căn phòng hoặc món đồ bạn đang nghĩ đến, và để AI của chúng tôi đề xuất một vài ý tưởng để bạn bắt đầu.
+                    Mô tả ý tưởng của bạn (ví dụ: 'setup quán phở nhỏ', 'văn phòng cho 10 người'), AI sẽ gợi ý các thiết bị cần thiết.
                 </p>
                 <div className="mt-8 flex gap-2">
                     <Input 
                         value={prompt}
                         onChange={(e) => setPrompt(e.target.value)}
-                        placeholder="ví dụ: 'phòng khách ấm cúng với tông màu đất'" 
+                        placeholder="ví dụ: 'cần đồ cho quán cafe nhỏ 20m2'" 
                         className="h-12"
                     />
                     <Button size="lg" onClick={handleRecommendation} disabled={loading} className="h-12">
-                        {loading ? 'Đang tạo...' : 'Lấy Cảm Hứng'}
+                        {loading ? 'Đang tạo...' : 'Lấy ý tưởng'}
                     </Button>
                 </div>
 

@@ -1,4 +1,3 @@
-
 "use client";
 
 import Link from 'next/link';
@@ -54,6 +53,19 @@ const SiteHeader = () => {
     router.push(`/products?q=${encodeURIComponent(searchQuery)}`);
   };
 
+  const menuItems = [
+    { name: 'Sản Phẩm', href: '/products' },
+    { 
+      name: 'Dịch Vụ', 
+      subItems: [
+        { name: 'Thu Mua Đồ Cũ', href: '/services/thu-mua' },
+        { name: 'Setup Nhà Hàng', href: '/services/setup-nha-hang' },
+      ]
+    },
+    { name: 'Cảm Hứng', href: '/inspiration' },
+    { name: 'Về Chúng Tôi', href: '/about' },
+  ];
+
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto px-4">
@@ -67,15 +79,15 @@ const SiteHeader = () => {
               </Button>
             </SheetTrigger>
             <SheetContent side="left" className="p-0">
-              <MobileNav closeMenu={() => setIsMobileMenuOpen(false)} />
+              <MobileNav closeMenu={() => setIsMobileMenuOpen(false)} menuItems={menuItems} />
             </SheetContent>
           </Sheet>
 
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 mr-8">
+          <Link href="/" className="flex items-center gap-2 mr-4 lg:mr-8">
             <Sofa className="h-7 w-7 text-primary" />
             <span className="font-headline text-2xl font-bold hidden sm:inline-block">
-              Home Harmony
+              Đồ Cũ
             </span>
           </Link>
 
@@ -83,14 +95,7 @@ const SiteHeader = () => {
           <NavigationMenu className="hidden md:flex">
             <NavigationMenuList>
               <NavigationMenuItem>
-                <Link href="/products" legacyBehavior passHref>
-                  <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                    Sản phẩm
-                  </NavigationMenuLink>
-                </Link>
-              </NavigationMenuItem>
-              <NavigationMenuItem>
-                <NavigationMenuTrigger>Danh mục</NavigationMenuTrigger>
+                <NavigationMenuTrigger>Sản Phẩm</NavigationMenuTrigger>
                 <NavigationMenuContent>
                   <div className="grid w-[600px] grid-cols-3 gap-4 p-4">
                     <div className="col-span-1 flex flex-col">
@@ -107,55 +112,52 @@ const SiteHeader = () => {
                     <div className="col-span-2 relative h-full w-full overflow-hidden rounded-md">
                       <Image
                         src="https://picsum.photos/seed/nav/600/400"
-                        alt="Nội thất nổi bật"
+                        alt="Thiết bị nhà hàng cũ"
                         fill
                         className="object-cover"
-                        data-ai-hint="elegant living room"
+                        data-ai-hint="used restaurant equipment"
                       />
                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"/>
                        <div className="absolute bottom-4 left-4 text-primary-foreground">
-                        <h4 className="font-bold">Hàng mới về</h4>
-                        <p className="text-sm">Khám phá các xu hướng mới nhất</p>
+                        <h4 className="font-bold">Hàng Mới Về</h4>
+                        <p className="text-sm">Tủ lạnh công nghiệp, bếp á...</p>
                        </div>
                     </div>
                   </div>
                 </NavigationMenuContent>
               </NavigationMenuItem>
-              <NavigationMenuItem>
-                 <Link href="/inspiration" legacyBehavior passHref>
-                  <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                    Cảm hứng
-                  </NavigationMenuLink>
-                </Link>
-              </NavigationMenuItem>
-              <NavigationMenuItem>
-                <Link href="/design-consultation" legacyBehavior passHref>
-                  <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                    Thiết kế nội thất
-                  </NavigationMenuLink>
-                </Link>
-              </NavigationMenuItem>
+              {menuItems.slice(1).map(item => (
+                <NavigationMenuItem key={item.name}>
+                  {item.subItems ? (
+                    <>
+                      <NavigationMenuTrigger>{item.name}</NavigationMenuTrigger>
+                      <NavigationMenuContent>
+                        <ul className="grid w-[200px] gap-3 p-4">
+                          {item.subItems.map(sub => (
+                            <ListItem key={sub.name} href={sub.href} title={sub.name} />
+                          ))}
+                        </ul>
+                      </NavigationMenuContent>
+                    </>
+                  ) : (
+                    <Link href={item.href} legacyBehavior passHref>
+                      <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                        {item.name}
+                      </NavigationMenuLink>
+                    </Link>
+                  )}
+                </NavigationMenuItem>
+              ))}
             </NavigationMenuList>
           </NavigationMenu>
 
-          <div className="flex flex-1 items-center justify-end gap-4">
-            {/* Search */}
-            <form onSubmit={handleSearch} className="hidden lg:flex relative w-full max-w-xs">
-              <Input 
-                type="search" 
-                placeholder="Tìm kiếm sản phẩm..." 
-                className="pr-10" 
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-              <button type="submit" className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground">
-                <Search className="h-full w-full" />
-              </button>
-            </form>
-
-            {/* Icons */}
-            <div className="flex items-center gap-2">
-              <Dialog>
+          <div className="flex flex-1 items-center justify-end gap-2">
+             <div className="hidden lg:flex items-center gap-2">
+                <Phone className="h-5 w-5 text-primary" />
+                <a href="tel:0377883337" className="font-bold text-sm">0377-88-3337</a>
+            </div>
+            
+            <Dialog>
                 <DialogTrigger asChild>
                   <Button variant="ghost" size="icon" aria-label="Tìm kiếm" className="lg:hidden">
                     <Search className="h-5 w-5" />
@@ -168,7 +170,7 @@ const SiteHeader = () => {
                   <form onSubmit={handleSearch} className="flex relative w-full">
                     <Input 
                       type="search" 
-                      placeholder="Nhập tên sản phẩm..." 
+                      placeholder="Tìm tủ lạnh cũ, bàn ghế nhà hàng..." 
                       className="pr-10 h-12" 
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
@@ -180,6 +182,20 @@ const SiteHeader = () => {
                 </DialogContent>
               </Dialog>
 
+            <form onSubmit={handleSearch} className="hidden lg:flex relative w-full max-w-xs">
+              <Input 
+                type="search" 
+                placeholder="Tìm tủ lạnh cũ, bàn ghế..." 
+                className="pr-10" 
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+              <button type="submit" className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground">
+                <Search className="h-full w-full" />
+              </button>
+            </form>
+
+            <div className="flex items-center gap-1">
               <Button variant="ghost" size="icon" asChild className="relative">
                 <Link href="/account#wishlist" aria-label="Danh sách yêu thích">
                   <Heart className="h-5 w-5" />
@@ -209,13 +225,13 @@ const SiteHeader = () => {
   );
 };
 
-const MobileNav = ({ closeMenu }: { closeMenu: () => void }) => {
+const MobileNav = ({ closeMenu, menuItems }: { closeMenu: () => void, menuItems: any[] }) => {
   return (
     <div className="flex flex-col h-full">
       <div className="flex items-center justify-between p-4 border-b">
         <Link href="/" className="flex items-center gap-2" onClick={closeMenu}>
           <Sofa className="h-7 w-7 text-primary" />
-          <span className="font-headline text-xl font-bold">Home Harmony</span>
+          <span className="font-headline text-xl font-bold">Đồ Cũ</span>
         </Link>
         <Button variant="ghost" size="icon" onClick={closeMenu}>
           <X className="h-6 w-6" />
@@ -224,12 +240,9 @@ const MobileNav = ({ closeMenu }: { closeMenu: () => void }) => {
       <nav className="flex-1 overflow-y-auto p-4">
         <ul className="flex flex-col gap-2">
            <li>
-            <Link href="/products" className="block py-2 font-medium" onClick={closeMenu}>Sản phẩm</Link>
-          </li>
-          <li>
             <details>
               <summary className="flex items-center justify-between py-2 font-medium cursor-pointer list-none">
-                Danh mục <ChevronDown className="h-4 w-4 transition-transform duration-200" />
+                Sản Phẩm <ChevronDown className="h-4 w-4 transition-transform duration-200" />
               </summary>
               <ul className="pl-4 mt-2 space-y-2">
                 {productCategories.map((category) => (
@@ -240,25 +253,63 @@ const MobileNav = ({ closeMenu }: { closeMenu: () => void }) => {
               </ul>
             </details>
           </li>
-          <li>
-            <Link href="/inspiration" className="block py-2 font-medium" onClick={closeMenu}>Cảm hứng</Link>
-          </li>
-          <li>
-            <Link href="/design-consultation" className="block py-2 font-medium" onClick={closeMenu}>Thiết kế nội thất</Link>
-          </li>
-          <li>
-            <Link href="/about" className="block py-2 font-medium" onClick={closeMenu}>Về chúng tôi</Link>
-          </li>
+          {menuItems.slice(1).map(item => (
+            <li key={item.name}>
+              {item.subItems ? (
+                 <details>
+                  <summary className="flex items-center justify-between py-2 font-medium cursor-pointer list-none">
+                    {item.name} <ChevronDown className="h-4 w-4 transition-transform duration-200" />
+                  </summary>
+                  <ul className="pl-4 mt-2 space-y-2">
+                    {item.subItems.map((sub: any) => (
+                       <li key={sub.name}>
+                         <Link href={sub.href} className="block py-2 text-muted-foreground hover:text-primary" onClick={closeMenu}>{sub.name}</Link>
+                       </li>
+                    ))}
+                  </ul>
+                </details>
+              ) : (
+                <Link href={item.href} className="block py-2 font-medium" onClick={closeMenu}>{item.name}</Link>
+              )}
+            </li>
+          ))}
         </ul>
       </nav>
       <div className="p-4 border-t">
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <Phone className="h-4 w-4" />
-          <span>Hotline: 0984115339</span>
+          <span>Hotline: 0377-88-3337</span>
         </div>
       </div>
     </div>
   );
 };
+
+const ListItem = React.forwardRef<
+  React.ElementRef<"a">,
+  React.ComponentPropsWithoutRef<"a">
+>(({ className, title, children, ...props }, ref) => {
+  return (
+    <li>
+      <NavigationMenuLink asChild>
+        <a
+          ref={ref}
+          className={cn(
+            "block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
+            className
+          )}
+          {...props}
+        >
+          <div className="text-sm font-medium leading-none">{title}</div>
+          <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
+            {children}
+          </p>
+        </a>
+      </NavigationMenuLink>
+    </li>
+  )
+})
+ListItem.displayName = "ListItem"
+
 
 export default SiteHeader;

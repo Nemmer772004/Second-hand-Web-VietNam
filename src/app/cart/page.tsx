@@ -13,9 +13,13 @@ export default function CartPage() {
   const { cart, updateQuantity, removeFromCart, clearCart } = useContext(CartContext);
 
   const subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
-  const shipping = subtotal > 50 ? 0 : 15; // Logic phí vận chuyển ví dụ
+  const shipping = subtotal > 10000000 ? 0 : 500000; // Miễn phí vận chuyển cho đơn hàng trên 10 triệu
 
   const total = subtotal + shipping;
+
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
+  }
 
   if (cart.length === 0) {
     return (
@@ -36,11 +40,11 @@ export default function CartPage() {
       <div className="grid lg:grid-cols-3 gap-12">
         <div className="lg:col-span-2 space-y-4">
           {cart.map(item => (
-            <div key={item.id} className="flex items-center gap-4 border p-4 rounded-lg">
+            <div key={item.id} className="flex items-center gap-4 border p-4 rounded-lg bg-card">
               <Image src={item.images[0]} alt={item.name} width={100} height={100} className="object-cover rounded-md" />
               <div className="flex-grow">
-                <Link href={`/products/${item.id}`} className="font-bold hover:underline">{item.name}</Link>
-                <p className="text-sm text-muted-foreground">${item.price.toFixed(2)}</p>
+                <Link href={`/products/${item.id}`} className="font-bold hover:text-primary">{item.name}</Link>
+                <p className="text-sm text-primary font-semibold">{formatPrice(item.price)}</p>
                 <div className="flex items-center gap-2 mt-2">
                   <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => updateQuantity(item.id, item.quantity - 1)}>
                     <Minus className="h-4 w-4" />
@@ -52,7 +56,7 @@ export default function CartPage() {
                 </div>
               </div>
               <div className="text-right">
-                <p className="font-semibold">${(item.price * item.quantity).toFixed(2)}</p>
+                <p className="font-semibold">{formatPrice(item.price * item.quantity)}</p>
                 <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-destructive mt-2" onClick={() => removeFromCart(item.id)}>
                   <Trash2 className="h-5 w-5" />
                 </Button>
@@ -65,21 +69,21 @@ export default function CartPage() {
         </div>
 
         <div className="lg:col-span-1">
-            <div className="sticky top-24 p-6 bg-secondary rounded-lg">
+            <div className="sticky top-24 p-6 bg-secondary rounded-lg shadow-sm">
                 <h2 className="font-headline text-2xl font-bold mb-4">Tóm Tắt Đơn Hàng</h2>
                 <div className="space-y-3">
                     <div className="flex justify-between">
                         <span>Tạm tính</span>
-                        <span>${subtotal.toFixed(2)}</span>
+                        <span>{formatPrice(subtotal)}</span>
                     </div>
                      <div className="flex justify-between">
                         <span>Phí vận chuyển</span>
-                        <span>{shipping > 0 ? `$${shipping.toFixed(2)}` : 'Miễn phí'}</span>
+                        <span>{shipping > 0 ? formatPrice(shipping) : 'Miễn phí'}</span>
                     </div>
                      <Separator />
                      <div className="flex justify-between font-bold text-lg">
                         <span>Tổng cộng</span>
-                        <span>${total.toFixed(2)}</span>
+                        <span>{formatPrice(total)}</span>
                     </div>
                 </div>
                 <div className="mt-6">

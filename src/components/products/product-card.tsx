@@ -2,13 +2,22 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { Heart, Star } from 'lucide-react';
+import { Heart, Star, Upload } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { Product } from '@/lib/data';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useWishlist } from '@/context/wishlist-context';
 import { useToast } from '@/hooks/use-toast';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogDescription
+} from "@/components/ui/dialog"
+import { Input } from '../ui/input';
 
 interface ProductCardProps {
   product: Product;
@@ -35,17 +44,20 @@ const ProductCard = ({ product }: ProductCardProps) => {
     }
   };
 
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
+  }
 
   return (
-    <div className="group relative flex flex-col">
-      <div className="relative w-full aspect-square overflow-hidden rounded-lg bg-secondary">
+    <div className="group relative flex flex-col shadow-sm hover:shadow-lg transition-shadow duration-300 rounded-lg bg-card overflow-hidden">
+      <div className="relative w-full aspect-square overflow-hidden bg-secondary">
         <Link href={`/products/${product.id}`}>
           <Image
             src={product.images[0]}
             alt={product.name}
             width={400}
             height={400}
-            className="w-full h-full object-cover object-center transition-opacity duration-300 group-hover:opacity-0"
+            className="w-full h-full object-cover object-center transition-transform duration-300 group-hover:scale-105"
             data-ai-hint={product.hint}
           />
           {product.images.length > 1 && (
@@ -59,20 +71,20 @@ const ProductCard = ({ product }: ProductCardProps) => {
             />
           )}
         </Link>
-        {product.isNew && (
-          <Badge variant="destructive" className="absolute top-2 right-2">Mới</Badge>
-        )}
+        <Badge variant={product.condition === "Bảo Hành 3 Tháng" ? "default" : "secondary"} className="absolute top-2 right-2">{product.condition}</Badge>
+        {product.price < (product.originalPrice || 0) && <Badge variant="destructive" className="absolute top-10 right-2">Giá Rẻ</Badge>}
+
         <Button 
             variant="ghost" 
             size="icon" 
-            className="absolute top-2 left-2 bg-background/50 hover:bg-background/80" 
+            className="absolute top-2 left-2 bg-background/50 hover:bg-background/80 rounded-full" 
             aria-label="Thêm vào danh sách yêu thích"
             onClick={handleWishlistToggle}
         >
-          <Heart className={cn("h-5 w-5 text-foreground", isWishlisted && "fill-destructive text-destructive")} />
+          <Heart className={cn("h-5 w-5 text-foreground", isWishlisted && "fill-rose-500 text-rose-500")} />
         </Button>
       </div>
-      <div className="mt-4 flex flex-col flex-1">
+      <div className="p-4 flex flex-col flex-1">
         <h3 className="text-sm font-medium text-foreground">
           <Link href={`/products/${product.id}`}>
             <span aria-hidden="true" className="absolute inset-0" />
@@ -94,15 +106,35 @@ const ProductCard = ({ product }: ProductCardProps) => {
           <span className="ml-2 text-xs text-muted-foreground">({product.reviewCount} đánh giá)</span>
         </div>
         <div className="flex-1 flex items-end mt-2">
-            <p className="text-lg font-semibold text-foreground">
-              ${product.price.toFixed(2)}
-            </p>
-            {product.originalPrice && (
-              <p className="ml-2 text-sm text-muted-foreground line-through">
-                ${product.originalPrice.toFixed(2)}
+            <div className='flex flex-col'>
+              {product.originalPrice && (
+                <p className="ml-0 text-xs text-muted-foreground line-through">
+                  {formatPrice(product.originalPrice)}
+                </p>
+              )}
+              <p className="text-lg font-semibold text-primary">
+                {formatPrice(product.price)}
               </p>
-            )}
+            </div>
         </div>
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button variant="outline" size="sm" className="mt-2 w-full">Định Giá Nhanh</Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Định giá nhanh sản phẩm của bạn</DialogTitle>
+              <DialogDescription>
+                Tải lên hình ảnh sản phẩm bạn muốn bán, chúng tôi sẽ ước tính giá thu mua.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="flex flex-col items-center justify-center p-4 border-2 border-dashed rounded-lg">
+              <Upload className="w-12 h-12 text-muted-foreground"/>
+              <Input type="file" className="mt-4"/>
+              <Button className="mt-4">Gửi Định Giá</Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
