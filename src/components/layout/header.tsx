@@ -318,5 +318,3 @@ ListItem.displayName = "ListItem"
 
 
 export default SiteHeader;
-
-    
