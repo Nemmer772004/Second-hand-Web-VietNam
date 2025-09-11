@@ -101,15 +101,19 @@ const SiteHeader = () => {
                     <div className="col-span-1 flex flex-col">
                       <h3 className="font-headline text-lg mb-2">Mua sắm theo danh mục</h3>
                       {productCategories.map((category) => (
-                        <Link href={category.href} key={category.name} passHref asChild>
-                          <NavigationMenuLink className="p-2 rounded-md hover:bg-accent block text-sm">
-                            {category.name}
+                        <Link href={category.href} key={category.name} passHref legacyBehavior>
+                          <NavigationMenuLink asChild>
+                            <a className="p-2 rounded-md hover:bg-accent block text-sm">
+                              {category.name}
+                            </a>
                           </NavigationMenuLink>
                         </Link>
                       ))}
-                       <Link href="/products" passHref asChild>
-                        <NavigationMenuLink className="p-2 mt-2 rounded-md bg-secondary text-secondary-foreground font-medium block text-sm">
-                          Xem tất cả sản phẩm
+                       <Link href="/products" passHref legacyBehavior>
+                        <NavigationMenuLink asChild>
+                          <a className="p-2 mt-2 rounded-md bg-secondary text-secondary-foreground font-medium block text-sm">
+                            Xem tất cả sản phẩm
+                          </a>
                         </NavigationMenuLink>
                       </Link>
                     </div>
@@ -138,13 +142,13 @@ const SiteHeader = () => {
                       <NavigationMenuContent>
                         <ul className="grid w-[200px] gap-3 p-4">
                           {item.subItems.map(sub => (
-                            <ListItem key={sub.name} href={sub.href} title={sub.name} />
+                             <ListItem key={sub.name} href={sub.href} title={sub.name} />
                           ))}
                         </ul>
                       </NavigationMenuContent>
                     </>
                   ) : (
-                    <Link href={item.href || '#'} passHref asChild>
+                    <Link href={item.href || '#'} passHref legacyBehavior>
                       <NavigationMenuLink className={navigationMenuTriggerStyle()}>
                         {item.name}
                       </NavigationMenuLink>
@@ -301,6 +305,7 @@ const ListItem = React.forwardRef<
       <NavigationMenuLink asChild>
         <Link
           ref={ref}
+          href={props.href || '#'}
           className={cn(
             "block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
             className

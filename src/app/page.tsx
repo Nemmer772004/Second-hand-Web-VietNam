@@ -22,10 +22,8 @@ export default function Home() {
         <Carousel
           opts={{
             loop: true,
-            delay: 5000,
           }}
           className="w-full"
-          autoplay={5000}
         >
           <CarouselContent>
             {heroSlides.map((slide, index) => (
