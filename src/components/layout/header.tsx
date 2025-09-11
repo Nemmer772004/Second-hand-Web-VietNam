@@ -1,5 +1,6 @@
 "use client";
 
+import * as React from "react";
 import Link from 'next/link';
 import { useState, useContext, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
@@ -54,7 +55,6 @@ const SiteHeader = () => {
   };
 
   const menuItems = [
-    { name: 'Sản Phẩm', href: '/products' },
     { 
       name: 'Dịch Vụ', 
       subItems: [
@@ -101,13 +101,17 @@ const SiteHeader = () => {
                     <div className="col-span-1 flex flex-col">
                       <h3 className="font-headline text-lg mb-2">Mua sắm theo danh mục</h3>
                       {productCategories.map((category) => (
-                        <NavigationMenuLink asChild key={category.name}>
-                          <Link href={category.href} className="p-2 rounded-md hover:bg-accent block text-sm">{category.name}</Link>
-                        </NavigationMenuLink>
+                        <Link href={category.href} key={category.name} legacyBehavior passHref>
+                          <NavigationMenuLink className="p-2 rounded-md hover:bg-accent block text-sm">
+                            {category.name}
+                          </NavigationMenuLink>
+                        </Link>
                       ))}
-                       <NavigationMenuLink asChild>
-                          <Link href="/products" className="p-2 mt-2 rounded-md bg-secondary text-secondary-foreground font-medium block text-sm">Xem tất cả sản phẩm</Link>
+                       <Link href="/products" legacyBehavior passHref>
+                        <NavigationMenuLink className="p-2 mt-2 rounded-md bg-secondary text-secondary-foreground font-medium block text-sm">
+                          Xem tất cả sản phẩm
                         </NavigationMenuLink>
+                      </Link>
                     </div>
                     <div className="col-span-2 relative h-full w-full overflow-hidden rounded-md">
                       <Image
@@ -126,7 +130,7 @@ const SiteHeader = () => {
                   </div>
                 </NavigationMenuContent>
               </NavigationMenuItem>
-              {menuItems.slice(1).map(item => (
+              {menuItems.map(item => (
                 <NavigationMenuItem key={item.name}>
                   {item.subItems ? (
                     <>
@@ -154,7 +158,7 @@ const SiteHeader = () => {
           <div className="flex flex-1 items-center justify-end gap-2">
              <div className="hidden lg:flex items-center gap-2">
                 <Phone className="h-5 w-5 text-primary" />
-                <a href="tel:0377883337" className="font-bold text-sm">0377-88-3337</a>
+                <a href="tel:0984115339" className="font-bold text-sm">0984115339</a>
             </div>
             
             <Dialog>
@@ -253,7 +257,7 @@ const MobileNav = ({ closeMenu, menuItems }: { closeMenu: () => void, menuItems:
               </ul>
             </details>
           </li>
-          {menuItems.slice(1).map(item => (
+          {menuItems.map(item => (
             <li key={item.name}>
               {item.subItems ? (
                  <details>
@@ -278,7 +282,7 @@ const MobileNav = ({ closeMenu, menuItems }: { closeMenu: () => void, menuItems:
       <div className="p-4 border-t">
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <Phone className="h-4 w-4" />
-          <span>Hotline: 0377-88-3337</span>
+          <span>Hotline: 0984115339</span>
         </div>
       </div>
     </div>
@@ -292,7 +296,7 @@ const ListItem = React.forwardRef<
   return (
     <li>
       <NavigationMenuLink asChild>
-        <a
+        <Link
           ref={ref}
           className={cn(
             "block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
@@ -304,7 +308,7 @@ const ListItem = React.forwardRef<
           <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
             {children}
           </p>
-        </a>
+        </Link>
       </NavigationMenuLink>
     </li>
   )
