@@ -43,11 +43,12 @@ const ProductCard = ({ product }: ProductCardProps) => {
       });
     }
   };
-
+  
   const handleDialogClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
   }
+
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
@@ -55,51 +56,54 @@ const ProductCard = ({ product }: ProductCardProps) => {
 
   return (
     <div className="group relative flex flex-col shadow-sm hover:shadow-lg transition-shadow duration-300 rounded-lg bg-card overflow-hidden">
-      <Dialog>
-        <DialogTrigger asChild>
-          <div className="relative w-full aspect-square overflow-hidden bg-secondary cursor-pointer">
-              <Image
-                src={product.images[0]}
-                alt={product.name}
-                width={400}
-                height={400}
-                className="w-full h-full object-cover object-center transition-transform duration-300 group-hover:scale-105"
-                data-ai-hint={product.hint}
-              />
-              {product.images.length > 1 && (
+      <div className="relative w-full aspect-square overflow-hidden bg-secondary">
+          <Dialog>
+            <DialogTrigger asChild>
+              <div className="w-full h-full cursor-pointer">
                 <Image
-                    src={product.images[1]}
-                    alt={`${product.name} alternate view`}
-                    width={400}
-                    height={400}
-                    className="w-full h-full object-cover object-center absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
-                    data-ai-hint={product.hint}
+                  src={product.images[0]}
+                  alt={product.name}
+                  width={400}
+                  height={400}
+                  className="w-full h-full object-cover object-center transition-transform duration-300 group-hover:scale-105"
+                  data-ai-hint={product.hint}
                 />
-              )}
-            <Badge variant={product.condition === "Bảo Hành 3 Tháng" ? "default" : "secondary"} className="absolute top-2 right-2">{product.condition}</Badge>
-            {product.price < (product.originalPrice || 0) && <Badge variant="destructive" className="absolute top-10 right-2">Giá Rẻ</Badge>}
+                {product.images.length > 1 && (
+                  <Image
+                      src={product.images[1]}
+                      alt={`${product.name} alternate view`}
+                      width={400}
+                      height={400}
+                      className="w-full h-full object-cover object-center absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+                      data-ai-hint={product.hint}
+                  />
+                )}
+              </div>
+            </DialogTrigger>
+             <DialogContent className="max-w-3xl">
+                <Image
+                    src={product.images[0]}
+                    alt={product.name}
+                    width={800}
+                    height={800}
+                    className="w-full h-auto object-contain rounded-md"
+                />
+            </DialogContent>
+          </Dialog>
+        
+        <Badge variant={product.condition === "Bảo Hành 3 Tháng" ? "default" : "secondary"} className="absolute top-2 right-2">{product.condition}</Badge>
+        {product.price < (product.originalPrice || 0) && <Badge variant="destructive" className="absolute top-10 right-2">Giá Rẻ</Badge>}
 
-            <Button 
-                variant="ghost" 
-                size="icon" 
-                className="absolute top-2 left-2 bg-background/50 hover:bg-background/80 rounded-full" 
-                aria-label="Thêm vào danh sách yêu thích"
-                onClick={handleWishlistToggle}
-            >
-              <Heart className={cn("h-5 w-5 text-foreground", isWishlisted && "fill-rose-500 text-rose-500")} />
-            </Button>
-          </div>
-        </DialogTrigger>
-        <DialogContent className="max-w-3xl">
-          <Image
-            src={product.images[0]}
-            alt={product.name}
-            width={800}
-            height={800}
-            className="w-full h-auto object-contain rounded-md"
-          />
-        </DialogContent>
-      </Dialog>
+        <Button 
+            variant="ghost" 
+            size="icon" 
+            className="absolute top-2 left-2 bg-background/50 hover:bg-background/80 rounded-full" 
+            aria-label="Thêm vào danh sách yêu thích"
+            onClick={handleWishlistToggle}
+        >
+          <Heart className={cn("h-5 w-5 text-foreground", isWishlisted && "fill-rose-500 text-rose-500")} />
+        </Button>
+      </div>
       <div className="p-4 flex flex-col flex-1">
         <h3 className="text-sm font-medium text-foreground">
           <Link href={`/products/${product.id}`} className="hover:underline">

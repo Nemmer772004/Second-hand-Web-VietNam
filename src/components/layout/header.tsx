@@ -154,11 +154,10 @@ const SiteHeader = () => {
                       </NavigationMenuContent>
                     </>
                   ) : (
-                    <Link
-                      href={item.href || "#"}
-                      className={navigationMenuTriggerStyle()}
-                    >
-                      {item.name}
+                    <Link href={item.href || "#"} legacyBehavior passHref>
+                      <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                        {item.name}
+                      </NavigationMenuLink>
                     </Link>
                   )}
                 </NavigationMenuItem>
