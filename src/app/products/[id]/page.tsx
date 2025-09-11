@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useContext } from 'react';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import { products } from '@/lib/data';
@@ -10,9 +10,11 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { cn } from '@/lib/utils';
 import ProductCard from '@/components/products/product-card';
 import { useToast } from '@/hooks/use-toast';
+import { CartContext } from '@/context/cart-context';
 
 export default function ProductDetailPage({ params }: { params: { id: string } }) {
   const { toast } = useToast();
+  const { addToCart } = useContext(CartContext);
   const [quantity, setQuantity] = useState(1);
   const product = products.find(p => p.id === params.id);
   
@@ -25,6 +27,7 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
   const relatedProducts = products.filter(p => p.category === product.category && p.id !== product.id).slice(0, 4);
 
   const handleAddToCart = () => {
+    addToCart(product, quantity);
     toast({
       title: "Added to cart!",
       description: `${quantity} x ${product.name} has been added to your cart.`,

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useContext } from 'react';
 import {
   Sofa,
   Search,
@@ -28,9 +28,12 @@ import {
 import { cn } from '@/lib/utils';
 import { productCategories } from '@/lib/data';
 import Image from 'next/image';
+import { CartContext } from '@/context/cart-context';
+import { Badge } from '@/components/ui/badge';
 
 const SiteHeader = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { cart } = useContext(CartContext);
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -128,14 +131,23 @@ const SiteHeader = () => {
               <Button variant="ghost" size="icon" aria-label="Search" className="lg:hidden">
                 <Search className="h-5 w-5" />
               </Button>
-              <Button variant="ghost" size="icon" aria-label="Wishlist">
-                <Heart className="h-5 w-5" />
+              <Button variant="ghost" size="icon" asChild>
+                <Link href="/account#wishlist" aria-label="Wishlist">
+                  <Heart className="h-5 w-5" />
+                </Link>
               </Button>
-              <Button variant="ghost" size="icon" aria-label="Shopping Cart">
-                <ShoppingCart className="h-5 w-5" />
+              <Button variant="ghost" size="icon" asChild className="relative">
+                <Link href="/cart" aria-label="Shopping Cart">
+                  <ShoppingCart className="h-5 w-5" />
+                  {cart.length > 0 && (
+                    <Badge variant="destructive" className="absolute -right-2 -top-2 h-5 w-5 justify-center p-0">{cart.reduce((acc, item) => acc + item.quantity, 0)}</Badge>
+                  )}
+                </Link>
               </Button>
-              <Button variant="ghost" size="icon" aria-label="User Account">
-                <User className="h-5 w-5" />
+              <Button variant="ghost" size="icon" asChild>
+                <Link href="/account" aria-label="User Account">
+                  <User className="h-5 w-5" />
+                </Link>
               </Button>
             </div>
           </div>
