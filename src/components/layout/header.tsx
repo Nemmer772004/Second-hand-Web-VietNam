@@ -101,13 +101,13 @@ const SiteHeader = () => {
                     <div className="col-span-1 flex flex-col">
                       <h3 className="font-headline text-lg mb-2">Mua sắm theo danh mục</h3>
                       {productCategories.map((category) => (
-                        <Link href={category.href} key={category.name} legacyBehavior passHref>
+                        <Link href={category.href} key={category.name} passHref asChild>
                           <NavigationMenuLink className="p-2 rounded-md hover:bg-accent block text-sm">
                             {category.name}
                           </NavigationMenuLink>
                         </Link>
                       ))}
-                       <Link href="/products" legacyBehavior passHref>
+                       <Link href="/products" passHref asChild>
                         <NavigationMenuLink className="p-2 mt-2 rounded-md bg-secondary text-secondary-foreground font-medium block text-sm">
                           Xem tất cả sản phẩm
                         </NavigationMenuLink>
@@ -144,7 +144,7 @@ const SiteHeader = () => {
                       </NavigationMenuContent>
                     </>
                   ) : (
-                    <Link href={item.href} legacyBehavior passHref>
+                    <Link href={item.href || '#'} passHref asChild>
                       <NavigationMenuLink className={navigationMenuTriggerStyle()}>
                         {item.name}
                       </NavigationMenuLink>
@@ -254,6 +254,9 @@ const MobileNav = ({ closeMenu, menuItems }: { closeMenu: () => void, menuItems:
                      <Link href={category.href} className="block py-2 text-muted-foreground hover:text-primary" onClick={closeMenu}>{category.name}</Link>
                    </li>
                 ))}
+                 <li>
+                    <Link href="/products" className="block py-2 font-medium" onClick={closeMenu}>Tất cả sản phẩm</Link>
+                  </li>
               </ul>
             </details>
           </li>
@@ -273,7 +276,7 @@ const MobileNav = ({ closeMenu, menuItems }: { closeMenu: () => void, menuItems:
                   </ul>
                 </details>
               ) : (
-                <Link href={item.href} className="block py-2 font-medium" onClick={closeMenu}>{item.name}</Link>
+                <Link href={item.href || '#'} className="block py-2 font-medium" onClick={closeMenu}>{item.name}</Link>
               )}
             </li>
           ))}
