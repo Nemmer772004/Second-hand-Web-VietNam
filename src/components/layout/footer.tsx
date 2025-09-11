@@ -14,12 +14,12 @@ const SiteFooter = () => {
               <Sofa className="h-8 w-8 text-primary" />
               <span className="font-headline text-2xl font-bold">Home Harmony</span>
             </Link>
-            <p className="text-muted-foreground mb-2">123 Đường Thiết Kế, Thành phố Sáng Tạo, 10001</p>
-            <p className="text-muted-foreground">Điện thoại: (123) 456-7890</p>
+            <p className="text-muted-foreground mb-2">Số 150 Ngõ 1277 Giải Phóng, Hoàng Mai, Hà Nội</p>
+            <p className="text-muted-foreground">Điện thoại: 0984115339</p>
             <p className="text-muted-foreground">Email: support@homeharmony.com</p>
             <div className="mt-4">
               <iframe
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3022.60831618671!2d-73.98842792429699!3d40.7487214713897!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x89c259a9a4c344df%3A0x4a0b32815461b173!2sEmpire%20State%20Building!5e0!3m2!1sen!2sus!4v1700000000000!5m2!1sen!2sus"
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3725.399516641571!2d105.84369417594043!3d20.97693528066224!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3135ac5dfa705a39%3A0x8d3132e407f35319!2zMTIzMiDEkC4gR2nhuqNpIFBow7NuZywgSG_DoG5nIE1haSwgSMOgIE7hu5lpLCBWaeG7h3QgTmFt!5e0!3m2!1svi!2s!4v1719213898090!5m2!1svi!2s"
                 width="100%"
                 height="150"
                 style={{ border: 0 }}
@@ -35,11 +35,11 @@ const SiteFooter = () => {
           <div>
             <h3 className="font-headline text-lg font-bold mb-4">Sản phẩm</h3>
             <ul className="space-y-2">
-              <li><Link href="/products/sofas" className="text-muted-foreground hover:text-primary">Ghế Sofa</Link></li>
-              <li><Link href="/products/chairs" className="text-muted-foreground hover:text-primary">Ghế</Link></li>
-              <li><Link href="/products/tables" className="text-muted-foreground hover:text-primary">Bàn</Link></li>
-              <li><Link href="/products/beds" className="text-muted-foreground hover:text-primary">Giường</Link></li>
-              <li><Link href="/products/storage" className="text-muted-foreground hover:text-primary">Tủ kệ</Link></li>
+              <li><Link href="/products?category=sofas" className="text-muted-foreground hover:text-primary">Ghế Sofa</Link></li>
+              <li><Link href="/products?category=chairs" className="text-muted-foreground hover:text-primary">Ghế</Link></li>
+              <li><Link href="/products?category=tables" className="text-muted-foreground hover:text-primary">Bàn</Link></li>
+              <li><Link href="/products?category=beds" className="text-muted-foreground hover:text-primary">Giường</Link></li>
+              <li><Link href="/products?category=storage" className="text-muted-foreground hover:text-primary">Tủ kệ</Link></li>
             </ul>
           </div>
 
