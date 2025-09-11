@@ -3,14 +3,14 @@ import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 
 // Your web app's Firebase configuration
-// ADD YOUR FIREBASE CONFIG HERE
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_AUTH_DOMAIN",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_STORAGE_BUCKET",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  "projectId": "studio-6747337646-626ab",
+  "appId": "1:1067862749903:web:cd3f5dc61208080c147dba",
+  "storageBucket": "studio-6747337646-626ab.firebasestorage.app",
+  "apiKey": "AIzaSyA3sx101IQwkmNSsWTvB4jvmSyB181_xPk",
+  "authDomain": "studio-6747337646-626ab.firebaseapp.com",
+  "measurementId": "",
+  "messagingSenderId": "1067862749903"
 };
 
 // Initialize Firebase
