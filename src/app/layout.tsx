@@ -5,6 +5,7 @@ import SiteHeader from '@/components/layout/header';
 import SiteFooter from '@/components/layout/footer';
 import { CartProvider } from '@/context/cart-context';
 import { AuthProvider } from '@/context/auth-context';
+import { WishlistProvider } from '@/context/wishlist-context';
 
 export const metadata: Metadata = {
   title: 'Home Harmony',
@@ -26,14 +27,16 @@ export default function RootLayout({
       <body className="font-body antialiased">
         <AuthProvider>
           <CartProvider>
-            <div className="relative flex min-h-dvh flex-col bg-transparent">
-              <SiteHeader />
-              <main className="flex-1">
-                {children}
-              </main>
-              <SiteFooter />
-            </div>
-            <Toaster />
+            <WishlistProvider>
+              <div className="relative flex min-h-dvh flex-col bg-transparent">
+                <SiteHeader />
+                <main className="flex-1">
+                  {children}
+                </main>
+                <SiteFooter />
+              </div>
+              <Toaster />
+            </WishlistProvider>
           </CartProvider>
         </AuthProvider>
       </body>

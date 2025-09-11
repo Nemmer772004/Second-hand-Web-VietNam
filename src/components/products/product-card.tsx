@@ -5,12 +5,35 @@ import { cn } from '@/lib/utils';
 import type { Product } from '@/lib/data';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { useWishlist } from '@/context/wishlist-context';
+import { useToast } from '@/hooks/use-toast';
 
 interface ProductCardProps {
   product: Product;
 }
 
 const ProductCard = ({ product }: ProductCardProps) => {
+  const { wishlist, addToWishlist, removeFromWishlist } = useWishlist();
+  const { toast } = useToast();
+  const isWishlisted = wishlist.some(item => item.id === product.id);
+
+  const handleWishlistToggle = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (isWishlisted) {
+      removeFromWishlist(product.id);
+      toast({
+        title: "Đã xóa khỏi danh sách yêu thích",
+      });
+    } else {
+      addToWishlist(product);
+      toast({
+        title: "Đã thêm vào danh sách yêu thích!",
+      });
+    }
+  };
+
+
   return (
     <div className="group relative flex flex-col">
       <div className="relative w-full aspect-square overflow-hidden rounded-lg bg-secondary">
@@ -37,8 +60,14 @@ const ProductCard = ({ product }: ProductCardProps) => {
         {product.isNew && (
           <Badge variant="destructive" className="absolute top-2 right-2">Mới</Badge>
         )}
-        <Button variant="ghost" size="icon" className="absolute top-2 left-2 bg-background/50 hover:bg-background/80" aria-label="Thêm vào danh sách yêu thích">
-          <Heart className="h-5 w-5 text-foreground" />
+        <Button 
+            variant="ghost" 
+            size="icon" 
+            className="absolute top-2 left-2 bg-background/50 hover:bg-background/80" 
+            aria-label="Thêm vào danh sách yêu thích"
+            onClick={handleWishlistToggle}
+        >
+          <Heart className={cn("h-5 w-5 text-foreground", isWishlisted && "fill-destructive text-destructive")} />
         </Button>
       </div>
       <div className="mt-4 flex flex-col flex-1">

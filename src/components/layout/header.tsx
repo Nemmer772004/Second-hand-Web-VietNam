@@ -1,7 +1,8 @@
 "use client";
 
 import Link from 'next/link';
-import { useState, useContext } from 'react';
+import { useState, useContext, FormEvent } from 'react';
+import { useRouter } from 'next/navigation';
 import {
   Sofa,
   Search,
@@ -30,10 +31,20 @@ import { productCategories } from '@/lib/data';
 import Image from 'next/image';
 import { CartContext } from '@/context/cart-context';
 import { Badge } from '@/components/ui/badge';
+import { useWishlist } from '@/context/wishlist-context';
 
 const SiteHeader = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { cart } = useContext(CartContext);
+  const { wishlist } = useWishlist();
+  const [searchQuery, setSearchQuery] = useState('');
+  const router = useRouter();
+
+  const handleSearch = (e: FormEvent) => {
+    e.preventDefault();
+    if (!searchQuery.trim()) return;
+    router.push(`/products?q=${encodeURIComponent(searchQuery)}`);
+  };
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -121,19 +132,30 @@ const SiteHeader = () => {
 
           <div className="flex flex-1 items-center justify-end gap-4">
             {/* Search */}
-            <div className="hidden lg:flex relative w-full max-w-xs">
-              <Input type="search" placeholder="Tìm kiếm sản phẩm..." className="pr-10" />
-              <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-            </div>
+            <form onSubmit={handleSearch} className="hidden lg:flex relative w-full max-w-xs">
+              <Input 
+                type="search" 
+                placeholder="Tìm kiếm sản phẩm..." 
+                className="pr-10" 
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+              <button type="submit" className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground">
+                <Search className="h-full w-full" />
+              </button>
+            </form>
 
             {/* Icons */}
             <div className="flex items-center gap-2">
               <Button variant="ghost" size="icon" aria-label="Tìm kiếm" className="lg:hidden">
                 <Search className="h-5 w-5" />
               </Button>
-              <Button variant="ghost" size="icon" asChild>
+              <Button variant="ghost" size="icon" asChild className="relative">
                 <Link href="/account#wishlist" aria-label="Danh sách yêu thích">
                   <Heart className="h-5 w-5" />
+                   {wishlist.length > 0 && (
+                    <Badge variant="destructive" className="absolute -right-2 -top-2 h-5 w-5 justify-center p-0">{wishlist.length}</Badge>
+                  )}
                 </Link>
               </Button>
               <Button variant="ghost" size="icon" asChild className="relative">
@@ -202,7 +224,7 @@ const MobileNav = ({ closeMenu }: { closeMenu: () => void }) => {
       <div className="p-4 border-t">
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <Phone className="h-4 w-4" />
-          <span>Hotline: (123) 456-7890</span>
+          <span>Hotline: 0984115339</span>
         </div>
       </div>
     </div>

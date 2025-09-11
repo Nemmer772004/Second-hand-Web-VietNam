@@ -6,15 +6,34 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { useAuth } from '@/context/auth-context';
 import { useRouter } from 'next/navigation';
-import { signOut } from 'firebase/auth';
+import { signOut, updateProfile } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+  DialogClose,
+} from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { useWishlist } from '@/context/wishlist-context';
+import Image from 'next/image';
 
 export default function AccountPage() {
   const [activeTab, setActiveTab] = useState('profile');
   const { user, loading } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
+  const { wishlist, removeFromWishlist } = useWishlist();
+
+  const [displayName, setDisplayName] = useState(user?.displayName || '');
+  const [phoneNumber, setPhoneNumber] = useState(user?.phoneNumber || '');
+  const [isSaving, setIsSaving] = useState(false);
 
   if (loading) {
     return <div>Đang tải...</div>;
@@ -41,14 +60,35 @@ export default function AccountPage() {
       });
     }
   };
+  
+  const handleProfileUpdate = async () => {
+    if (!user) return;
+    setIsSaving(true);
+    try {
+        await updateProfile(user, {
+            displayName: displayName
+        });
+        // Note: Updating phone number requires more complex verification and is not directly supported via updateProfile.
+        // This is a simplified example. For a real app, you'd use a more robust phone verification flow.
+        toast({
+            title: 'Hồ sơ đã được cập nhật!',
+            description: 'Thông tin của bạn đã được lưu.',
+        });
+    } catch (error) {
+        toast({
+            variant: 'destructive',
+            title: 'Cập nhật thất bại',
+            description: 'Đã có lỗi xảy ra khi cập nhật hồ sơ của bạn.',
+        });
+    } finally {
+        setIsSaving(false);
+    }
+  };
 
   const orders = [
     { id: 'ORD-12345', date: '2024-05-20', total: 1249.98, status: 'Đã giao' },
     { id: 'ORD-12332', date: '2024-04-12', total: 349.99, status: 'Đã hoàn thành' },
-  ];
-  const wishlist = [
-    { id: 'velvet-dream-sofa', name: 'Sofa Nhung Mơ Mộng', price: 899.99, image: 'https://picsum.photos/seed/p1/200/200' },
-    { id: 'oakwood-coffee-table', name: 'Bàn Cà Phê Gỗ Sồi', price: 249.99, image: 'https://picsum.photos/seed/p2/200/200' },
+    { id: 'ORD-12318', date: '2024-03-01', total: 799.99, status: 'Đã hoàn thành' },
   ];
 
   const renderContent = () => {
@@ -60,8 +100,37 @@ export default function AccountPage() {
             <div className="space-y-4">
               <p><strong>Tên:</strong> {user.displayName || 'N/A'}</p>
               <p><strong>Email:</strong> {user.email}</p>
-              <p><strong>Số điện thoại:</strong> {user.phoneNumber || 'Chưa cung cấp'}</p>
-              <Button variant="outline">Chỉnh sửa hồ sơ</Button>
+              <p><strong>Số điện thoại:</strong> {phoneNumber || 'Chưa cung cấp'}</p>
+               <Dialog>
+                <DialogTrigger asChild>
+                    <Button variant="outline">Chỉnh sửa hồ sơ</Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[425px]">
+                    <DialogHeader>
+                        <DialogTitle>Chỉnh sửa hồ sơ</DialogTitle>
+                        <DialogDescription>
+                            Cập nhật thông tin cá nhân của bạn tại đây. Nhấn lưu để hoàn tất.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="grid gap-4 py-4">
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="name" className="text-right">Tên</Label>
+                            <Input id="name" value={displayName} onChange={(e) => setDisplayName(e.target.value)} className="col-span-3" />
+                        </div>
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="phone" className="text-right">Số điện thoại</Label>
+                            <Input id="phone" value={phoneNumber} onChange={(e) => setPhoneNumber(e.target.value)} className="col-span-3" />
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <DialogClose asChild>
+                            <Button type="button" onClick={handleProfileUpdate} disabled={isSaving}>
+                                {isSaving ? 'Đang lưu...' : 'Lưu thay đổi'}
+                            </Button>
+                        </DialogClose>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
             </div>
           </div>
         );
@@ -89,18 +158,29 @@ export default function AccountPage() {
         return (
           <div>
             <h2 className="font-headline text-2xl font-bold mb-4">Danh Sách Yêu Thích</h2>
-            <div className="space-y-4">
-              {wishlist.map(item => (
-                <div key={item.id} className="border p-4 rounded-lg flex items-center gap-4">
-                  <img src={item.image} alt={item.name} className="w-20 h-20 object-cover rounded-md" />
-                  <div className="flex-grow">
-                    <p className="font-bold">{item.name}</p>
-                    <p className="text-muted-foreground">${item.price.toFixed(2)}</p>
-                  </div>
-                  <Button asChild><Link href={`/products/${item.id}`}>Xem Sản Phẩm</Link></Button>
+            {wishlist.length > 0 ? (
+                <div className="space-y-4">
+                {wishlist.map(item => (
+                    <div key={item.id} className="border p-4 rounded-lg flex items-center gap-4">
+                    <Image src={item.images[0]} alt={item.name} width={80} height={80} className="w-20 h-20 object-cover rounded-md" />
+                    <div className="flex-grow">
+                        <Link href={`/products/${item.id}`} className="font-bold hover:underline">{item.name}</Link>
+                        <p className="text-muted-foreground">${item.price.toFixed(2)}</p>
+                    </div>
+                     <Button variant="outline" size="sm" onClick={() => removeFromWishlist(item.id)}>Xóa</Button>
+                    <Button asChild size="sm"><Link href={`/products/${item.id}`}>Xem Sản Phẩm</Link></Button>
+                    </div>
+                ))}
                 </div>
-              ))}
-            </div>
+            ) : (
+                <div className="text-center py-10">
+                    <Heart className="mx-auto h-12 w-12 text-muted-foreground" />
+                    <p className="mt-4 text-muted-foreground">Danh sách yêu thích của bạn đang trống.</p>
+                    <Button asChild className="mt-4">
+                        <Link href="/products">Bắt đầu mua sắm</Link>
+                    </Button>
+                </div>
+            )}
           </div>
         );
       case 'settings':

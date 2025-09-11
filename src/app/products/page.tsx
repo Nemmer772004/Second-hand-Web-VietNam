@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { products, productCategories } from '@/lib/data';
 import ProductCard from '@/components/products/product-card';
@@ -15,18 +15,27 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Input } from '@/components/ui/input';
 
 export default function ProductsPage() {
   const searchParams = useSearchParams();
   const initialCategory = searchParams.get('category');
+  const initialSearch = searchParams.get('q');
   
   const allMaterials = useMemo(() => Array.from(new Set(products.flatMap(p => p.specs.Material ? p.specs.Material.split(',').map(m => m.trim()) : []))), []);
   const maxPrice = useMemo(() => Math.ceil(Math.max(...products.map(p => p.price))), []);
 
+  const [searchQuery, setSearchQuery] = useState(initialSearch || '');
   const [selectedCategories, setSelectedCategories] = useState<string[]>(initialCategory ? [initialCategory] : []);
   const [priceRange, setPriceRange] = useState<[number, number]>([0, maxPrice]);
   const [selectedMaterials, setSelectedMaterials] = useState<string[]>([]);
   const [sortOrder, setSortOrder] = useState('newest');
+
+  useEffect(() => {
+    if(initialSearch) {
+      setSearchQuery(initialSearch);
+    }
+  }, [initialSearch]);
 
   const handleCategoryChange = (categoryKey: string) => {
     setSelectedCategories(prev =>
@@ -46,6 +55,10 @@ export default function ProductsPage() {
 
   const filteredProducts = useMemo(() => {
     let tempProducts = [...products];
+
+    if (searchQuery) {
+        tempProducts = tempProducts.filter(p => p.name.toLowerCase().includes(searchQuery.toLowerCase()));
+    }
 
     if (selectedCategories.length > 0) {
       tempProducts = tempProducts.filter(p => selectedCategories.includes(p.category));
@@ -76,7 +89,7 @@ export default function ProductsPage() {
     }
 
     return tempProducts;
-  }, [selectedCategories, priceRange, selectedMaterials, sortOrder]);
+  }, [selectedCategories, priceRange, selectedMaterials, sortOrder, searchQuery]);
 
 
   return (
@@ -149,6 +162,7 @@ export default function ProductsPage() {
               </AccordionItem>
             </Accordion>
              <Button onClick={() => {
+                setSearchQuery('');
                 setSelectedCategories([]);
                 setPriceRange([0, maxPrice]);
                 setSelectedMaterials([]);

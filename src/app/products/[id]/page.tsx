@@ -11,10 +11,13 @@ import { cn } from '@/lib/utils';
 import ProductCard from '@/components/products/product-card';
 import { useToast } from '@/hooks/use-toast';
 import { CartContext } from '@/context/cart-context';
+import { useWishlist } from '@/context/wishlist-context';
 
 export default function ProductDetailPage({ params }: { params: { id: string } }) {
   const { toast } = useToast();
   const { addToCart } = useContext(CartContext);
+  const { wishlist, addToWishlist, removeFromWishlist } = useWishlist();
+  
   const [quantity, setQuantity] = useState(1);
   const product = products.find(p => p.id === params.id);
   
@@ -24,6 +27,8 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
     notFound();
   }
   
+  const isWishlisted = wishlist.some(item => item.id === product.id);
+
   const relatedProducts = products.filter(p => p.category === product.category && p.id !== product.id).slice(0, 4);
 
   const handleAddToCart = () => {
@@ -32,6 +37,22 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
       title: "Đã thêm vào giỏ hàng!",
       description: `${quantity} x ${product.name} đã được thêm vào giỏ hàng của bạn.`,
     });
+  };
+  
+  const handleWishlistToggle = () => {
+    if (isWishlisted) {
+      removeFromWishlist(product.id);
+      toast({
+        title: "Đã xóa khỏi danh sách yêu thích",
+        description: `${product.name} đã được xóa khỏi danh sách yêu thích của bạn.`,
+      });
+    } else {
+      addToWishlist(product);
+      toast({
+        title: "Đã thêm vào danh sách yêu thích!",
+        description: `${product.name} đã được thêm vào danh sách yêu thích của bạn.`,
+      });
+    }
   };
 
   return (
@@ -110,8 +131,8 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
             <Button size="lg" variant="outline" className="flex-1">
               Mua ngay
             </Button>
-             <Button variant="outline" size="icon" aria-label="Thêm vào danh sách yêu thích">
-                <Heart className="h-5 w-5" />
+             <Button variant="outline" size="icon" aria-label="Thêm vào danh sách yêu thích" onClick={handleWishlistToggle}>
+                <Heart className={cn("h-5 w-5", isWishlisted && "fill-destructive text-destructive")} />
              </Button>
           </div>
           
