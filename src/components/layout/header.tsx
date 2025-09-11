@@ -75,7 +75,7 @@ const SiteHeader = () => {
           <NavigationMenu className="hidden md:flex">
             <NavigationMenuList>
               <NavigationMenuItem>
-                <Link href="/products" legacyBehavior passHref>
+                <Link href="/products" legacyBehavior={false} passHref>
                   <NavigationMenuLink className={navigationMenuTriggerStyle()}>
                     Sản phẩm
                   </NavigationMenuLink>
@@ -114,14 +114,14 @@ const SiteHeader = () => {
                 </NavigationMenuContent>
               </NavigationMenuItem>
               <NavigationMenuItem>
-                <Link href="/inspiration" legacyBehavior passHref>
+                <Link href="/inspiration" legacyBehavior={false} passHref>
                   <NavigationMenuLink className={navigationMenuTriggerStyle()}>
                     Cảm hứng
                   </NavigationMenuLink>
                 </Link>
               </NavigationMenuItem>
               <NavigationMenuItem>
-                <Link href="/design-consultation" legacyBehavior passHref>
+                <Link href="/design-consultation" legacyBehavior={false} passHref>
                   <NavigationMenuLink className={navigationMenuTriggerStyle()}>
                     Thiết kế nội thất
                   </NavigationMenuLink>
