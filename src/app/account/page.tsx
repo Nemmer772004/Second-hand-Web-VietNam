@@ -4,15 +4,44 @@ import { useState } from 'react';
 import { User, LogOut, ShoppingBag, Heart, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import { useAuth } from '@/context/auth-context';
+import { useRouter } from 'next/navigation';
+import { signOut } from 'firebase/auth';
+import { auth } from '@/lib/firebase';
+import { useToast } from '@/hooks/use-toast';
 
 export default function AccountPage() {
   const [activeTab, setActiveTab] = useState('profile');
+  const { user, loading } = useAuth();
+  const router = useRouter();
+  const { toast } = useToast();
 
-  const user = {
-    name: 'Jane Doe',
-    email: 'jane.doe@example.com',
-    memberSince: '2023-01-15',
+  if (loading) {
+    return <div>Loading...</div>; // Or a spinner component
+  }
+
+  if (!user) {
+    router.push('/login');
+    return null;
+  }
+  
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      toast({
+        title: 'Logged Out',
+        description: 'You have been successfully logged out.',
+      });
+      router.push('/');
+    } catch (error) {
+       toast({
+        variant: 'destructive',
+        title: 'Logout Failed',
+        description: 'An error occurred while logging out.',
+      });
+    }
   };
+
 
   // Mock data - replace with actual data fetching
   const orders = [
@@ -31,9 +60,9 @@ export default function AccountPage() {
           <div>
             <h2 className="font-headline text-2xl font-bold mb-4">My Profile</h2>
             <div className="space-y-4">
-              <p><strong>Name:</strong> {user.name}</p>
+              <p><strong>Name:</strong> {user.displayName || 'N/A'}</p>
               <p><strong>Email:</strong> {user.email}</p>
-              <p><strong>Member Since:</strong> {user.memberSince}</p>
+              <p><strong>Phone Number:</strong> {user.phoneNumber || 'Not provided'}</p>
               <Button variant="outline">Edit Profile</Button>
             </div>
           </div>
@@ -101,7 +130,7 @@ export default function AccountPage() {
             <Button variant={activeTab === 'orders' ? 'secondary' : 'ghost'} onClick={() => setActiveTab('orders')} className="justify-start gap-3"><ShoppingBag /> Orders</Button>
             <Button variant={activeTab === 'wishlist' ? 'secondary' : 'ghost'} onClick={() => setActiveTab('wishlist')} className="justify-start gap-3"><Heart /> Wishlist</Button>
             <Button variant={activeTab === 'settings' ? 'secondary' : 'ghost'} onClick={() => setActiveTab('settings')} className="justify-start gap-3"><Settings /> Settings</Button>
-            <Button variant="ghost" className="justify-start gap-3 text-destructive hover:text-destructive"><LogOut /> Logout</Button>
+            <Button variant="ghost" className="justify-start gap-3 text-destructive hover:text-destructive" onClick={handleLogout}><LogOut /> Logout</Button>
           </nav>
         </aside>
 

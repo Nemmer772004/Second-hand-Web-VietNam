@@ -9,6 +9,8 @@ import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
+import { auth } from '@/lib/firebase';
 
 const registerFormSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters.'),
@@ -26,12 +28,23 @@ export default function RegisterPage() {
     defaultValues: { name: '', email: '', password: '' },
   });
 
-  const onSubmit = (data: RegisterFormValues) => {
-    toast({
-      title: 'Account Created!',
-      description: 'Welcome to Home Harmony! You can now log in.',
-    });
-    router.push('/login');
+  const onSubmit = async (data: RegisterFormValues) => {
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, data.email, data.password);
+      await updateProfile(userCredential.user, { displayName: data.name });
+      
+      toast({
+        title: 'Account Created!',
+        description: 'Welcome to Home Harmony! You can now log in.',
+      });
+      router.push('/login');
+    } catch (error: any) {
+      toast({
+        variant: 'destructive',
+        title: 'Registration Failed',
+        description: error.message,
+      });
+    }
   };
 
   return (
