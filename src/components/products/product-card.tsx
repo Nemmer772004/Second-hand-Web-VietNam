@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { Heart, Star, Upload } from 'lucide-react';
+import { Heart, Star, Upload, Eye } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { Product } from '@/lib/data';
 import { Badge } from '@/components/ui/badge';
@@ -29,7 +29,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
   const isWishlisted = wishlist.some(item => item.id === product.id);
 
   const handleWishlistToggle = (e: React.MouseEvent) => {
-    e.stopPropagation(); // Ngăn sự kiện click lan ra thẻ Link bên ngoài
+    e.stopPropagation(); 
     e.preventDefault();
     if (isWishlisted) {
       removeFromWishlist(product.id);
@@ -45,7 +45,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
   };
 
   const handleDialogClick = (e: React.MouseEvent) => {
-    e.stopPropagation(); // Ngăn sự kiện click lan ra thẻ Link bên ngoài
+    e.stopPropagation();
     e.preventDefault();
   }
 
@@ -54,42 +54,57 @@ const ProductCard = ({ product }: ProductCardProps) => {
   }
 
   return (
-    <Link href={`/products/${product.id}`} className="group relative flex flex-col shadow-sm hover:shadow-lg transition-shadow duration-300 rounded-lg bg-card overflow-hidden no-underline">
-      <div className="relative w-full aspect-square overflow-hidden bg-secondary">
+    <div className="group relative flex flex-col shadow-sm hover:shadow-lg transition-shadow duration-300 rounded-lg bg-card overflow-hidden">
+      <Dialog>
+        <DialogTrigger asChild>
+          <div className="relative w-full aspect-square overflow-hidden bg-secondary cursor-pointer">
+              <Image
+                src={product.images[0]}
+                alt={product.name}
+                width={400}
+                height={400}
+                className="w-full h-full object-cover object-center transition-transform duration-300 group-hover:scale-105"
+                data-ai-hint={product.hint}
+              />
+              {product.images.length > 1 && (
+                <Image
+                    src={product.images[1]}
+                    alt={`${product.name} alternate view`}
+                    width={400}
+                    height={400}
+                    className="w-full h-full object-cover object-center absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+                    data-ai-hint={product.hint}
+                />
+              )}
+            <Badge variant={product.condition === "Bảo Hành 3 Tháng" ? "default" : "secondary"} className="absolute top-2 right-2">{product.condition}</Badge>
+            {product.price < (product.originalPrice || 0) && <Badge variant="destructive" className="absolute top-10 right-2">Giá Rẻ</Badge>}
+
+            <Button 
+                variant="ghost" 
+                size="icon" 
+                className="absolute top-2 left-2 bg-background/50 hover:bg-background/80 rounded-full" 
+                aria-label="Thêm vào danh sách yêu thích"
+                onClick={handleWishlistToggle}
+            >
+              <Heart className={cn("h-5 w-5 text-foreground", isWishlisted && "fill-rose-500 text-rose-500")} />
+            </Button>
+          </div>
+        </DialogTrigger>
+        <DialogContent className="max-w-3xl">
           <Image
             src={product.images[0]}
             alt={product.name}
-            width={400}
-            height={400}
-            className="w-full h-full object-cover object-center transition-transform duration-300 group-hover:scale-105"
-            data-ai-hint={product.hint}
+            width={800}
+            height={800}
+            className="w-full h-auto object-contain rounded-md"
           />
-          {product.images.length > 1 && (
-            <Image
-                src={product.images[1]}
-                alt={`${product.name} alternate view`}
-                width={400}
-                height={400}
-                className="w-full h-full object-cover object-center absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
-                data-ai-hint={product.hint}
-            />
-          )}
-        <Badge variant={product.condition === "Bảo Hành 3 Tháng" ? "default" : "secondary"} className="absolute top-2 right-2">{product.condition}</Badge>
-        {product.price < (product.originalPrice || 0) && <Badge variant="destructive" className="absolute top-10 right-2">Giá Rẻ</Badge>}
-
-        <Button 
-            variant="ghost" 
-            size="icon" 
-            className="absolute top-2 left-2 bg-background/50 hover:bg-background/80 rounded-full" 
-            aria-label="Thêm vào danh sách yêu thích"
-            onClick={handleWishlistToggle}
-        >
-          <Heart className={cn("h-5 w-5 text-foreground", isWishlisted && "fill-rose-500 text-rose-500")} />
-        </Button>
-      </div>
+        </DialogContent>
+      </Dialog>
       <div className="p-4 flex flex-col flex-1">
-        <h3 className="text-sm font-medium text-foreground hover:underline">
+        <h3 className="text-sm font-medium text-foreground">
+          <Link href={`/products/${product.id}`} className="hover:underline">
             {product.name}
+          </Link>
         </h3>
         <div className="flex items-center mt-1">
           <div className="flex items-center">
@@ -117,26 +132,34 @@ const ProductCard = ({ product }: ProductCardProps) => {
               </p>
             </div>
         </div>
-        <Dialog>
-          <DialogTrigger asChild>
-            <Button variant="outline" size="sm" className="mt-2 w-full" onClick={handleDialogClick}>Định Giá Nhanh</Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Định giá nhanh sản phẩm của bạn</DialogTitle>
-              <DialogDescription>
-                Tải lên hình ảnh sản phẩm bạn muốn bán, chúng tôi sẽ ước tính giá thu mua.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="flex flex-col items-center justify-center p-4 border-2 border-dashed rounded-lg">
-              <Upload className="w-12 h-12 text-muted-foreground"/>
-              <Input type="file" className="mt-4"/>
-              <Button className="mt-4">Gửi Định Giá</Button>
-            </div>
-          </DialogContent>
-        </Dialog>
+        <div className="mt-2 flex flex-col gap-2">
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button variant="outline" size="sm" className="w-full" onClick={handleDialogClick}>Định Giá Nhanh</Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Định giá nhanh sản phẩm của bạn</DialogTitle>
+                  <DialogDescription>
+                    Tải lên hình ảnh sản phẩm bạn muốn bán, chúng tôi sẽ ước tính giá thu mua.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="flex flex-col items-center justify-center p-4 border-2 border-dashed rounded-lg">
+                  <Upload className="w-12 h-12 text-muted-foreground"/>
+                  <Input type="file" className="mt-4"/>
+                  <Button className="mt-4">Gửi Định Giá</Button>
+                </div>
+              </DialogContent>
+            </Dialog>
+            <Button asChild size="sm" className="w-full">
+              <Link href={`/products/${product.id}`}>
+                <Eye className="mr-2 h-4 w-4" />
+                Xem Chi Tiết
+              </Link>
+            </Button>
+        </div>
       </div>
-    </Link>
+    </div>
   );
 };
 
