@@ -44,7 +44,7 @@ const SiteHeader = () => {
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon" className="md:hidden mr-4">
                 <Menu className="h-6 w-6" />
-                <span className="sr-only">Open menu</span>
+                <span className="sr-only">Mở menu</span>
               </Button>
             </SheetTrigger>
             <SheetContent side="left" className="p-0">
@@ -66,37 +66,37 @@ const SiteHeader = () => {
               <NavigationMenuItem>
                 <Link href="/products" legacyBehavior passHref>
                   <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                    Products
+                    Sản phẩm
                   </NavigationMenuLink>
                 </Link>
               </NavigationMenuItem>
               <NavigationMenuItem>
-                <NavigationMenuTrigger>Categories</NavigationMenuTrigger>
+                <NavigationMenuTrigger>Danh mục</NavigationMenuTrigger>
                 <NavigationMenuContent>
                   <div className="grid w-[600px] grid-cols-3 gap-4 p-4">
                     <div className="col-span-1 flex flex-col">
-                      <h3 className="font-headline text-lg mb-2">Shop by Category</h3>
+                      <h3 className="font-headline text-lg mb-2">Mua sắm theo danh mục</h3>
                       {productCategories.map((category) => (
                         <NavigationMenuLink asChild key={category.name}>
                           <Link href={category.href} className="p-2 rounded-md hover:bg-accent block text-sm">{category.name}</Link>
                         </NavigationMenuLink>
                       ))}
                        <NavigationMenuLink asChild>
-                          <Link href="/products" className="p-2 mt-2 rounded-md bg-secondary text-secondary-foreground font-medium block text-sm">View All Products</Link>
+                          <Link href="/products" className="p-2 mt-2 rounded-md bg-secondary text-secondary-foreground font-medium block text-sm">Xem tất cả sản phẩm</Link>
                         </NavigationMenuLink>
                     </div>
                     <div className="col-span-2 relative h-full w-full overflow-hidden rounded-md">
                       <Image
                         src="https://picsum.photos/seed/nav/600/400"
-                        alt="Featured furniture"
+                        alt="Nội thất nổi bật"
                         fill
                         className="object-cover"
                         data-ai-hint="elegant living room"
                       />
                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"/>
                        <div className="absolute bottom-4 left-4 text-primary-foreground">
-                        <h4 className="font-bold">New Arrivals</h4>
-                        <p className="text-sm">Explore the latest trends</p>
+                        <h4 className="font-bold">Hàng mới về</h4>
+                        <p className="text-sm">Khám phá các xu hướng mới nhất</p>
                        </div>
                     </div>
                   </div>
@@ -105,14 +105,14 @@ const SiteHeader = () => {
               <NavigationMenuItem>
                 <Link href="/inspiration" legacyBehavior passHref>
                   <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                    Inspiration
+                    Cảm hứng
                   </NavigationMenuLink>
                 </Link>
               </NavigationMenuItem>
               <NavigationMenuItem>
                 <Link href="/design-consultation" legacyBehavior passHref>
                   <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                    Interior Design
+                    Thiết kế nội thất
                   </NavigationMenuLink>
                 </Link>
               </NavigationMenuItem>
@@ -122,22 +122,22 @@ const SiteHeader = () => {
           <div className="flex flex-1 items-center justify-end gap-4">
             {/* Search */}
             <div className="hidden lg:flex relative w-full max-w-xs">
-              <Input type="search" placeholder="Search products..." className="pr-10" />
+              <Input type="search" placeholder="Tìm kiếm sản phẩm..." className="pr-10" />
               <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
             </div>
 
             {/* Icons */}
             <div className="flex items-center gap-2">
-              <Button variant="ghost" size="icon" aria-label="Search" className="lg:hidden">
+              <Button variant="ghost" size="icon" aria-label="Tìm kiếm" className="lg:hidden">
                 <Search className="h-5 w-5" />
               </Button>
               <Button variant="ghost" size="icon" asChild>
-                <Link href="/account#wishlist" aria-label="Wishlist">
+                <Link href="/account#wishlist" aria-label="Danh sách yêu thích">
                   <Heart className="h-5 w-5" />
                 </Link>
               </Button>
               <Button variant="ghost" size="icon" asChild className="relative">
-                <Link href="/cart" aria-label="Shopping Cart">
+                <Link href="/cart" aria-label="Giỏ hàng">
                   <ShoppingCart className="h-5 w-5" />
                   {cart.length > 0 && (
                     <Badge variant="destructive" className="absolute -right-2 -top-2 h-5 w-5 justify-center p-0">{cart.reduce((acc, item) => acc + item.quantity, 0)}</Badge>
@@ -145,7 +145,7 @@ const SiteHeader = () => {
                 </Link>
               </Button>
               <Button variant="ghost" size="icon" asChild>
-                <Link href="/account" aria-label="User Account">
+                <Link href="/account" aria-label="Tài khoản người dùng">
                   <User className="h-5 w-5" />
                 </Link>
               </Button>
@@ -172,12 +172,12 @@ const MobileNav = ({ closeMenu }: { closeMenu: () => void }) => {
       <nav className="flex-1 overflow-y-auto p-4">
         <ul className="flex flex-col gap-2">
            <li>
-            <Link href="/products" className="block py-2 font-medium" onClick={closeMenu}>Products</Link>
+            <Link href="/products" className="block py-2 font-medium" onClick={closeMenu}>Sản phẩm</Link>
           </li>
           <li>
             <details>
               <summary className="flex items-center justify-between py-2 font-medium cursor-pointer list-none">
-                Categories <ChevronDown className="h-4 w-4 transition-transform duration-200" />
+                Danh mục <ChevronDown className="h-4 w-4 transition-transform duration-200" />
               </summary>
               <ul className="pl-4 mt-2 space-y-2">
                 {productCategories.map((category) => (
@@ -189,13 +189,13 @@ const MobileNav = ({ closeMenu }: { closeMenu: () => void }) => {
             </details>
           </li>
           <li>
-            <Link href="/inspiration" className="block py-2 font-medium" onClick={closeMenu}>Inspiration</Link>
+            <Link href="/inspiration" className="block py-2 font-medium" onClick={closeMenu}>Cảm hứng</Link>
           </li>
           <li>
-            <Link href="/design-consultation" className="block py-2 font-medium" onClick={closeMenu}>Interior Design</Link>
+            <Link href="/design-consultation" className="block py-2 font-medium" onClick={closeMenu}>Thiết kế nội thất</Link>
           </li>
           <li>
-            <Link href="/about" className="block py-2 font-medium" onClick={closeMenu}>About Us</Link>
+            <Link href="/about" className="block py-2 font-medium" onClick={closeMenu}>Về chúng tôi</Link>
           </li>
         </ul>
       </nav>
@@ -208,6 +208,5 @@ const MobileNav = ({ closeMenu }: { closeMenu: () => void }) => {
     </div>
   );
 };
-
 
 export default SiteHeader;

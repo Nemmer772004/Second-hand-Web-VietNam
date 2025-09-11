@@ -14,11 +14,11 @@ import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 
 const registerFormSchema = z.object({
-  name: z.string().min(2, 'Name must be at least 2 characters.'),
-  email: z.string().email('Please enter a valid email address.'),
-  password: z.string().min(8, 'Password must be at least 8 characters.'),
+  name: z.string().min(2, 'Tên phải có ít nhất 2 ký tự.'),
+  email: z.string().email('Vui lòng nhập một địa chỉ email hợp lệ.'),
+  password: z.string().min(8, 'Mật khẩu phải có ít nhất 8 ký tự.'),
   agree: z.boolean().default(false).refine((val) => val === true, {
-    message: "You must agree to the privacy policy.",
+    message: "Bạn phải đồng ý với chính sách bảo mật.",
   }),
 });
 
@@ -38,17 +38,17 @@ export default function RegisterPage() {
       await updateProfile(userCredential.user, { displayName: data.name });
       
       toast({
-        title: 'Account Created!',
-        description: 'Welcome to Home Harmony! You can now log in.',
+        title: 'Tài khoản đã được tạo!',
+        description: 'Chào mừng đến với Home Harmony! Bây giờ bạn có thể đăng nhập.',
       });
       router.push('/login');
     } catch (error: any) {
       toast({
         variant: 'destructive',
-        title: 'Registration Failed',
+        title: 'Đăng ký thất bại',
         description: error.code === 'auth/email-already-in-use' 
-          ? 'This email address is already in use.'
-          : 'An unexpected error occurred. Please try again.',
+          ? 'Địa chỉ email này đã được sử dụng.'
+          : 'Đã xảy ra lỗi không mong muốn. Vui lòng thử lại.',
       });
     }
   };
@@ -57,9 +57,9 @@ export default function RegisterPage() {
     <div className="container mx-auto px-4 py-16 flex items-center justify-center min-h-[70vh]">
       <div className="max-w-md w-full">
         <div className="text-center mb-8">
-          <h1 className="font-headline text-4xl font-bold">Create an Account</h1>
+          <h1 className="font-headline text-4xl font-bold">Tạo tài khoản</h1>
           <p className="mt-2 text-muted-foreground">
-            Join Home Harmony to enjoy a faster checkout and save your favorite items.
+            Tham gia Home Harmony để tận hưởng thanh toán nhanh hơn và lưu các mặt hàng yêu thích của bạn.
           </p>
         </div>
 
@@ -70,9 +70,9 @@ export default function RegisterPage() {
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Full Name</FormLabel>
+                  <FormLabel>Họ và Tên</FormLabel>
                   <FormControl>
-                    <Input placeholder="John Doe" {...field} />
+                    <Input placeholder="Nguyễn Văn A" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -85,7 +85,7 @@ export default function RegisterPage() {
                 <FormItem>
                   <FormLabel>Email</FormLabel>
                   <FormControl>
-                    <Input type="email" placeholder="you@example.com" {...field} />
+                    <Input type="email" placeholder="ban@example.com" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -96,7 +96,7 @@ export default function RegisterPage() {
               name="password"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Password</FormLabel>
+                  <FormLabel>Mật khẩu</FormLabel>
                   <FormControl>
                     <Input type="password" placeholder="••••••••" {...field} />
                   </FormControl>
@@ -117,9 +117,9 @@ export default function RegisterPage() {
                   </FormControl>
                   <div className="space-y-1 leading-none">
                     <FormLabel>
-                      I agree to the{' '}
+                      Tôi đồng ý với{' '}
                       <Link href="/privacy-policy" className="font-medium text-primary hover:underline">
-                        Privacy Policy
+                        Chính sách bảo mật
                       </Link>
                       .
                     </FormLabel>
@@ -129,16 +129,16 @@ export default function RegisterPage() {
               )}
             />
             <Button type="submit" size="lg" className="w-full" disabled={form.formState.isSubmitting}>
-              {form.formState.isSubmitting ? 'Creating Account...' : 'Create Account'}
+              {form.formState.isSubmitting ? 'Đang tạo tài khoản...' : 'Tạo tài khoản'}
             </Button>
           </form>
         </Form>
         
         <div className="mt-6 text-center text-sm">
           <p className="text-muted-foreground">
-            Already have an account?{' '}
+            Đã có tài khoản?{' '}
             <Link href="/login" className="font-medium text-primary hover:underline">
-              Log in
+              Đăng nhập
             </Link>
           </p>
         </div>

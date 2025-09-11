@@ -14,8 +14,8 @@ const SiteFooter = () => {
               <Sofa className="h-8 w-8 text-primary" />
               <span className="font-headline text-2xl font-bold">Home Harmony</span>
             </Link>
-            <p className="text-muted-foreground mb-2">123 Design Lane, Creativity City, 10001</p>
-            <p className="text-muted-foreground">Phone: (123) 456-7890</p>
+            <p className="text-muted-foreground mb-2">123 Đường Thiết Kế, Thành phố Sáng Tạo, 10001</p>
+            <p className="text-muted-foreground">Điện thoại: (123) 456-7890</p>
             <p className="text-muted-foreground">Email: support@homeharmony.com</p>
             <div className="mt-4">
               <iframe
@@ -33,41 +33,41 @@ const SiteFooter = () => {
 
           {/* Column 2: Product Links */}
           <div>
-            <h3 className="font-headline text-lg font-bold mb-4">Products</h3>
+            <h3 className="font-headline text-lg font-bold mb-4">Sản phẩm</h3>
             <ul className="space-y-2">
-              <li><Link href="/products/sofas" className="text-muted-foreground hover:text-primary">Sofas</Link></li>
-              <li><Link href="/products/chairs" className="text-muted-foreground hover:text-primary">Chairs</Link></li>
-              <li><Link href="/products/tables" className="text-muted-foreground hover:text-primary">Tables</Link></li>
-              <li><Link href="/products/beds" className="text-muted-foreground hover:text-primary">Beds</Link></li>
-              <li><Link href="/products/storage" className="text-muted-foreground hover:text-primary">Storage</Link></li>
+              <li><Link href="/products/sofas" className="text-muted-foreground hover:text-primary">Ghế Sofa</Link></li>
+              <li><Link href="/products/chairs" className="text-muted-foreground hover:text-primary">Ghế</Link></li>
+              <li><Link href="/products/tables" className="text-muted-foreground hover:text-primary">Bàn</Link></li>
+              <li><Link href="/products/beds" className="text-muted-foreground hover:text-primary">Giường</Link></li>
+              <li><Link href="/products/storage" className="text-muted-foreground hover:text-primary">Tủ kệ</Link></li>
             </ul>
           </div>
 
           {/* Column 3: Services & Support */}
           <div>
-            <h3 className="font-headline text-lg font-bold mb-4">Support</h3>
+            <h3 className="font-headline text-lg font-bold mb-4">Hỗ trợ</h3>
              <ul className="space-y-2">
-              <li><Link href="/about" className="text-muted-foreground hover:text-primary">About Us</Link></li>
-              <li><Link href="/contact" className="text-muted-foreground hover:text-primary">Contact</Link></li>
+              <li><Link href="/about" className="text-muted-foreground hover:text-primary">Về chúng tôi</Link></li>
+              <li><Link href="/contact" className="text-muted-foreground hover:text-primary">Liên hệ</Link></li>
               <li><Link href="/faq" className="text-muted-foreground hover:text-primary">FAQ</Link></li>
-              <li><Link href="/delivery" className="text-muted-foreground hover:text-primary">Delivery</Link></li>
-              <li><Link href="/design-consultation" className="text-muted-foreground hover:text-primary">Interior Design</Link></li>
+              <li><Link href="/delivery" className="text-muted-foreground hover:text-primary">Giao hàng</Link></li>
+              <li><Link href="/design-consultation" className="text-muted-foreground hover:text-primary">Thiết kế nội thất</Link></li>
             </ul>
           </div>
 
           {/* Column 4: Newsletter */}
           <div>
-            <h3 className="font-headline text-lg font-bold mb-4">Newsletter</h3>
-            <p className="text-muted-foreground mb-4">Get updates on new arrivals and special offers.</p>
+            <h3 className="font-headline text-lg font-bold mb-4">Bản tin</h3>
+            <p className="text-muted-foreground mb-4">Nhận cập nhật về hàng mới về và ưu đãi đặc biệt.</p>
             <form className="flex flex-col gap-2">
-              <Input type="email" placeholder="Your email" />
-              <Button>Subscribe</Button>
+              <Input type="email" placeholder="Email của bạn" />
+              <Button>Đăng ký</Button>
             </form>
           </div>
         </div>
 
         <div className="mt-12 border-t pt-8 flex flex-col sm:flex-row justify-between items-center gap-4">
-          <p className="text-sm text-muted-foreground">&copy; {new Date().getFullYear()} Home Harmony. All rights reserved.</p>
+          <p className="text-sm text-muted-foreground">&copy; {new Date().getFullYear()} Home Harmony. Bảo lưu mọi quyền.</p>
           <div className="flex items-center gap-4">
              <div className="flex gap-4">
               <Link href="#" aria-label="Youtube"><Youtube className="h-5 w-5 text-muted-foreground hover:text-primary" /></Link>

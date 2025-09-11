@@ -17,7 +17,7 @@ export default function AccountPage() {
   const { toast } = useToast();
 
   if (loading) {
-    return <div>Loading...</div>; // Or a spinner component
+    return <div>Đang tải...</div>;
   }
 
   if (!user) {
@@ -29,28 +29,26 @@ export default function AccountPage() {
     try {
       await signOut(auth);
       toast({
-        title: 'Logged Out',
-        description: 'You have been successfully logged out.',
+        title: 'Đã đăng xuất',
+        description: 'Bạn đã đăng xuất thành công.',
       });
       router.push('/');
     } catch (error) {
        toast({
         variant: 'destructive',
-        title: 'Logout Failed',
-        description: 'An error occurred while logging out.',
+        title: 'Đăng xuất thất bại',
+        description: 'Đã xảy ra lỗi khi đăng xuất.',
       });
     }
   };
 
-
-  // Mock data - replace with actual data fetching
   const orders = [
-    { id: 'ORD-12345', date: '2024-05-20', total: 1249.98, status: 'Shipped' },
-    { id: 'ORD-12332', date: '2024-04-12', total: 349.99, status: 'Delivered' },
+    { id: 'ORD-12345', date: '2024-05-20', total: 1249.98, status: 'Đã giao' },
+    { id: 'ORD-12332', date: '2024-04-12', total: 349.99, status: 'Đã hoàn thành' },
   ];
   const wishlist = [
-    { id: 'velvet-dream-sofa', name: 'Velvet Dream Sofa', price: 899.99, image: 'https://picsum.photos/seed/p1/200/200' },
-    { id: 'oakwood-coffee-table', name: 'Oakwood Coffee Table', price: 249.99, image: 'https://picsum.photos/seed/p2/200/200' },
+    { id: 'velvet-dream-sofa', name: 'Sofa Nhung Mơ Mộng', price: 899.99, image: 'https://picsum.photos/seed/p1/200/200' },
+    { id: 'oakwood-coffee-table', name: 'Bàn Cà Phê Gỗ Sồi', price: 249.99, image: 'https://picsum.photos/seed/p2/200/200' },
   ];
 
   const renderContent = () => {
@@ -58,26 +56,26 @@ export default function AccountPage() {
       case 'profile':
         return (
           <div>
-            <h2 className="font-headline text-2xl font-bold mb-4">My Profile</h2>
+            <h2 className="font-headline text-2xl font-bold mb-4">Hồ Sơ Của Tôi</h2>
             <div className="space-y-4">
-              <p><strong>Name:</strong> {user.displayName || 'N/A'}</p>
+              <p><strong>Tên:</strong> {user.displayName || 'N/A'}</p>
               <p><strong>Email:</strong> {user.email}</p>
-              <p><strong>Phone Number:</strong> {user.phoneNumber || 'Not provided'}</p>
-              <Button variant="outline">Edit Profile</Button>
+              <p><strong>Số điện thoại:</strong> {user.phoneNumber || 'Chưa cung cấp'}</p>
+              <Button variant="outline">Chỉnh sửa hồ sơ</Button>
             </div>
           </div>
         );
       case 'orders':
         return (
           <div>
-            <h2 className="font-headline text-2xl font-bold mb-4">My Orders</h2>
+            <h2 className="font-headline text-2xl font-bold mb-4">Đơn Hàng Của Tôi</h2>
             <div className="space-y-4">
               {orders.map(order => (
                 <div key={order.id} className="border p-4 rounded-lg flex justify-between items-center">
                   <div>
-                    <p className="font-bold">Order #{order.id}</p>
-                    <p className="text-sm text-muted-foreground">Date: {order.date}</p>
-                    <p className="text-sm text-muted-foreground">Total: ${order.total.toFixed(2)}</p>
+                    <p className="font-bold">Đơn hàng #{order.id}</p>
+                    <p className="text-sm text-muted-foreground">Ngày: {order.date}</p>
+                    <p className="text-sm text-muted-foreground">Tổng: ${order.total.toFixed(2)}</p>
                   </div>
                   <div className="text-right">
                     <span className="text-sm font-medium bg-secondary text-secondary-foreground px-2 py-1 rounded-md">{order.status}</span>
@@ -90,7 +88,7 @@ export default function AccountPage() {
       case 'wishlist':
         return (
           <div>
-            <h2 className="font-headline text-2xl font-bold mb-4">My Wishlist</h2>
+            <h2 className="font-headline text-2xl font-bold mb-4">Danh Sách Yêu Thích</h2>
             <div className="space-y-4">
               {wishlist.map(item => (
                 <div key={item.id} className="border p-4 rounded-lg flex items-center gap-4">
@@ -99,7 +97,7 @@ export default function AccountPage() {
                     <p className="font-bold">{item.name}</p>
                     <p className="text-muted-foreground">${item.price.toFixed(2)}</p>
                   </div>
-                  <Button asChild><Link href={`/products/${item.id}`}>View Item</Link></Button>
+                  <Button asChild><Link href={`/products/${item.id}`}>Xem Sản Phẩm</Link></Button>
                 </div>
               ))}
             </div>
@@ -108,8 +106,8 @@ export default function AccountPage() {
       case 'settings':
          return (
           <div>
-            <h2 className="font-headline text-2xl font-bold mb-4">Settings</h2>
-            <p className="text-muted-foreground">Manage your account settings and preferences here.</p>
+            <h2 className="font-headline text-2xl font-bold mb-4">Cài Đặt</h2>
+            <p className="text-muted-foreground">Quản lý cài đặt tài khoản và tùy chọn của bạn tại đây.</p>
           </div>
         );
       default:
@@ -120,17 +118,17 @@ export default function AccountPage() {
   return (
     <div className="container mx-auto px-4 py-16">
       <div className="text-center mb-12">
-        <h1 className="font-headline text-4xl md:text-5xl font-bold">My Account</h1>
+        <h1 className="font-headline text-4xl md:text-5xl font-bold">Tài Khoản Của Tôi</h1>
       </div>
 
       <div className="grid md:grid-cols-4 gap-8">
         <aside className="md:col-span-1">
           <nav className="flex flex-col space-y-2">
-            <Button variant={activeTab === 'profile' ? 'secondary' : 'ghost'} onClick={() => setActiveTab('profile')} className="justify-start gap-3"><User /> Profile</Button>
-            <Button variant={activeTab === 'orders' ? 'secondary' : 'ghost'} onClick={() => setActiveTab('orders')} className="justify-start gap-3"><ShoppingBag /> Orders</Button>
-            <Button variant={activeTab === 'wishlist' ? 'secondary' : 'ghost'} onClick={() => setActiveTab('wishlist')} className="justify-start gap-3"><Heart /> Wishlist</Button>
-            <Button variant={activeTab === 'settings' ? 'secondary' : 'ghost'} onClick={() => setActiveTab('settings')} className="justify-start gap-3"><Settings /> Settings</Button>
-            <Button variant="ghost" className="justify-start gap-3 text-destructive hover:text-destructive" onClick={handleLogout}><LogOut /> Logout</Button>
+            <Button variant={activeTab === 'profile' ? 'secondary' : 'ghost'} onClick={() => setActiveTab('profile')} className="justify-start gap-3"><User /> Hồ sơ</Button>
+            <Button variant={activeTab === 'orders' ? 'secondary' : 'ghost'} onClick={() => setActiveTab('orders')} className="justify-start gap-3"><ShoppingBag /> Đơn hàng</Button>
+            <Button variant={activeTab === 'wishlist' ? 'secondary' : 'ghost'} onClick={() => setActiveTab('wishlist')} className="justify-start gap-3"><Heart /> Yêu thích</Button>
+            <Button variant={activeTab === 'settings' ? 'secondary' : 'ghost'} onClick={() => setActiveTab('settings')} className="justify-start gap-3"><Settings /> Cài đặt</Button>
+            <Button variant="ghost" className="justify-start gap-3 text-destructive hover:text-destructive" onClick={handleLogout}><LogOut /> Đăng xuất</Button>
           </nav>
         </aside>
 

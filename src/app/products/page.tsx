@@ -82,17 +82,17 @@ export default function ProductsPage() {
   return (
     <div className="container mx-auto px-4 py-8">
        <div className="mb-8 text-center">
-        <h1 className="font-headline text-4xl md:text-5xl font-bold">Our Collection</h1>
-        <p className="mt-2 text-lg text-muted-foreground">Find the perfect pieces to complete your home.</p>
+        <h1 className="font-headline text-4xl md:text-5xl font-bold">Bộ Sưu Tập Của Chúng Tôi</h1>
+        <p className="mt-2 text-lg text-muted-foreground">Tìm những món đồ hoàn hảo để hoàn thiện ngôi nhà của bạn.</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
         <aside className="lg:col-span-1">
           <div className="sticky top-20">
-            <h2 className="font-headline text-2xl font-bold mb-4">Filters</h2>
+            <h2 className="font-headline text-2xl font-bold mb-4">Bộ lọc</h2>
             <Accordion type="multiple" defaultValue={['category', 'price']} className="w-full">
               <AccordionItem value="category">
-                <AccordionTrigger className="text-lg font-medium">Category</AccordionTrigger>
+                <AccordionTrigger className="text-lg font-medium">Danh mục</AccordionTrigger>
                 <AccordionContent>
                   <div className="space-y-2">
                     {productCategories.map(category => (
@@ -111,7 +111,7 @@ export default function ProductsPage() {
                 </AccordionContent>
               </AccordionItem>
               <AccordionItem value="price">
-                <AccordionTrigger className="text-lg font-medium">Price</AccordionTrigger>
+                <AccordionTrigger className="text-lg font-medium">Giá</AccordionTrigger>
                 <AccordionContent>
                   <div className="space-y-4">
                     <Slider
@@ -129,7 +129,7 @@ export default function ProductsPage() {
                 </AccordionContent>
               </AccordionItem>
               <AccordionItem value="material">
-                <AccordionTrigger className="text-lg font-medium">Material</AccordionTrigger>
+                <AccordionTrigger className="text-lg font-medium">Chất liệu</AccordionTrigger>
                 <AccordionContent>
                    <div className="space-y-2">
                     {allMaterials.map(material => (
@@ -153,23 +153,23 @@ export default function ProductsPage() {
                 setPriceRange([0, maxPrice]);
                 setSelectedMaterials([]);
              }} className="w-full mt-6" variant="outline">
-                Clear Filters
+                Xóa bộ lọc
             </Button>
           </div>
         </aside>
 
         <main className="lg:col-span-3">
           <div className="flex justify-between items-center mb-6">
-            <p className="text-muted-foreground">{filteredProducts.length} products found</p>
+            <p className="text-muted-foreground">{filteredProducts.length} sản phẩm được tìm thấy</p>
              <Select value={sortOrder} onValueChange={setSortOrder}>
               <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Sort by" />
+                <SelectValue placeholder="Sắp xếp theo" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="newest">Newest</SelectItem>
-                <SelectItem value="price-asc">Price: Low to High</SelectItem>
-                <SelectItem value="price-desc">Price: High to Low</SelectItem>
-                <SelectItem value="rating">Top Rated</SelectItem>
+                <SelectItem value="newest">Mới nhất</SelectItem>
+                <SelectItem value="price-asc">Giá: Thấp đến Cao</SelectItem>
+                <SelectItem value="price-desc">Giá: Cao đến Thấp</SelectItem>
+                <SelectItem value="rating">Đánh giá cao nhất</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -180,8 +180,8 @@ export default function ProductsPage() {
           </div>
           {filteredProducts.length === 0 && (
              <div className="text-center py-20">
-                <h3 className="font-headline text-2xl">No Products Found</h3>
-                <p className="text-muted-foreground mt-2">Try adjusting your filters to find what you're looking for.</p>
+                <h3 className="font-headline text-2xl">Không tìm thấy sản phẩm nào</h3>
+                <p className="text-muted-foreground mt-2">Hãy thử điều chỉnh bộ lọc của bạn để tìm thấy những gì bạn đang tìm kiếm.</p>
              </div>
           )}
         </main>

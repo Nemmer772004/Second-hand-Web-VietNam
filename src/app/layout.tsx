@@ -8,7 +8,7 @@ import { AuthProvider } from '@/context/auth-context';
 
 export const metadata: Metadata = {
   title: 'Home Harmony',
-  description: 'Discover curated furniture for your home.',
+  description: 'Khám phá đồ nội thất được tuyển chọn cho ngôi nhà của bạn.',
 };
 
 export default function RootLayout({
@@ -17,7 +17,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="scroll-smooth">
+    <html lang="vi" className="scroll-smooth">
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />

@@ -13,17 +13,18 @@ export default function CartPage() {
   const { cart, updateQuantity, removeFromCart, clearCart } = useContext(CartContext);
 
   const subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
-  const shipping = subtotal > 50 ? 0 : 15; // Example shipping logic
+  const shipping = subtotal > 50 ? 0 : 15; // Logic phí vận chuyển ví dụ
+
   const total = subtotal + shipping;
 
   if (cart.length === 0) {
     return (
       <div className="container mx-auto px-4 py-16 text-center min-h-[60vh] flex flex-col justify-center items-center">
         <ShoppingCart className="h-24 w-24 text-muted-foreground mb-6" />
-        <h1 className="font-headline text-4xl font-bold">Your Cart is Empty</h1>
-        <p className="mt-2 text-lg text-muted-foreground">Looks like you haven't added anything to your cart yet.</p>
+        <h1 className="font-headline text-4xl font-bold">Giỏ Hàng Của Bạn Đang Trống</h1>
+        <p className="mt-2 text-lg text-muted-foreground">Có vẻ như bạn chưa thêm sản phẩm nào vào giỏ hàng.</p>
         <Button asChild size="lg" className="mt-8">
-          <Link href="/products">Continue Shopping</Link>
+          <Link href="/products">Tiếp Tục Mua Sắm</Link>
         </Button>
       </div>
     );
@@ -31,7 +32,7 @@ export default function CartPage() {
 
   return (
     <div className="container mx-auto px-4 py-16">
-      <h1 className="font-headline text-4xl font-bold mb-8">Shopping Cart</h1>
+      <h1 className="font-headline text-4xl font-bold mb-8">Giỏ Hàng</h1>
       <div className="grid lg:grid-cols-3 gap-12">
         <div className="lg:col-span-2 space-y-4">
           {cart.map(item => (
@@ -59,37 +60,37 @@ export default function CartPage() {
             </div>
           ))}
           <div className="text-right mt-4">
-            <Button variant="outline" onClick={clearCart}>Clear Cart</Button>
+            <Button variant="outline" onClick={clearCart}>Xóa Giỏ Hàng</Button>
           </div>
         </div>
 
         <div className="lg:col-span-1">
             <div className="sticky top-24 p-6 bg-secondary rounded-lg">
-                <h2 className="font-headline text-2xl font-bold mb-4">Order Summary</h2>
+                <h2 className="font-headline text-2xl font-bold mb-4">Tóm Tắt Đơn Hàng</h2>
                 <div className="space-y-3">
                     <div className="flex justify-between">
-                        <span>Subtotal</span>
+                        <span>Tạm tính</span>
                         <span>${subtotal.toFixed(2)}</span>
                     </div>
                      <div className="flex justify-between">
-                        <span>Shipping</span>
-                        <span>{shipping > 0 ? `$${shipping.toFixed(2)}` : 'Free'}</span>
+                        <span>Phí vận chuyển</span>
+                        <span>{shipping > 0 ? `$${shipping.toFixed(2)}` : 'Miễn phí'}</span>
                     </div>
                      <Separator />
                      <div className="flex justify-between font-bold text-lg">
-                        <span>Total</span>
+                        <span>Tổng cộng</span>
                         <span>${total.toFixed(2)}</span>
                     </div>
                 </div>
                 <div className="mt-6">
-                    <h3 className="font-medium mb-2">Promo Code</h3>
+                    <h3 className="font-medium mb-2">Mã Khuyến Mãi</h3>
                     <div className="flex gap-2">
-                        <Input placeholder="Enter code" />
-                        <Button variant="outline">Apply</Button>
+                        <Input placeholder="Nhập mã" />
+                        <Button variant="outline">Áp dụng</Button>
                     </div>
                 </div>
                 <Button size="lg" className="w-full mt-6">
-                    Proceed to Checkout
+                    Tiến Hành Thanh Toán
                 </Button>
             </div>
         </div>

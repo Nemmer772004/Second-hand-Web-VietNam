@@ -62,8 +62,8 @@ export default function Home() {
 
       <section aria-labelledby="new-products-heading" className="container mx-auto px-4">
         <div className="text-center">
-          <h2 id="new-products-heading" className="font-headline text-3xl md:text-4xl font-bold">New Products</h2>
-          <p className="mt-2 text-lg text-muted-foreground">Discover our latest collection of handcrafted furniture.</p>
+          <h2 id="new-products-heading" className="font-headline text-3xl md:text-4xl font-bold">Sản Phẩm Mới</h2>
+          <p className="mt-2 text-lg text-muted-foreground">Khám phá bộ sưu tập đồ nội thất thủ công mới nhất của chúng tôi.</p>
         </div>
         <div className="mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-10">
           {newProducts.map((product) => (
@@ -72,7 +72,7 @@ export default function Home() {
         </div>
         <div className="mt-12 text-center">
           <Button asChild size="lg" variant="outline">
-            <Link href="/products">View All Products</Link>
+            <Link href="/products">Xem Tất Cả Sản Phẩm</Link>
           </Button>
         </div>
       </section>
@@ -81,12 +81,12 @@ export default function Home() {
         <div className="absolute inset-0 bg-secondary/80" />
         <div className="relative h-full flex items-center justify-center">
           <div className="text-center p-8 max-w-3xl bg-background/90 rounded-lg shadow-xl mx-4">
-            <h2 id="brand-intro-heading" className="font-headline text-3xl md:text-4xl font-bold">Crafting Homes Since 1999</h2>
+            <h2 id="brand-intro-heading" className="font-headline text-3xl md:text-4xl font-bold">Kiến Tạo Ngôi Nhà Từ Năm 1999</h2>
             <p className="mt-4 text-lg text-muted-foreground">
-              With over two decades of experience, Home Harmony brings you furniture that blends timeless design with modern living. Our commitment to quality and sustainability is at the heart of everything we create.
+              Với hơn hai thập kỷ kinh nghiệm, Home Harmony mang đến cho bạn những món đồ nội thất kết hợp giữa thiết kế vượt thời gian và cuộc sống hiện đại. Cam kết của chúng tôi về chất lượng và tính bền vững là trọng tâm của mọi thứ chúng tôi tạo ra.
             </p>
             <Button asChild size="lg" className="mt-6">
-              <Link href="/about">Learn More About Us</Link>
+              <Link href="/about">Tìm Hiểu Thêm Về Chúng Tôi</Link>
             </Button>
           </div>
         </div>
@@ -94,8 +94,8 @@ export default function Home() {
 
       <section aria-labelledby="inspiration-heading" className="container mx-auto px-4">
         <div className="text-center">
-          <h2 id="inspiration-heading" className="font-headline text-3xl md:text-4xl font-bold">Find Your Inspiration</h2>
-          <p className="mt-2 text-lg text-muted-foreground">Explore curated design ideas for every room in your home.</p>
+          <h2 id="inspiration-heading" className="font-headline text-3xl md:text-4xl font-bold">Tìm Cảm Hứng Của Bạn</h2>
+          <p className="mt-2 text-lg text-muted-foreground">Khám phá các ý tưởng thiết kế được tuyển chọn cho mọi căn phòng trong nhà bạn.</p>
         </div>
         <Carousel
           opts={{
@@ -130,14 +130,14 @@ export default function Home() {
 
       <section aria-labelledby="newsletter-heading" className="bg-secondary">
         <div className="container mx-auto px-4 py-16 text-center">
-           <h2 id="newsletter-heading" className="font-headline text-3xl font-bold">Stay in the Loop</h2>
-           <p className="mt-2 text-lg text-muted-foreground">Subscribe to our newsletter for exclusive offers and design tips.</p>
+           <h2 id="newsletter-heading" className="font-headline text-3xl font-bold">Luôn Cập Nhật</h2>
+           <p className="mt-2 text-lg text-muted-foreground">Đăng ký nhận bản tin của chúng tôi để nhận các ưu đãi độc quyền và mẹo thiết kế.</p>
            <form className="mt-6 max-w-md mx-auto flex gap-2">
             <div className="relative flex-grow">
               <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-              <Input type="email" placeholder="Enter your email" className="pl-10 h-12" />
+              <Input type="email" placeholder="Nhập email của bạn" className="pl-10 h-12" />
             </div>
-             <Button type="submit" size="lg" className="h-12">Subscribe</Button>
+             <Button type="submit" size="lg" className="h-12">Đăng ký</Button>
            </form>
         </div>
       </section>

@@ -35,9 +35,9 @@ const ProductCard = ({ product }: ProductCardProps) => {
           )}
         </Link>
         {product.isNew && (
-          <Badge variant="destructive" className="absolute top-2 right-2">New</Badge>
+          <Badge variant="destructive" className="absolute top-2 right-2">Mới</Badge>
         )}
-        <Button variant="ghost" size="icon" className="absolute top-2 left-2 bg-background/50 hover:bg-background/80" aria-label="Add to wishlist">
+        <Button variant="ghost" size="icon" className="absolute top-2 left-2 bg-background/50 hover:bg-background/80" aria-label="Thêm vào danh sách yêu thích">
           <Heart className="h-5 w-5 text-foreground" />
         </Button>
       </div>
@@ -60,7 +60,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
               />
             ))}
           </div>
-          <span className="ml-2 text-xs text-muted-foreground">({product.reviewCount} reviews)</span>
+          <span className="ml-2 text-xs text-muted-foreground">({product.reviewCount} đánh giá)</span>
         </div>
         <div className="flex-1 flex items-end mt-2">
             <p className="text-lg font-semibold text-foreground">

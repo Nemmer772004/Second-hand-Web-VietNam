@@ -29,8 +29,8 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
   const handleAddToCart = () => {
     addToCart(product, quantity);
     toast({
-      title: "Added to cart!",
-      description: `${quantity} x ${product.name} has been added to your cart.`,
+      title: "Đã thêm vào giỏ hàng!",
+      description: `${quantity} x ${product.name} đã được thêm vào giỏ hàng của bạn.`,
     });
   };
 
@@ -83,7 +83,7 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
                 />
               ))}
             </div>
-            <a href="#reviews" className="text-sm text-muted-foreground hover:text-primary">{product.reviewCount} reviews</a>
+            <a href="#reviews" className="text-sm text-muted-foreground hover:text-primary">{product.reviewCount} đánh giá</a>
           </div>
 
           <div className="mt-6">
@@ -105,12 +105,12 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
           
           <div className="mt-8 flex flex-col sm:flex-row gap-4">
             <Button size="lg" className="flex-1" onClick={handleAddToCart}>
-              <ShoppingCart className="mr-2 h-5 w-5" /> Add to Cart
+              <ShoppingCart className="mr-2 h-5 w-5" /> Thêm vào giỏ hàng
             </Button>
             <Button size="lg" variant="outline" className="flex-1">
-              Buy Now
+              Mua ngay
             </Button>
-             <Button variant="outline" size="icon" aria-label="Add to wishlist">
+             <Button variant="outline" size="icon" aria-label="Thêm vào danh sách yêu thích">
                 <Heart className="h-5 w-5" />
              </Button>
           </div>
@@ -118,11 +118,11 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
            <div className="mt-8 space-y-4">
             <div className="flex items-center gap-3 text-sm">
                 <Truck className="h-6 w-6 text-primary" />
-                <p><span className="font-semibold">Free Delivery</span> on orders over $50.</p>
+                <p><span className="font-semibold">Miễn phí giao hàng</span> cho đơn hàng trên 500.000đ.</p>
             </div>
             <div className="flex items-center gap-3 text-sm">
                 <Shield className="h-6 w-6 text-primary" />
-                <p><span className="font-semibold">1-Year Warranty</span> on all products.</p>
+                <p><span className="font-semibold">Bảo hành 1 năm</span> trên tất cả các sản phẩm.</p>
             </div>
           </div>
 
@@ -133,13 +133,13 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
       <div className="mt-16 lg:mt-24">
          <Accordion type="single" collapsible defaultValue="description" className="w-full">
             <AccordionItem value="description">
-                <AccordionTrigger className="text-xl font-headline">Description</AccordionTrigger>
+                <AccordionTrigger className="text-xl font-headline">Mô tả</AccordionTrigger>
                 <AccordionContent className="text-muted-foreground leading-relaxed">
                    {product.description}
                 </AccordionContent>
             </AccordionItem>
              <AccordionItem value="specifications">
-                <AccordionTrigger className="text-xl font-headline">Specifications</AccordionTrigger>
+                <AccordionTrigger className="text-xl font-headline">Thông số kỹ thuật</AccordionTrigger>
                 <AccordionContent>
                     <table className="w-full text-sm">
                         <tbody>
@@ -154,9 +154,9 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
                 </AccordionContent>
             </AccordionItem>
             <AccordionItem value="reviews" id="reviews">
-                <AccordionTrigger className="text-xl font-headline">Reviews ({product.reviewCount})</AccordionTrigger>
+                <AccordionTrigger className="text-xl font-headline">Đánh giá ({product.reviewCount})</AccordionTrigger>
                 <AccordionContent>
-                    <p className="text-muted-foreground">Customer reviews coming soon!</p>
+                    <p className="text-muted-foreground">Đánh giá của khách hàng sắp ra mắt!</p>
                 </AccordionContent>
             </AccordionItem>
         </Accordion>
@@ -165,7 +165,7 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
        {/* Related Products */}
       {relatedProducts.length > 0 && (
          <div className="mt-16 lg:mt-24">
-          <h2 className="font-headline text-3xl md:text-4xl font-bold text-center">You Might Also Like</h2>
+          <h2 className="font-headline text-3xl md:text-4xl font-bold text-center">Bạn Cũng Có Thể Thích</h2>
           <div className="mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-10">
             {relatedProducts.map((p) => (
               <ProductCard key={p.id} product={p} />

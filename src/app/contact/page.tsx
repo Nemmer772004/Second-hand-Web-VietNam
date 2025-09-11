@@ -12,10 +12,10 @@ import { Mail, Phone, MapPin } from 'lucide-react';
 import Link from 'next/link';
 
 const contactFormSchema = z.object({
-  name: z.string().min(2, 'Name must be at least 2 characters.'),
-  email: z.string().email('Please enter a valid email address.'),
-  subject: z.string().min(5, 'Subject must be at least 5 characters.'),
-  message: z.string().min(10, 'Message must be at least 10 characters.'),
+  name: z.string().min(2, 'Tên phải có ít nhất 2 ký tự.'),
+  email: z.string().email('Vui lòng nhập một địa chỉ email hợp lệ.'),
+  subject: z.string().min(5, 'Chủ đề phải có ít nhất 5 ký tự.'),
+  message: z.string().min(10, 'Tin nhắn phải có ít nhất 10 ký tự.'),
 });
 
 type ContactFormValues = z.infer<typeof contactFormSchema>;
@@ -34,8 +34,8 @@ export default function ContactPage() {
 
   const onSubmit = (data: ContactFormValues) => {
     toast({
-      title: 'Message Sent!',
-      description: 'Thank you for contacting us. We will get back to you shortly.',
+      title: 'Tin nhắn đã được gửi!',
+      description: 'Cảm ơn bạn đã liên hệ với chúng tôi. Chúng tôi sẽ trả lời bạn sớm nhất có thể.',
     });
     form.reset();
   };
@@ -43,9 +43,9 @@ export default function ContactPage() {
   return (
     <div className="container mx-auto px-4 py-16">
       <div className="text-center max-w-3xl mx-auto mb-12">
-        <h1 className="font-headline text-4xl md:text-5xl font-bold">Get in Touch</h1>
+        <h1 className="font-headline text-4xl md:text-5xl font-bold">Liên Hệ</h1>
         <p className="mt-4 text-lg text-muted-foreground">
-          Have a question or need assistance? Our team is here to help. Reach out to us via the form below, email, phone, or visit our showroom.
+          Bạn có câu hỏi hoặc cần hỗ trợ? Đội ngũ của chúng tôi luôn sẵn lòng giúp đỡ. Hãy liên hệ với chúng tôi qua biểu mẫu dưới đây, email, điện thoại hoặc ghé thăm phòng trưng bày của chúng tôi.
         </p>
       </div>
 
@@ -59,9 +59,9 @@ export default function ContactPage() {
                   name="name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Full Name</FormLabel>
+                      <FormLabel>Họ và Tên</FormLabel>
                       <FormControl>
-                        <Input placeholder="John Doe" {...field} />
+                        <Input placeholder="Nguyễn Văn A" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -72,9 +72,9 @@ export default function ContactPage() {
                   name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Email Address</FormLabel>
+                      <FormLabel>Địa chỉ Email</FormLabel>
                       <FormControl>
-                        <Input placeholder="you@example.com" {...field} />
+                        <Input placeholder="ban@example.com" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -86,9 +86,9 @@ export default function ContactPage() {
                 name="subject"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Subject</FormLabel>
+                    <FormLabel>Chủ đề</FormLabel>
                     <FormControl>
-                      <Input placeholder="Inquiry about the Velvet Dream Sofa" {...field} />
+                      <Input placeholder="Yêu cầu về Sofa Nhung Mơ Mộng" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -99,23 +99,23 @@ export default function ContactPage() {
                 name="message"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Message</FormLabel>
+                    <FormLabel>Nội dung</FormLabel>
                     <FormControl>
-                      <Textarea placeholder="Tell us how we can help..." className="min-h-[150px]" {...field} />
+                      <Textarea placeholder="Hãy cho chúng tôi biết chúng tôi có thể giúp gì cho bạn..." className="min-h-[150px]" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
               <Button type="submit" size="lg" disabled={form.formState.isSubmitting}>
-                {form.formState.isSubmitting ? 'Sending...' : 'Send Message'}
+                {form.formState.isSubmitting ? 'Đang gửi...' : 'Gửi Tin Nhắn'}
               </Button>
             </form>
           </Form>
         </div>
 
         <div className="space-y-8">
-            <h2 className="font-headline text-2xl font-bold">Contact Information</h2>
+            <h2 className="font-headline text-2xl font-bold">Thông Tin Liên Hệ</h2>
             <div className="space-y-4">
                 <Link href="mailto:support@homeharmony.com" className="flex items-center gap-4 group">
                     <Mail className="h-6 w-6 text-primary" />
@@ -128,9 +128,9 @@ export default function ContactPage() {
                 <div className="flex items-start gap-4">
                     <MapPin className="h-6 w-6 text-primary mt-1" />
                     <p className="text-muted-foreground">
-                        123 Design Lane<br />
-                        Creativity City, 10001<br />
-                        United States
+                        123 Đường Thiết Kế<br />
+                        Thành phố Sáng Tạo, 10001<br />
+                        Việt Nam
                     </p>
                 </div>
             </div>

@@ -14,8 +14,8 @@ import { auth } from '@/lib/firebase';
 import { Separator } from '@/components/ui/separator';
 
 const loginFormSchema = z.object({
-  email: z.string().email('Please enter a valid email address.'),
-  password: z.string().min(1, 'Password is required.'),
+  email: z.string().email('Vui lòng nhập một địa chỉ email hợp lệ.'),
+  password: z.string().min(1, 'Mật khẩu là bắt buộc.'),
 });
 
 type LoginFormValues = z.infer<typeof loginFormSchema>;
@@ -32,15 +32,15 @@ export default function LoginPage() {
     try {
       await signInWithEmailAndPassword(auth, data.email, data.password);
       toast({
-        title: 'Login Successful!',
-        description: 'Welcome back to Home Harmony.',
+        title: 'Đăng nhập thành công!',
+        description: 'Chào mừng trở lại Home Harmony.',
       });
       router.push('/account');
     } catch (error: any) {
       toast({
         variant: 'destructive',
-        title: 'Login Failed',
-        description: 'Invalid email or password.',
+        title: 'Đăng nhập thất bại',
+        description: 'Email hoặc mật khẩu không hợp lệ.',
       });
     }
   };
@@ -50,27 +50,26 @@ export default function LoginPage() {
     try {
       await signInWithPopup(auth, provider);
       toast({
-        title: 'Login Successful!',
-        description: 'Welcome to Home Harmony.',
+        title: 'Đăng nhập thành công!',
+        description: 'Chào mừng đến với Home Harmony.',
       });
       router.push('/account');
     } catch (error: any) {
        toast({
         variant: 'destructive',
-        title: 'Login Failed',
-        description: 'Could not sign in with Google.',
+        title: 'Đăng nhập thất bại',
+        description: 'Không thể đăng nhập bằng Google.',
       });
     }
   };
-
 
   return (
     <div className="container mx-auto px-4 py-16 flex items-center justify-center min-h-[70vh]">
       <div className="max-w-md w-full">
         <div className="text-center mb-8">
-          <h1 className="font-headline text-4xl font-bold">Login</h1>
+          <h1 className="font-headline text-4xl font-bold">Đăng nhập</h1>
           <p className="mt-2 text-muted-foreground">
-            Access your account to view your orders and wishlist.
+            Truy cập tài khoản của bạn để xem đơn hàng và danh sách yêu thích.
           </p>
         </div>
 
@@ -83,7 +82,7 @@ export default function LoginPage() {
                 <FormItem>
                   <FormLabel>Email</FormLabel>
                   <FormControl>
-                    <Input type="email" placeholder="you@example.com" {...field} />
+                    <Input type="email" placeholder="ban@example.com" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -94,7 +93,7 @@ export default function LoginPage() {
               name="password"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Password</FormLabel>
+                  <FormLabel>Mật khẩu</FormLabel>
                   <FormControl>
                     <Input type="password" placeholder="••••••••" {...field} />
                   </FormControl>
@@ -103,27 +102,26 @@ export default function LoginPage() {
               )}
             />
             <Button type="submit" size="lg" className="w-full" disabled={form.formState.isSubmitting}>
-              {form.formState.isSubmitting ? 'Signing In...' : 'Sign In'}
+              {form.formState.isSubmitting ? 'Đang đăng nhập...' : 'Đăng nhập'}
             </Button>
           </form>
         </Form>
         
         <div className="relative my-6">
           <Separator />
-          <span className="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 bg-background px-2 text-sm text-muted-foreground">OR</span>
+          <span className="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 bg-background px-2 text-sm text-muted-foreground">HOẶC</span>
         </div>
         
         <Button variant="outline" className="w-full" onClick={handleGoogleSignIn}>
           <svg className="mr-2 h-4 w-4" aria-hidden="true" focusable="false" data-prefix="fab" data-icon="google" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 488 512"><path fill="currentColor" d="M488 261.8C488 403.3 391.1 504 248 504 110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 126 23.4 172.9 61.9l-67.4 64.8C309.1 101.9 283.4 96 248 96c-90.4 0-163.6 73.2-163.6 160S157.6 416 248 416c53.3 0 98.4-23.7 127.3-61.9 21.2-28.2 32.4-62.9 35.1-98.7H248v-85.3h236.1c2.3 12.7 3.9 25.9 3.9 40.2z"></path></svg>
-          Sign in with Google
+          Đăng nhập với Google
         </Button>
-
 
         <div className="mt-6 text-center text-sm">
           <p className="text-muted-foreground">
-            Don't have an account?{' '}
+            Chưa có tài khoản?{' '}
             <Link href="/register" className="font-medium text-primary hover:underline">
-              Sign up
+              Đăng ký
             </Link>
           </p>
         </div>

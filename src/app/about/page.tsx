@@ -5,26 +5,26 @@ import Link from 'next/link';
 
 export default function AboutPage() {
   const timelineEvents = [
-    { year: 1999, event: 'Home Harmony was founded with a single store in Creativity City, with a passion for beautiful, functional furniture.' },
-    { year: 2005, event: 'Opened our first large-format showroom and introduced our in-house design consultation service.' },
-    { year: 2012, event: 'Expanded our manufacturing capabilities, opening a new 80,000m² factory in Westland to ensure quality control.' },
-    { year: 2018, event: 'Launched our e-commerce platform, bringing Home Harmony furniture to customers nationwide.' },
-    { year: 2024, event: 'Celebrated 25 years of design excellence, with 9 stores across the country and a thriving online community.' },
+    { year: 1999, event: 'Home Harmony được thành lập với một cửa hàng duy nhất tại Thành phố Sáng tạo, với niềm đam mê dành cho nội thất đẹp và tiện dụng.' },
+    { year: 2005, event: 'Khai trương phòng trưng bày lớn đầu tiên và giới thiệu dịch vụ tư vấn thiết kế tại nhà của chúng tôi.' },
+    { year: 2012, event: 'Mở rộng năng lực sản xuất, khai trương nhà máy mới rộng 80.000m² tại Westland để đảm bảo kiểm soát chất lượng.' },
+    { year: 2018, event: 'Ra mắt nền tảng thương mại điện tử, mang đồ nội thất Home Harmony đến với khách hàng trên toàn quốc.' },
+    { year: 2024, event: 'Kỷ niệm 25 năm xuất sắc trong thiết kế, với 9 cửa hàng trên toàn quốc và một cộng đồng trực tuyến phát triển mạnh mẽ.' },
   ];
 
   const coreValues = [
-    { icon: <Gem className="h-10 w-10 text-primary" />, title: 'Quality Craftsmanship', description: 'Every piece is built to last, using premium materials and meticulous attention to detail.' },
-    { icon: <Leaf className="h-10 w-10 text-primary" />, title: 'Sustainable Practices', description: 'We are committed to using sustainably sourced materials and eco-friendly manufacturing processes.' },
-    { icon: <Users className="h-10 w-10 text-primary" />, title: 'Customer-Centric', description: 'Your satisfaction is our priority. We provide exceptional service from design to delivery.' },
+    { icon: <Gem className="h-10 w-10 text-primary" />, title: 'Chất Lượng Thủ Công', description: 'Mỗi sản phẩm đều được chế tác để trường tồn, sử dụng vật liệu cao cấp và sự chú ý tỉ mỉ đến từng chi tiết.' },
+    { icon: <Leaf className="h-10 w-10 text-primary" />, title: 'Thực Hành Bền Vững', description: 'Chúng tôi cam kết sử dụng vật liệu có nguồn gốc bền vững và quy trình sản xuất thân thiện với môi trường.' },
+    { icon: <Users className="h-10 w-10 text-primary" />, title: 'Lấy Khách Hàng Làm Trung Tâm', description: 'Sự hài lòng của bạn là ưu tiên hàng đầu của chúng tôi. Chúng tôi cung cấp dịch vụ đặc biệt từ thiết kế đến giao hàng.' },
   ];
 
   return (
     <div className="flex flex-col gap-16 sm:gap-24 md:gap-32 py-12">
       <section className="container mx-auto px-4">
         <div className="text-center max-w-4xl mx-auto">
-          <h1 className="font-headline text-4xl md:text-5xl font-bold">Crafting Homes, Building Harmony</h1>
+          <h1 className="font-headline text-4xl md:text-5xl font-bold">Kiến Tạo Ngôi Nhà, Xây Dựng Sự Hài Hòa</h1>
           <p className="mt-4 text-lg text-muted-foreground">
-            Since 1999, Home Harmony has been dedicated to the art of creating beautiful living spaces. We believe that furniture should not only be functional but also a source of joy and inspiration in your daily life.
+            Kể từ năm 1999, Home Harmony đã cống hiến cho nghệ thuật tạo ra không gian sống tươi đẹp. Chúng tôi tin rằng đồ nội thất không chỉ nên tiện dụng mà còn là nguồn vui và cảm hứng trong cuộc sống hàng ngày của bạn.
           </p>
         </div>
       </section>
@@ -53,8 +53,8 @@ export default function AboutPage() {
       <section className="bg-secondary">
         <div className="container mx-auto px-4 py-24">
           <div className="text-center mb-12">
-            <h2 className="font-headline text-3xl md:text-4xl font-bold">Our Core Values</h2>
-            <p className="mt-2 text-lg text-muted-foreground">The principles that guide everything we do.</p>
+            <h2 className="font-headline text-3xl md:text-4xl font-bold">Giá Trị Cốt Lõi Của Chúng Tôi</h2>
+            <p className="mt-2 text-lg text-muted-foreground">Những nguyên tắc định hướng mọi việc chúng tôi làm.</p>
           </div>
           <div className="grid md:grid-cols-3 gap-12">
             {coreValues.map((value) => (
@@ -71,23 +71,23 @@ export default function AboutPage() {
       <section className="container mx-auto px-4">
         <div className="grid md:grid-cols-2 gap-12 items-center">
           <div>
-            <h2 className="font-headline text-3xl md:text-4xl font-bold">Our Factory & Team</h2>
+            <h2 className="font-headline text-3xl md:text-4xl font-bold">Nhà Máy & Đội Ngũ Của Chúng Tôi</h2>
             <p className="mt-4 text-muted-foreground">
-              Our state-of-the-art 80,000m² factory is where design meets production. Staffed by skilled artisans and designers, we ensure every product meets ISO 9001 quality standards. We proudly export our furniture to international markets, a testament to our commitment to excellence.
+              Nhà máy hiện đại rộng 80.000m² của chúng tôi là nơi thiết kế gặp gỡ sản xuất. Với đội ngũ nghệ nhân và nhà thiết kế lành nghề, chúng tôi đảm bảo mọi sản phẩm đều đạt tiêu chuẩn chất lượng ISO 9001. Chúng tôi tự hào xuất khẩu đồ nội thất của mình ra thị trường quốc tế, một minh chứng cho cam kết về sự xuất sắc.
             </p>
             <div className="mt-8 flex gap-4">
               <Button asChild size="lg">
-                <Link href="/contact">Contact Us</Link>
+                <Link href="/contact">Liên Hệ</Link>
               </Button>
               <Button asChild size="lg" variant="outline">
-                <Link href="/design-consultation">Explore Our Projects</Link>
+                <Link href="/design-consultation">Khám Phá Các Dự Án</Link>
               </Button>
             </div>
           </div>
           <div className="relative h-96 w-full rounded-lg overflow-hidden shadow-lg">
             <Image 
               src="https://picsum.photos/seed/factory/800/600" 
-              alt="Home Harmony Factory" 
+              alt="Nhà máy Home Harmony" 
               fill 
               className="object-cover"
               data-ai-hint="furniture factory"
