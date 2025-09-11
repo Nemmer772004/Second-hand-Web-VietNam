@@ -54,8 +54,8 @@ const ProductCard = ({ product }: ProductCardProps) => {
   }
 
   return (
-    <Link href={`/products/${product.id}`} className="group relative flex flex-col shadow-sm hover:shadow-lg transition-shadow duration-300 rounded-lg bg-card overflow-hidden">
-      <div className="relative w-full aspect-square overflow-hidden bg-secondary">
+    <div className="group relative flex flex-col shadow-sm hover:shadow-lg transition-shadow duration-300 rounded-lg bg-card overflow-hidden">
+      <Link href={`/products/${product.id}`} className="block relative w-full aspect-square overflow-hidden bg-secondary">
           <Image
             src={product.images[0]}
             alt={product.name}
@@ -86,10 +86,10 @@ const ProductCard = ({ product }: ProductCardProps) => {
         >
           <Heart className={cn("h-5 w-5 text-foreground", isWishlisted && "fill-rose-500 text-rose-500")} />
         </Button>
-      </div>
+      </Link>
       <div className="p-4 flex flex-col flex-1">
         <h3 className="text-sm font-medium text-foreground">
-            {product.name}
+            <Link href={`/products/${product.id}`} className="hover:underline">{product.name}</Link>
         </h3>
         <div className="flex items-center mt-1">
           <div className="flex items-center">
@@ -118,10 +118,10 @@ const ProductCard = ({ product }: ProductCardProps) => {
             </div>
         </div>
         <Dialog>
-          <DialogTrigger asChild onClick={handleDialogTriggerClick}>
+          <DialogTrigger asChild>
             <Button variant="outline" size="sm" className="mt-2 w-full">Định Giá Nhanh</Button>
           </DialogTrigger>
-          <DialogContent onClick={handleDialogTriggerClick}>
+          <DialogContent>
             <DialogHeader>
               <DialogTitle>Định giá nhanh sản phẩm của bạn</DialogTitle>
               <DialogDescription>
@@ -136,7 +136,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
           </DialogContent>
         </Dialog>
       </div>
-    </Link>
+    </div>
   );
 };
 
