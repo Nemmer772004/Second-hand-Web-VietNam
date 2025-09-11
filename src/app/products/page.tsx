@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
@@ -16,6 +17,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Input } from '@/components/ui/input';
+import { Search } from 'lucide-react';
 
 export default function ProductsPage() {
   const searchParams = useSearchParams();
@@ -32,9 +34,9 @@ export default function ProductsPage() {
   const [sortOrder, setSortOrder] = useState('newest');
 
   useEffect(() => {
-    if(initialSearch) {
-      setSearchQuery(initialSearch);
-    }
+    // This effect ensures the search input in the filter section
+    // stays in sync with the URL query parameter.
+    setSearchQuery(initialSearch || '');
   }, [initialSearch]);
 
   const handleCategoryChange = (categoryKey: string) => {
@@ -55,9 +57,10 @@ export default function ProductsPage() {
 
   const filteredProducts = useMemo(() => {
     let tempProducts = [...products];
+    const currentSearchQuery = initialSearch || '';
 
-    if (searchQuery) {
-        tempProducts = tempProducts.filter(p => p.name.toLowerCase().includes(searchQuery.toLowerCase()));
+    if (currentSearchQuery) {
+        tempProducts = tempProducts.filter(p => p.name.toLowerCase().includes(currentSearchQuery.toLowerCase()));
     }
 
     if (selectedCategories.length > 0) {
@@ -84,13 +87,23 @@ export default function ProductsPage() {
         break;
       case 'newest':
       default:
-        tempProducts.sort((a, b) => (b.isNew ? 1 : -1) - (a.isNew ? 1 : -1) || products.indexOf(a) - products.indexOf(b));
+        // Sort by isNew first, then by original order
+        tempProducts.sort((a, b) => (b.isNew ? 1 : 0) - (a.isNew ? 1 : 0) || products.indexOf(a) - products.indexOf(b));
         break;
     }
 
     return tempProducts;
-  }, [selectedCategories, priceRange, selectedMaterials, sortOrder, searchQuery]);
+  }, [selectedCategories, priceRange, selectedMaterials, sortOrder, initialSearch]);
 
+  const clearFilters = () => {
+    setSelectedCategories([]);
+    setPriceRange([0, maxPrice]);
+    setSelectedMaterials([]);
+    setSortOrder('newest');
+    // Note: We don't clear the search query from the URL here,
+    // as it's the primary filter on this page.
+    // A separate action/button might be needed to clear the search itself.
+  };
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -103,7 +116,24 @@ export default function ProductsPage() {
         <aside className="lg:col-span-1">
           <div className="sticky top-20">
             <h2 className="font-headline text-2xl font-bold mb-4">Bộ lọc</h2>
-            <Accordion type="multiple" defaultValue={['category', 'price']} className="w-full">
+            <Accordion type="multiple" defaultValue={['search', 'category', 'price']} className="w-full">
+              <AccordionItem value="search">
+                <AccordionTrigger className="text-lg font-medium">Tìm kiếm</AccordionTrigger>
+                <AccordionContent>
+                  <div className="relative">
+                     <Input 
+                      type="search" 
+                      placeholder="Tìm trong kết quả..." 
+                      className="pr-10" 
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      // This input now only filters the *currently visible* results on the client side
+                      // The main search is driven by the URL param 'q'
+                    />
+                    <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
               <AccordionItem value="category">
                 <AccordionTrigger className="text-lg font-medium">Danh mục</AccordionTrigger>
                 <AccordionContent>
@@ -144,7 +174,7 @@ export default function ProductsPage() {
               <AccordionItem value="material">
                 <AccordionTrigger className="text-lg font-medium">Chất liệu</AccordionTrigger>
                 <AccordionContent>
-                   <div className="space-y-2">
+                   <div className="space-y-2 max-h-40 overflow-y-auto">
                     {allMaterials.map(material => (
                       <div key={material} className="flex items-center space-x-2">
                         <Checkbox
@@ -161,12 +191,7 @@ export default function ProductsPage() {
                 </AccordionContent>
               </AccordionItem>
             </Accordion>
-             <Button onClick={() => {
-                setSearchQuery('');
-                setSelectedCategories([]);
-                setPriceRange([0, maxPrice]);
-                setSelectedMaterials([]);
-             }} className="w-full mt-6" variant="outline">
+             <Button onClick={clearFilters} className="w-full mt-6" variant="outline">
                 Xóa bộ lọc
             </Button>
           </div>
@@ -188,12 +213,14 @@ export default function ProductsPage() {
             </Select>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-x-6 gap-y-10">
-            {filteredProducts.map(product => (
+            {filteredProducts
+              .filter(p => p.name.toLowerCase().includes(searchQuery.toLowerCase())) // Client-side filtering based on the filter input
+              .map(product => (
               <ProductCard key={product.id} product={product} />
             ))}
           </div>
           {filteredProducts.length === 0 && (
-             <div className="text-center py-20">
+             <div className="text-center py-20 col-span-full">
                 <h3 className="font-headline text-2xl">Không tìm thấy sản phẩm nào</h3>
                 <p className="text-muted-foreground mt-2">Hãy thử điều chỉnh bộ lọc của bạn để tìm thấy những gì bạn đang tìm kiếm.</p>
              </div>

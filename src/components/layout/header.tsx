@@ -27,6 +27,13 @@ import {
   NavigationMenuTrigger,
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
 import { cn } from '@/lib/utils';
 import { productCategories } from '@/lib/data';
 import Image from 'next/image';
@@ -148,9 +155,31 @@ const SiteHeader = () => {
 
             {/* Icons */}
             <div className="flex items-center gap-2">
-              <Button variant="ghost" size="icon" aria-label="Tìm kiếm" className="lg:hidden">
-                <Search className="h-5 w-5" />
-              </Button>
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button variant="ghost" size="icon" aria-label="Tìm kiếm" className="lg:hidden">
+                    <Search className="h-5 w-5" />
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Tìm kiếm sản phẩm</DialogTitle>
+                  </DialogHeader>
+                  <form onSubmit={handleSearch} className="flex relative w-full">
+                    <Input 
+                      type="search" 
+                      placeholder="Nhập tên sản phẩm..." 
+                      className="pr-10 h-12" 
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                    />
+                    <Button type="submit" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-10 w-10">
+                      <Search className="h-5 w-5" />
+                    </Button>
+                  </form>
+                </DialogContent>
+              </Dialog>
+
               <Button variant="ghost" size="icon" asChild className="relative">
                 <Link href="/account#wishlist" aria-label="Danh sách yêu thích">
                   <Heart className="h-5 w-5" />
