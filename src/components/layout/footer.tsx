@@ -19,7 +19,7 @@ const SiteFooter = () => {
             <p className="text-muted-foreground">Email: support@homeharmony.com</p>
             <div className="mt-4">
               <iframe
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3725.399516641571!2d105.84369417594043!3d20.97693528066224!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3135ac5dfa705a39%3A0x8d3132e407f35319!2zMTIzMiDEkC4gR2nhuqNpIFBow7NuZywgSG_DoG5nIE1haSwgSMOgIE7hu5lpLCBWaeG7h3QgTmFt!5e0!3m2!1svi!2s!4v1719213898090!5m2!1svi!2s"
+                src="https://www.google.com/maps/place/150+Ng%C3%B5+1277+Gi%E1%BA%A3i+Ph%C3%B3ng,+Th%E1%BB%8Bnh+Li%E1%BB%87t,+Ho%C3%A0ng+Mai,+H%C3%A0+N%E1%BB%99i+100000,+Vi%E1%BB%87t+Nam/@20.971948,105.8462424,17z/data=!4m15!1m8!3m7!1s0x3135ac4f46bd3931:0xcf7d18b885af17a5!2zMTUwIE5nw7UgMTI3NyBHaeG6o2kgUGjDs25nLCBUaOG7i25oIExp4buHdCwgSG_DoG5nIE1haSwgSMOgIE7hu5lpIDEwMDAwMCwgVmnhu4d0IE5hbQ!3b1!8m2!3d20.9720131!4d105.8456255!16s%2Fg%2F11vstnbmkm!3m5!1s0x3135ac4f46bd3931:0xcf7d18b885af17a5!8m2!3d20.9720131!4d105.8456255!16s%2Fg%2F11vstnbmkm?hl=vi&entry=ttu&g_ep=EgoyMDI1MDkwOC4wIKXMDSoASAFQAw%3D%3D"
                 width="100%"
                 height="150"
                 style={{ border: 0 }}
