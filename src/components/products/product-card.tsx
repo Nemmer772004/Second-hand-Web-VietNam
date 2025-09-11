@@ -103,6 +103,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
       <div className="p-4 flex flex-col flex-1">
         <h3 className="text-sm font-medium text-foreground">
           <Link href={`/products/${product.id}`} className="hover:underline">
+            <span className="absolute inset-0 z-0" />
             {product.name}
           </Link>
         </h3>
@@ -132,7 +133,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
               </p>
             </div>
         </div>
-        <div className="mt-2 flex flex-col gap-2">
+        <div className="mt-2 flex flex-col gap-2 z-10">
             <Dialog>
               <DialogTrigger asChild>
                 <Button variant="outline" size="sm" className="w-full" onClick={handleDialogClick}>Định Giá Nhanh</Button>
