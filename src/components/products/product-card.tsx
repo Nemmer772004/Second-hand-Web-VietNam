@@ -44,14 +44,18 @@ const ProductCard = ({ product }: ProductCardProps) => {
     }
   };
 
+  const handleDialogTriggerClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  }
+
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
   }
 
   return (
-    <div className="group relative flex flex-col shadow-sm hover:shadow-lg transition-shadow duration-300 rounded-lg bg-card overflow-hidden">
+    <Link href={`/products/${product.id}`} className="group relative flex flex-col shadow-sm hover:shadow-lg transition-shadow duration-300 rounded-lg bg-card overflow-hidden">
       <div className="relative w-full aspect-square overflow-hidden bg-secondary">
-        <Link href={`/products/${product.id}`}>
           <Image
             src={product.images[0]}
             alt={product.name}
@@ -70,7 +74,6 @@ const ProductCard = ({ product }: ProductCardProps) => {
                 data-ai-hint={product.hint}
             />
           )}
-        </Link>
         <Badge variant={product.condition === "Bảo Hành 3 Tháng" ? "default" : "secondary"} className="absolute top-2 right-2">{product.condition}</Badge>
         {product.price < (product.originalPrice || 0) && <Badge variant="destructive" className="absolute top-10 right-2">Giá Rẻ</Badge>}
 
@@ -86,10 +89,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
       </div>
       <div className="p-4 flex flex-col flex-1">
         <h3 className="text-sm font-medium text-foreground">
-          <Link href={`/products/${product.id}`}>
-            <span aria-hidden="true" className="absolute inset-0" />
             {product.name}
-          </Link>
         </h3>
         <div className="flex items-center mt-1">
           <div className="flex items-center">
@@ -118,10 +118,10 @@ const ProductCard = ({ product }: ProductCardProps) => {
             </div>
         </div>
         <Dialog>
-          <DialogTrigger asChild>
+          <DialogTrigger asChild onClick={handleDialogTriggerClick}>
             <Button variant="outline" size="sm" className="mt-2 w-full">Định Giá Nhanh</Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent onClick={handleDialogTriggerClick}>
             <DialogHeader>
               <DialogTitle>Định giá nhanh sản phẩm của bạn</DialogTitle>
               <DialogDescription>
@@ -136,7 +136,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
           </DialogContent>
         </Dialog>
       </div>
-    </div>
+    </Link>
   );
 };
 
