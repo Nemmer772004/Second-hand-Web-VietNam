@@ -101,13 +101,7 @@ const SiteHeader = () => {
                     <div className="col-span-1 flex flex-col">
                       <h3 className="font-headline text-lg mb-2">Mua sắm theo danh mục</h3>
                       {productCategories.map((category) => (
-                        <Link href={category.href} key={category.name} passHref legacyBehavior>
-                          <NavigationMenuLink asChild>
-                            <a className="p-2 rounded-md hover:bg-accent block text-sm">
-                              {category.name}
-                            </a>
-                          </NavigationMenuLink>
-                        </Link>
+                        <ListItem key={category.name} href={category.href} title={category.name} />
                       ))}
                        <Link href="/products" passHref legacyBehavior>
                         <NavigationMenuLink asChild>
@@ -148,9 +142,9 @@ const SiteHeader = () => {
                       </NavigationMenuContent>
                     </>
                   ) : (
-                    <Link href={item.href || '#'} legacyBehavior={false} passHref>
+                    <Link href={item.href || '#'} passHref asChild>
                       <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                          {item.name}
+                        {item.name}
                       </NavigationMenuLink>
                     </Link>
                   )}
