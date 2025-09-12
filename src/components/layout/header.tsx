@@ -64,6 +64,7 @@ const SiteHeader = () => {
     },
     { name: "Cảm Hứng", href: "/inspiration" },
     { name: "Về Chúng Tôi", href: "/about" },
+    { name: "Liên Hệ", href: "/contact" },
   ];
 
   return (
@@ -100,8 +101,8 @@ const SiteHeader = () => {
               <NavigationMenuItem>
                 <NavigationMenuTrigger>Sản Phẩm</NavigationMenuTrigger>
                 <NavigationMenuContent>
-                  <div className="grid w-[600px] grid-cols-3 gap-4 p-4">
-                    <div className="col-span-1 flex flex-col">
+                  <ul className="grid w-[600px] grid-cols-3 gap-4 p-4">
+                    <li className="col-span-1 flex flex-col">
                       <h3 className="font-headline text-lg mb-2">
                         Mua sắm theo danh mục
                       </h3>
@@ -118,8 +119,8 @@ const SiteHeader = () => {
                       >
                         Xem tất cả sản phẩm
                       </Link>
-                    </div>
-                    <div className="col-span-2 relative h-full w-full overflow-hidden rounded-md">
+                    </li>
+                    <li className="col-span-2 relative h-full w-full overflow-hidden rounded-md">
                       <Image
                         src="https://picsum.photos/seed/nav/600/400"
                         alt="Thiết bị nhà hàng cũ"
@@ -132,8 +133,8 @@ const SiteHeader = () => {
                         <h4 className="font-bold">Hàng Mới Về</h4>
                         <p className="text-sm">Tủ lạnh công nghiệp, bếp á...</p>
                       </div>
-                    </div>
-                  </div>
+                    </li>
+                  </ul>
                 </NavigationMenuContent>
               </NavigationMenuItem>
               {menuItems.map((item) => (
@@ -154,9 +155,11 @@ const SiteHeader = () => {
                       </NavigationMenuContent>
                     </>
                   ) : (
-                    <Link href={item.href || '#'} legacyBehavior passHref>
-                      <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                        {item.name}
+                    <Link href={item.href || '#'} passHref legacyBehavior>
+                       <NavigationMenuLink asChild>
+                         <a className={navigationMenuTriggerStyle()}>
+                          {item.name}
+                        </a>
                       </NavigationMenuLink>
                     </Link>
                   )}
