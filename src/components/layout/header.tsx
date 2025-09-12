@@ -154,7 +154,7 @@ const SiteHeader = () => {
                       </NavigationMenuContent>
                     </>
                   ) : (
-                    <Link href={item.href || "#"} legacyBehavior passHref>
+                    <Link href={item.href || '#'} legacyBehavior passHref>
                       <NavigationMenuLink className={navigationMenuTriggerStyle()}>
                         {item.name}
                       </NavigationMenuLink>
