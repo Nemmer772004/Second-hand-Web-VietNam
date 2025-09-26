@@ -179,12 +179,45 @@ export const GET_ORDERS = gql`
       userId
       items {
         productId
+        productName
         quantity
         price
+        lineTotal
       }
       totalAmount
       status
+      paymentStatus
+      paymentMethod
+      customerName
+      customerEmail
+      customerPhone
       shippingAddress
+      notes
+      createdAt
+      updatedAt
+    }
+  }
+`;
+
+export const GET_MY_ORDERS = gql`
+  query MyOrders {
+    myOrders {
+      id
+      userId
+      items {
+        productId
+        productName
+        quantity
+        price
+        lineTotal
+      }
+      totalAmount
+      status
+      paymentStatus
+      paymentMethod
+      shippingAddress
+      notes
+      confirmedAt
       createdAt
       updatedAt
     }
@@ -198,12 +231,18 @@ export const GET_ORDER_BY_ID = gql`
       userId
       items {
         productId
+        productName
         quantity
         price
+        lineTotal
       }
       totalAmount
       status
+      paymentStatus
+      paymentMethod
       shippingAddress
+      notes
+      confirmedAt
       createdAt
       updatedAt
     }
@@ -212,12 +251,13 @@ export const GET_ORDER_BY_ID = gql`
 
 // Order Mutations
 export const CREATE_ORDER = gql`
-  mutation CreateOrder($items: [OrderItemInput!]!, $shippingAddress: String!) {
-    createOrder(items: $items, shippingAddress: $shippingAddress) {
+  mutation CreateOrder($input: CreateOrderInput!) {
+    createOrder(input: $input) {
       id
       userId
       totalAmount
       status
+      paymentStatus
       createdAt
     }
   }

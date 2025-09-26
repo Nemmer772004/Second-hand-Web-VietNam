@@ -1,0 +1,65 @@
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Cart } from './entities/cart.entity';
+import { ConfigService } from '@nestjs/config';
+import axios from 'axios';
+
+@Injectable()
+export class CartService {
+  constructor(
+    @InjectRepository(Cart)
+    private cartRepository: Repository<Cart>,
+    private configService: ConfigService,
+  ) {}
+
+  private async getProductPrice(productId: string): Promise<number> {
+    const productServiceUrl = this.configService.get('PRODUCT_SERVICE_URL');
+    const response = await axios.get(`${productServiceUrl}/products/${productId}`);
+    return response.data.price;
+  }
+
+  async findAll(userId: string): Promise<Cart[]> {
+    return this.cartRepository.find({
+      where: { userId }
+    });
+  }
+
+  async findOne(id: string, userId: string): Promise<Cart> {
+    return this.cartRepository.findOne({
+      where: { id, userId }
+    });
+  }
+
+  async create(userId: string, productId: string, quantity: number): Promise<Cart> {
+    const price = await this.getProductPrice(productId);
+    const cartItem = this.cartRepository.create({
+      userId,
+      productId,
+      quantity,
+      price: price * quantity
+    });
+    return this.cartRepository.save(cartItem);
+  }
+
+  async update(id: string, userId: string, quantity: number): Promise<Cart> {
+    const cartItem = await this.findOne(id, userId);
+    if (!cartItem) {
+      throw new Error('Cart item not found');
+    }
+    const price = await this.getProductPrice(cartItem.productId);
+    await this.cartRepository.update(
+      { id, userId }, 
+      { quantity, price: price * quantity }
+    );
+    return this.cartRepository.findOne({ where: { id, userId } });
+  }
+
+  async remove(id: string, userId: string): Promise<void> {
+    await this.cartRepository.delete({ id, userId });
+  }
+
+  async clearCart(userId: string): Promise<void> {
+    await this.cartRepository.delete({ userId });
+  }
+}
