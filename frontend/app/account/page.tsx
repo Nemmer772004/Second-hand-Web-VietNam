@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { Suspense, useEffect, useMemo, useState } from 'react';
 import { useQuery } from '@apollo/client';
 import { User, LogOut, ShoppingBag, Heart, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -49,6 +49,15 @@ const PAYMENT_STATUS_LABELS: Record<string, string> = {
 };
 
 export default function AccountPage() {
+  return (
+    <Suspense fallback={<div className="flex justify-center py-16">Đang tải tài khoản...</div>}>
+      <AccountPageContent />
+    </Suspense>
+  );
+}
+
+
+function AccountPageContent() {
   const searchParams = useSearchParams();
   const [activeTab, setActiveTab] = useState('profile');
   const { user, loading, logout } = useAuth();

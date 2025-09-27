@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { Suspense, useState, useMemo, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useQuery } from '@apollo/client';
 import { GET_PRODUCTS, GET_CATEGORIES } from '@/lib/queries';
@@ -23,6 +23,19 @@ import { Input } from '@/components/ui/input';
 import { Search } from 'lucide-react';
 
 export default function ProductsPage() {
+  return (
+    <Suspense fallback={(
+      <div className="container mx-auto px-4 py-16 text-center">
+        <p className="text-lg text-muted-foreground">Đang tải trang sản phẩm...</p>
+      </div>
+    )}>
+      <ProductsPageContent />
+    </Suspense>
+  );
+}
+
+
+function ProductsPageContent() {
   const searchParams = useSearchParams();
   const initialCategory = searchParams.get('category');
   const initialSearch = searchParams.get('q');

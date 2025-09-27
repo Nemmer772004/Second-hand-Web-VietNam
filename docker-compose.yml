@@ -6,7 +6,7 @@ services:
       - "27017:27017"
     volumes:
       - mongodb_data:/data/db
-      - ./init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+      - /home/nemmer/Nemmer-Workflow/Project/Second-hand-Web-VietNam/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
     environment:
       - MONGO_INITDB_ROOT_USERNAME=admin
       - MONGO_INITDB_ROOT_PASSWORD=adminpassword
@@ -68,7 +68,7 @@ services:
       - CART_SERVICE_URL=http://cart-service:3007
       - CORS_ORIGIN=http://localhost:9002,http://localhost:3005
       - JWT_SECRET=your_jwt_secret_key
-      - MONGODB_URI=mongodb+srv://nemmer:nemmer@cluster0.i2pm9zb.mongodb.net/luxhome?retryWrites=true&w=majority&appName=Cluster0
+      - MONGODB_URI=mongodb://admin:adminpassword@mongodb:27017/luxhome?authSource=admin
     depends_on:
       - product-service
       - category-service
@@ -87,7 +87,7 @@ services:
       - "3001:3001"
     environment:
       - PORT=3001
-      - MONGODB_URI=mongodb+srv://nemmer:nemmer@cluster0.i2pm9zb.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
+      - MONGODB_URI=mongodb://admin:adminpassword@mongodb:27017/luxhome?authSource=admin
       - JWT_SECRET=your_jwt_secret_key
       - CORS_ORIGIN=http://localhost:9002,http://localhost:3005,http://localhost:4000
       - NODE_ENV=development
@@ -109,7 +109,7 @@ services:
       - "3002:3002"
     environment:
       - PORT=3002
-      - MONGODB_URI=mongodb+srv://nemmer:nemmer@cluster0.i2pm9zb.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
+      - MONGODB_URI=mongodb://admin:adminpassword@mongodb:27017/luxhome?authSource=admin
     depends_on: []
     networks:
       - studio_network
@@ -127,7 +127,7 @@ services:
       - "3003:3003"
     environment:
       - PORT=3003
-      - MONGODB_URI=mongodb+srv://nemmer:nemmer@cluster0.i2pm9zb.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
+      - MONGODB_URI=mongodb://admin:adminpassword@mongodb:27017/luxhome?authSource=admin
     depends_on: []
     networks:
       - studio_network
@@ -145,7 +145,7 @@ services:
       - "3004:3004"
     environment:
       - PORT=3004
-      - MONGODB_URI=mongodb+srv://nemmer:nemmer@cluster0.i2pm9zb.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
+      - MONGODB_URI=mongodb://admin:adminpassword@mongodb:27017/luxhome?authSource=admin
       - JWT_SECRET=your_jwt_secret_key
     depends_on: []
     networks:
@@ -164,7 +164,7 @@ services:
       - "3007:3007"
     environment:
       - PORT=3007
-      - MONGODB_URI=mongodb+srv://nemmer:nemmer@cluster0.i2pm9zb.mongodb.net/luxhome?retryWrites=true&w=majority&appName=Cluster0
+      - MONGODB_URI=mongodb://admin:adminpassword@mongodb:27017/luxhome?authSource=admin
       - PRODUCT_SERVICE_HOST=product-service
       - PRODUCT_SERVICE_PORT=3001
       - NODE_ENV=development
