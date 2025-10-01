@@ -1,7 +1,7 @@
 <h1 align="center">Second-hand Web VietNam</h1>
 <p align="center">
   Nền tảng thương mại điện tử chuyên biệt cho thị trường đồ đã qua sử dụng tại Việt Nam.<br/>
-  Monorepo kết hợp Next.js hiện đại và hệ thống microservices NestJS, tối ưu trải nghiệm người dùng & quản trị.
+  Monorepo kết hợp Next.js hiện đại và hệ thống Microservices NestJS, tối ưu trải nghiệm người dùng & quản trị.
 </p>
 
 <p align="center">
