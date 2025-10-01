@@ -14,7 +14,7 @@
 </p>
 
 ---
-
+<p align="center">
 ## Mục Lục
 - [Tổng Quan](#tổng-quan)
 - [Điểm Nổi Bật](#điểm-nổi-bật)
@@ -28,7 +28,7 @@
 - [Định Hướng Tiếp Theo](#định-hướng-tiếp-theo)
 
 ---
-
+</p>
 ## Tổng Quan
 - **Tầm nhìn**: Xây dựng chợ đồ cũ kiểu mới — minh bạch, an toàn, cá nhân hóa trải nghiệm mua bán.
 - **Kiến trúc**: Monorepo gồm ứng dụng khách (`frontend`), dashboard quản trị (`admin`) và cụm microservices NestJS giao tiếp qua API Gateway GraphQL.
@@ -77,7 +77,6 @@ Luồng xử lý chính:
   <a href="https://nestjs.com/"><img src="https://img.shields.io/badge/NestJS-GraphQL-E0234E?style=for-the-badge&logo=nestjs&logoColor=white" alt="NestJS"/></a>
   <a href="https://www.mongodb.com/"><img src="https://img.shields.io/badge/MongoDB-47A248?style=for-the-badge&logo=mongodb&logoColor=white" alt="MongoDB"/></a>
   <a href="https://www.postgresql.org/"><img src="https://img.shields.io/badge/PostgreSQL-336791?style=for-the-badge&logo=postgresql&logoColor=white" alt="PostgreSQL"/></a>
-  <a href="https://cloud.google.com/vertex-ai"><img src="https://img.shields.io/badge/Google_Gemini-4285F4?style=for-the-badge&logo=googlecloud&logoColor=white" alt="Gemini"/></a>
 
 </p>
 
