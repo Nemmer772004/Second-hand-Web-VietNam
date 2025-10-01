@@ -5,6 +5,9 @@ Nền tảng thương mại điện tử dành cho thị trường đồ đã qu
 ---
 
 ## Tổng Quan Kiến Trúc
+
+![Sơ Đồ Tổng Quát](access/images/So_do_tong_quat_he_thong.png)
+
 - **Frontend (khách hàng)**: Ứng dụng Next.js 14 (App Router) viết bằng TypeScript/React 18. Tích hợp Apollo Client để giao tiếp GraphQL với API Gateway, TailwindCSS & Radix UI cho UI, React Hook Form + Zod để kiểm soát form.
 - **Admin (quản trị viên)**: Ứng dụng Next.js 13 riêng biệt, TypeScript/React. Kết nối thẳng API Gateway/REST nội bộ để quản lý sản phẩm, đơn hàng, người dùng.
 - **API Gateway**: NestJS GraphQL (cổng 4000) đóng vai trò BFF, xác thực JWT, tổng hợp schema và điều phối request tới microservice qua transport TCP và REST fallback.
