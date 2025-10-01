@@ -169,8 +169,3 @@ docker compose up --build
 
 ---
 
-## Định Hướng Tiếp Theo
-- Mở rộng `ai-service` với pipeline phân tích hành vi nâng cao, tích hợp Kafka/RabbitMQ cho event-driven.
-- Bổ sung push notification realtime (WebSocket / SSE) cho người dùng và admin.
-- Thiết kế bộ dashboard giám sát (metrics, alert) nhằm theo dõi sức khỏe từng microservice.
-- Mọi ý kiến đóng góp: vui lòng tạo issue/PR trực tiếp trên repository.
