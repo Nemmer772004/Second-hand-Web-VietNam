@@ -10,7 +10,6 @@
   <a href="https://graphql.org/"><img src="https://img.shields.io/badge/GraphQL-Build%20BFF-E10098?style=for-the-badge&logo=graphql&logoColor=white" alt="GraphQL"/></a>
   <a href="https://www.mongodb.com/"><img src="https://img.shields.io/badge/MongoDB-NoSQL-47A248?style=for-the-badge&logo=mongodb&logoColor=white" alt="MongoDB"/></a>
   <a href="https://www.postgresql.org/"><img src="https://img.shields.io/badge/PostgreSQL-Relational-336791?style=for-the-badge&logo=postgresql&logoColor=white" alt="PostgreSQL"/></a>
-  <a href="https://cloud.google.com/ai"><img src="https://img.shields.io/badge/Genkit_AI-Gemini-4285F4?style=for-the-badge&logo=googlecloud&logoColor=white" alt="Genkit"/></a>
 </p>
 
 ---
