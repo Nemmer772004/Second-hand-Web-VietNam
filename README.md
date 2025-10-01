@@ -16,10 +16,7 @@
 ---
 
 ## Mục Lục
-<p align="center">
 - [Tổng Quan](#tổng-quan)
-</p>
-<p align="center">
 - [Điểm Nổi Bật](#điểm-nổi-bật)
 - [Sơ Đồ Hệ Thống](#sơ-đồ-hệ-thống)
 - [Giao Diện Tham Khảo](#giao-diện-tham-khảo)
