@@ -73,14 +73,12 @@ Luồng xử lý chính:
 <p align="center">
   <a href="https://nextjs.org/"><img src="https://img.shields.io/badge/Next.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white" alt="Next.js"/></a>
   <a href="https://react.dev/"><img src="https://img.shields.io/badge/React-18-61DAFB?style=for-the-badge&logo=react&logoColor=082032" alt="React"/></a>
-  <a href="https://tailwindcss.com/"><img src="https://img.shields.io/badge/TailwindCSS-38BDF8?style=for-the-badge&logo=tailwindcss&logoColor=white" alt="Tailwind"/></a>
-  <a href="https://www.radix-ui.com/"><img src="https://img.shields.io/badge/Radix_UI-161618?style=for-the-badge&logo=radixui&logoColor=white" alt="Radix UI"/></a>
   <a href="https://www.apollographql.com/docs/react/"><img src="https://img.shields.io/badge/Apollo_Client-311C87?style=for-the-badge&logo=apollographql&logoColor=white" alt="Apollo Client"/></a>
   <a href="https://nestjs.com/"><img src="https://img.shields.io/badge/NestJS-GraphQL-E0234E?style=for-the-badge&logo=nestjs&logoColor=white" alt="NestJS"/></a>
   <a href="https://www.mongodb.com/"><img src="https://img.shields.io/badge/MongoDB-47A248?style=for-the-badge&logo=mongodb&logoColor=white" alt="MongoDB"/></a>
   <a href="https://www.postgresql.org/"><img src="https://img.shields.io/badge/PostgreSQL-336791?style=for-the-badge&logo=postgresql&logoColor=white" alt="PostgreSQL"/></a>
   <a href="https://cloud.google.com/vertex-ai"><img src="https://img.shields.io/badge/Google_Gemini-4285F4?style=for-the-badge&logo=googlecloud&logoColor=white" alt="Gemini"/></a>
-  <a href="https://pytest.org/"><img src="https://img.shields.io/badge/Pytest-E9D54C?style=for-the-badge&logo=pytest&logoColor=3776AB" alt="Pytest"/></a>
+
 </p>
 
 ---
