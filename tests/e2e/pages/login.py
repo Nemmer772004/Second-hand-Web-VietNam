@@ -1,4 +1,4 @@
-"""Page object for the /login screen."""
+"""Page object for the /login screen — no delay version"""
 from __future__ import annotations
 
 from selenium.webdriver.common.by import By
@@ -22,19 +22,30 @@ class LoginPage(BasePage):
         super().__init__(driver)
 
     def load(self) -> None:
-        self.open(self.URL)
-        self.wait_for_visible(self.EMAIL_INPUT)
+        self.driver.get(self.URL)
 
     def fill_form(self, *, email: str, password: str) -> None:
-        self.fill_input(self.EMAIL_INPUT, email)
-        self.fill_input(self.PASSWORD_INPUT, password)
+        try:
+            self.driver.find_element(*self.EMAIL_INPUT).send_keys(email.strip())
+            self.driver.find_element(*self.PASSWORD_INPUT).send_keys(password)
+        except Exception as e:
+            print(f"[ERROR] Lỗi khi nhập form: {e}")
 
     def submit(self) -> None:
-        self.click(self.SUBMIT_BUTTON)
+        try:
+            button = self.driver.find_element(*self.SUBMIT_BUTTON)
+            self.driver.execute_script("arguments[0].scrollIntoView(true);", button)
+            button.click()
+        except Exception:
+            try:
+                self.driver.execute_script("arguments[0].click();", button)
+            except Exception as e:
+                print(f"[ERROR] Không click được submit: {e}")
 
     def toast_message(self) -> tuple[str, str] | None:
-        if not self.is_displayed(self.TOAST_SELECTOR):
+        try:
+            title = self.driver.find_element(*self.TOAST_TITLE).text
+            description = self.driver.find_element(*self.TOAST_DESCRIPTION).text
+            return title, description
+        except Exception:
             return None
-        title = self.text_of(self.TOAST_TITLE)
-        description = self.text_of(self.TOAST_DESCRIPTION)
-        return title, description

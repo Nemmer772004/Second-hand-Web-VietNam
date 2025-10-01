@@ -3,6 +3,8 @@ from __future__ import annotations
 
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webdriver import WebDriver
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 
 from .base import BasePage
 from ..config import settings
@@ -15,14 +17,14 @@ class CartPage(BasePage):
     CART_ITEM = (By.CSS_SELECTOR, "div[data-testid='cart-item'], div[data-cart-item]")
     ITEM_NAME = (By.CSS_SELECTOR, "a.font-bold")
     ITEM_QUANTITY = (By.XPATH, ".//span[normalize-space() and not(ancestor::button)]")
-    INCREASE_BUTTON = (By.XPATH, ".//button[@aria-label='Increase' or .//svg[@data-icon='plus']] | .//button[contains(@class,'w-8')][2]")
-    DECREASE_BUTTON = (By.XPATH, ".//button[@aria-label='Decrease' or .//svg[@data-icon='minus']] | .//button[contains(@class,'w-8')][1]")
-    REMOVE_BUTTON = (By.XPATH, ".//button[contains(@class,'text-muted-foreground') and .//svg]")
-    CLEAR_CART_BUTTON = (By.XPATH, "//button[normalize-space()='Xóa Giỏ Hàng']")
-    CHECKOUT_BUTTON = (By.XPATH, "//button[contains(.,'Đặt hàng') or contains(.,'Thanh toán')]" )
-    ADDRESS_TEXTAREA = (By.CSS_SELECTOR, "textarea[placeholder*='Ví dụ']")
-    PAYMENT_SELECT = (By.CSS_SELECTOR, "select")
-    NOTE_TEXTAREA = (By.CSS_SELECTOR, "textarea[placeholder*='Lưu ý']")
+    INCREASE_BUTTON = (By.XPATH, ".//button[.//svg[contains(@class, 'lucide-plus')]]")
+    DECREASE_BUTTON = (By.XPATH, ".//button[.//svg[contains(@class, 'lucide-minus')]]")
+    REMOVE_BUTTON = (By.XPATH, ".//button[.//svg[contains(@class, 'lucide-x')]]")
+    CLEAR_CART_BUTTON = (By.XPATH, "//button[normalize-space()='Xóa hết']")
+    CHECKOUT_BUTTON = (By.XPATH, "//button[normalize-space()='Đặt hàng']")
+    ADDRESS_TEXTAREA = (By.NAME, "address")
+    PAYMENT_SELECT = (By.NAME, "paymentMethod")
+    NOTE_TEXTAREA = (By.NAME, "note")
     ERROR_ALERT = (By.CSS_SELECTOR, "div.text-destructive, p.text-destructive")
 
     def __init__(self, driver: WebDriver) -> None:
@@ -32,7 +34,14 @@ class CartPage(BasePage):
         self.open(self.URL)
 
     def is_empty(self) -> bool:
-        return self.is_displayed(self.EMPTY_STATE)
+        try:
+            # A short wait can make this more robust
+            WebDriverWait(self.driver, 2).until(
+                EC.visibility_of_element_located(self.EMPTY_STATE)
+            )
+            return True
+        except Exception:
+            return False
 
     def items(self):
         return self.driver.find_elements(*self.CART_ITEM)

@@ -44,11 +44,13 @@ class RegisterPage(BasePage):
         self.click(self.SUBMIT_BUTTON)
 
     def toast_message(self) -> tuple[str, str] | None:
-        if not self.is_displayed(self.TOAST_TITLE):
+        try:
+            self.wait_for_visible(self.TOAST_TITLE)
+            title = self.text_of(self.TOAST_TITLE)
+            description = self.text_of(self.TOAST_DESCRIPTION)
+            return title, description
+        except Exception:
             return None
-        title = self.text_of(self.TOAST_TITLE)
-        description = self.text_of(self.TOAST_DESCRIPTION)
-        return title, description
 
     def validation_errors(self) -> list[str]:
         return [el.text.strip() for el in self.driver.find_elements(*self.ERROR_MESSAGES) if el.text.strip()]

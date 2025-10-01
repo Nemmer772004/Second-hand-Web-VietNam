@@ -13,7 +13,7 @@ from ..config import settings
 class ProductsPage(BasePage):
     URL = f"{settings.base_url}/products"
 
-    SEARCH_INPUT = (By.CSS_SELECTOR, "input[type='search'][placeholder='Tìm trong kết quả...']")
+    SEARCH_INPUT = (By.NAME, "q")
     CATEGORY_SECTION = (By.XPATH, "//h2[contains(., 'Bộ lọc')]")
     CATEGORY_CHECKBOX_BY_LABEL = "//label[normalize-space()='{label}']/preceding-sibling::*[contains(@role,'checkbox')]"
     MATERIAL_CHECKBOX_BY_LABEL = "//label[normalize-space()='{label}']/preceding-sibling::*[contains(@role,'checkbox')]"
@@ -30,7 +30,7 @@ class ProductsPage(BasePage):
 
     def load(self) -> None:
         self.open(self.URL)
-        self.wait_for_visible(self.SEARCH_INPUT)
+        self.wait_for_visible(self.CATEGORY_SECTION)
 
     def search(self, term: str) -> None:
         self.fill_input(self.SEARCH_INPUT, term)

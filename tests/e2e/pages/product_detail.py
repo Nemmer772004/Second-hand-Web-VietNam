@@ -10,7 +10,7 @@ from ..config import settings
 
 class ProductDetailPage(BasePage):
     PRODUCT_TITLE = (By.CSS_SELECTOR, "h1, h2")
-    ADD_TO_CART_BUTTON = (By.XPATH, "//button[contains(., 'Thêm vào giỏ')]")
+    ADD_TO_CART_BUTTON = (By.XPATH, "//button[normalize-space()='Thêm vào giỏ hàng']")
     BREADCRUMB = (By.CSS_SELECTOR, "nav[aria-label='breadcrumb']")
     TOAST_SELECTOR = (By.CSS_SELECTOR, "[data-sonner-toast]")
     TOAST_TITLE = (By.CSS_SELECTOR, "[data-sonner-toast] [data-title]")
@@ -29,12 +29,14 @@ class ProductDetailPage(BasePage):
             self.click(self.ADD_TO_CART_BUTTON)
 
     def toast(self) -> tuple[str, str] | None:
-        if not self.is_displayed(self.TOAST_SELECTOR):
+        try:
+            self.wait_for_visible(self.TOAST_SELECTOR)
+            title = self.text_of(self.TOAST_TITLE)
+            description_locator = (By.CSS_SELECTOR, "[data-sonner-toast] [data-description]")
+            description = self.text_of(description_locator)
+            return title, description
+        except Exception:
             return None
-        title = self.text_of(self.TOAST_TITLE)
-        description_locator = (By.CSS_SELECTOR, "[data-sonner-toast] [data-description]")
-        description = self.text_of(description_locator)
-        return title, description
 
     def price(self) -> str:
         return self.text_of(self.PRICE_TEXT)

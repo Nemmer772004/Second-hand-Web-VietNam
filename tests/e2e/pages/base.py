@@ -10,6 +10,10 @@ from ..config import settings
 
 
 class BasePage:
+    # Assuming logout is triggered by a button/link with text 'Đăng xuất'
+    LOGOUT_BUTTON = (By.XPATH, "//button[contains(., 'Đăng xuất')] | //a[contains(., 'Đăng xuất')]")
+    LOGIN_URL = f"{settings.base_url}/login"
+
     def __init__(self, driver: WebDriver) -> None:
         self.driver = driver
         self.wait = WebDriverWait(driver, settings.explicit_wait)
@@ -42,6 +46,20 @@ class BasePage:
             return self.driver.find_element(*locator).is_displayed()
         except Exception:
             return False
+
+    def logout(self) -> None:
+        """Logs the user out by finding and clicking a logout button."""
+        # Try clicking logout from the current page, if available
+        if self.is_displayed(self.LOGOUT_BUTTON):
+            self.click(self.LOGOUT_BUTTON)
+        else:
+            # As a fallback, go to the account page where it's likely to be
+            self.open(f"{settings.base_url}/account")
+            self.wait_for_clickable(self.LOGOUT_BUTTON)
+            self.click(self.LOGOUT_BUTTON)
+        
+        # Wait until the URL reflects a logged-out state
+        self.wait.until(EC.url_contains("/login"))
 
 
 ByT = By  # alias to shorten imports in child classes
