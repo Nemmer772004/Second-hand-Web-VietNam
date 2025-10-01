@@ -14,9 +14,12 @@
 </p>
 
 ---
-<p align="center">
+
 ## Mục Lục
+<p align="center">
 - [Tổng Quan](#tổng-quan)
+</p>
+<p align="center">
 - [Điểm Nổi Bật](#điểm-nổi-bật)
 - [Sơ Đồ Hệ Thống](#sơ-đồ-hệ-thống)
 - [Giao Diện Tham Khảo](#giao-diện-tham-khảo)
@@ -28,7 +31,7 @@
 - [Định Hướng Tiếp Theo](#định-hướng-tiếp-theo)
 
 ---
-</p>
+
 ## Tổng Quan
 - **Tầm nhìn**: Xây dựng chợ đồ cũ kiểu mới — minh bạch, an toàn, cá nhân hóa trải nghiệm mua bán.
 - **Kiến trúc**: Monorepo gồm ứng dụng khách (`frontend`), dashboard quản trị (`admin`) và cụm microservices NestJS giao tiếp qua API Gateway GraphQL.
