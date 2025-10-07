@@ -1,12 +1,10 @@
-
 'use client';
 
 import { Suspense, useState, useMemo, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useQuery } from '@apollo/client';
 import { GET_PRODUCTS, GET_CATEGORIES } from '@/lib/queries';
-import { getAllDemoProducts, getDemoCategories } from '@/lib/demo-adapter';
-import type { Product as CatalogProduct } from '@/lib/types';
+import type { Product as CatalogProduct, Category } from '@/lib/types';
 import ProductCard from '@/components/products/product-card';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -18,121 +16,257 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Search } from 'lucide-react';
 
 export default function ProductsPage() {
   return (
-    <Suspense fallback={(
-      <div className="container mx-auto px-4 py-16 text-center">
-        <p className="text-lg text-muted-foreground">Đang tải trang sản phẩm...</p>
-      </div>
-    )}>
+    <Suspense
+      fallback={(
+        <div className="container mx-auto px-4 py-16 text-center">
+          <p className="text-lg text-muted-foreground">Đang tải trang sản phẩm...</p>
+        </div>
+      )}
+    >
       <ProductsPageContent />
     </Suspense>
   );
 }
 
-
 function ProductsPageContent() {
   const searchParams = useSearchParams();
   const initialCategory = searchParams.get('category');
   const initialSearch = searchParams.get('q');
-  
-  // Fetch data from backend
-  const { data: productsData, loading: productsLoading, error: productsError } = useQuery(GET_PRODUCTS);
-  const { data: categoriesData, loading: categoriesLoading } = useQuery(GET_CATEGORIES);
 
-  const fallbackProducts = useMemo(() => getAllDemoProducts(), []);
-  const fallbackCategories = useMemo(() => getDemoCategories(), []);
+  const normalise = (value: unknown) =>
+    String(value ?? '')
+      .normalize('NFD')
+      .replace(/\p{Diacritic}/gu, '')
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, '')
+      .trim();
 
-  const products: CatalogProduct[] = (productsData?.products?.length ? productsData.products : fallbackProducts) as CatalogProduct[];
-  const categories = categoriesData?.categories?.length ? categoriesData.categories : fallbackCategories;
-  
+  const initialCategoryToken = initialCategory ? normalise(initialCategory) : undefined;
+
+  const {
+    data: productsData,
+    loading: productsLoading,
+    error: productsError,
+  } = useQuery(GET_PRODUCTS);
+  const {
+    data: categoriesData,
+    loading: categoriesLoading,
+  } = useQuery(GET_CATEGORIES);
+
+  const products: CatalogProduct[] = useMemo(
+    () => (Array.isArray(productsData?.products) ? productsData.products : []),
+    [productsData?.products],
+  );
+
+  const categories: Category[] = useMemo(
+    () => (Array.isArray(categoriesData?.categories) ? categoriesData.categories : []),
+    [categoriesData?.categories],
+  );
+
+  const categoryOptions = useMemo(
+    () =>
+      categories
+        .map((category) => ({
+          key: (category.id ?? category.name ?? '').toString(),
+          label: category.name ?? category.id ?? 'Danh mục chưa đặt tên',
+        }))
+        .filter((option) => option.key.trim().length > 0),
+    [categories],
+  );
+
+  const categoryTokenMap = useMemo(() => {
+    const map = new Map<string, string[]>();
+    categories.forEach((category) => {
+      const tokens = new Set<string>();
+      if (category.id) {
+        tokens.add(normalise(category.id));
+      }
+      if (category.name) {
+        tokens.add(normalise(category.name));
+      }
+      map.set((category.id ?? category.name ?? '').toString(), Array.from(tokens));
+    });
+    return map;
+  }, [categories]);
+
   const allMaterials = useMemo(
-    () => Array.from(new Set(products.flatMap((p: any) => (p.features ? p.features : [])))),
+    () =>
+      Array.from(
+        new Set(
+          products.flatMap((product) =>
+            Array.isArray(product.features) ? product.features.filter(Boolean) : [],
+          ),
+        ),
+      ),
     [products],
   );
-  const maxPrice = useMemo(() => products.length > 0 ? Math.ceil(Math.max(...products.map((p: any) => p.price))) : 10000000, [products]);
+
+  const maxPrice = useMemo(() => {
+    const validPrices = products
+      .map((product) => {
+        if (typeof product.price === 'number') {
+          return product.price;
+        }
+        const parsed = Number(product.price ?? 0);
+        return Number.isNaN(parsed) ? 0 : parsed;
+      })
+      .filter((value) => value >= 0);
+
+    if (!validPrices.length) {
+      return 0;
+    }
+
+    return Math.ceil(Math.max(...validPrices));
+  }, [products]);
 
   const [searchQuery, setSearchQuery] = useState(initialSearch || '');
-  const [selectedCategories, setSelectedCategories] = useState<string[]>(initialCategory ? [initialCategory] : []);
-  const [priceRange, setPriceRange] = useState<[number, number]>([0, maxPrice]);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>(
+    initialCategoryToken ? [initialCategoryToken] : [],
+  );
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, 0]);
   const [selectedMaterials, setSelectedMaterials] = useState<string[]>([]);
   const [sortOrder, setSortOrder] = useState('newest');
 
   useEffect(() => {
-    // This effect ensures the search input in the filter section
-    // stays in sync with the URL query parameter.
     setSearchQuery(initialSearch || '');
   }, [initialSearch]);
 
+  useEffect(() => {
+    if (initialCategory) {
+      setSelectedCategories([normalise(initialCategory)]);
+    } else {
+      setSelectedCategories([]);
+    }
+  }, [initialCategory]);
+
+  useEffect(() => {
+    if (maxPrice > 0) {
+      setPriceRange((current) => {
+        const [, currentMax] = current;
+        if (currentMax === 0 || currentMax > maxPrice) {
+          return [0, maxPrice];
+        }
+        return current;
+      });
+    }
+  }, [maxPrice]);
+
   const handleCategoryChange = (categoryKey: string) => {
-    setSelectedCategories(prev =>
-      prev.includes(categoryKey)
-        ? prev.filter(c => c !== categoryKey)
-        : [...prev, categoryKey]
+    const token = normalise(categoryKey);
+    setSelectedCategories((prev) =>
+      prev.includes(token) ? prev.filter((value) => value !== token) : [...prev, token],
     );
   };
 
   const handleMaterialChange = (material: string) => {
-    setSelectedMaterials(prev =>
-      prev.includes(material)
-        ? prev.filter(m => m !== material)
-        : [...prev, material]
+    setSelectedMaterials((prev) =>
+      prev.includes(material) ? prev.filter((value) => value !== material) : [...prev, material],
     );
   };
 
   const filteredProducts = useMemo(() => {
     let tempProducts = [...products];
-    const currentSearchQuery = initialSearch || '';
 
-    if (currentSearchQuery) {
-        tempProducts = tempProducts.filter(p => p.name.toLowerCase().includes(currentSearchQuery.toLowerCase()));
+    const activeSearch = searchQuery.trim().toLowerCase();
+    if (activeSearch) {
+      tempProducts = tempProducts.filter((product) =>
+        (product.name ?? '').toLowerCase().includes(activeSearch),
+      );
     }
 
     if (selectedCategories.length > 0) {
-      tempProducts = tempProducts.filter(p => selectedCategories.includes(p.category));
+      tempProducts = tempProducts.filter((product) => {
+        const tokens: string[] = [];
+
+        const collectTokens = (value: unknown) => {
+          if (!value) return;
+          const raw = value.toString();
+          tokens.push(normalise(raw));
+          const mapped = categoryTokenMap.get(raw);
+          if (mapped) {
+            tokens.push(...mapped);
+          }
+        };
+
+        collectTokens(product.category);
+        collectTokens(product.displayCategory);
+        collectTokens((product as any).categoryId);
+
+        const uniqueTokens = Array.from(new Set(tokens));
+        return selectedCategories.some((token) => uniqueTokens.includes(token));
+      });
     }
 
     if (selectedMaterials.length > 0) {
-      tempProducts = tempProducts.filter((p: any) => 
-        selectedMaterials.some(m => p.features?.some((f: any) => f.toLowerCase().includes(m.toLowerCase())))
+      const materialTokens = selectedMaterials.map((material) => material.toLowerCase());
+      tempProducts = tempProducts.filter((product) =>
+        (product.features ?? []).some((feature) =>
+          materialTokens.some((token) => feature.toLowerCase().includes(token)),
+        ),
       );
     }
-    
-    tempProducts = tempProducts.filter(p => p.price >= priceRange[0] && p.price <= priceRange[1]);
 
+    tempProducts = tempProducts.filter((product) => {
+      const priceValue =
+        typeof product.price === 'number' ? product.price : Number(product.price ?? 0);
+      if (Number.isNaN(priceValue)) {
+        return false;
+      }
+      const [min, max] = priceRange;
+      const upperBound = max === 0 && maxPrice > 0 ? maxPrice : max;
+      return priceValue >= min && (upperBound === 0 || priceValue <= upperBound);
+    });
+
+    const sorter = [...tempProducts];
     switch (sortOrder) {
       case 'price-asc':
-        tempProducts.sort((a, b) => a.price - b.price);
+        sorter.sort((a, b) => (Number(a.price) || 0) - (Number(b.price) || 0));
         break;
       case 'price-desc':
-        tempProducts.sort((a, b) => b.price - a.price);
+        sorter.sort((a, b) => (Number(b.price) || 0) - (Number(a.price) || 0));
         break;
       case 'rating':
-        tempProducts.sort((a, b) => b.rating - a.rating);
+        sorter.sort(
+          (a, b) => (b.averageRating ?? b.rating ?? 0) - (a.averageRating ?? a.rating ?? 0),
+        );
         break;
       case 'newest':
       default:
-        // Sort by createdAt (newest first)
-        tempProducts.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        sorter.sort(
+          (a, b) =>
+            new Date(b.createdAt ?? 0).getTime() - new Date(a.createdAt ?? 0).getTime(),
+        );
         break;
     }
 
-    return tempProducts;
-  }, [selectedCategories, priceRange, selectedMaterials, sortOrder, initialSearch]);
+    return sorter;
+  }, [
+    products,
+    searchQuery,
+    selectedCategories,
+    selectedMaterials,
+    priceRange,
+    sortOrder,
+    categoryTokenMap,
+    maxPrice,
+  ]);
 
   const clearFilters = () => {
-    setSelectedCategories([]);
-    setPriceRange([0, maxPrice]);
+    setSelectedCategories(initialCategoryToken ? [initialCategoryToken] : []);
+    setPriceRange([0, maxPrice > 0 ? maxPrice : 0]);
     setSelectedMaterials([]);
     setSortOrder('newest');
-    // Note: We don't clear the search query from the URL here,
-    // as it's the primary filter on this page.
-    // A separate action/button might be needed to clear the search itself.
+    setSearchQuery(initialSearch || '');
   };
+
+  const sliderMax = maxPrice > 0 ? maxPrice : 10_000_000;
+  const sliderValue = priceRange[1] === 0 ? sliderMax : priceRange[1];
 
   if (productsLoading || categoriesLoading) {
     return (
@@ -145,16 +279,16 @@ function ProductsPageContent() {
     );
   }
 
-  const usingFallbackProducts = !(productsData?.products?.length);
-
   return (
     <div className="container mx-auto px-4 py-8">
-       <div className="mb-8 text-center">
+      <div className="mb-8 text-center">
         <h1 className="font-headline text-4xl md:text-5xl font-bold">Bộ Sưu Tập Của Chúng Tôi</h1>
-        <p className="mt-2 text-lg text-muted-foreground">Tìm những món đồ hoàn hảo để hoàn thiện ngôi nhà của bạn.</p>
-        {productsError && usingFallbackProducts && (
+        <p className="mt-2 text-lg text-muted-foreground">
+          Tìm những món đồ hoàn hảo để hoàn thiện ngôi nhà hoặc mô hình kinh doanh của bạn.
+        </p>
+        {productsError && (
           <p className="mt-4 text-sm text-yellow-600">
-            Không thể kết nối tới máy chủ. Đang hiển thị dữ liệu demo.
+            Không thể kết nối tới máy chủ. Vui lòng thử lại sau.
           </p>
         )}
       </div>
@@ -168,14 +302,12 @@ function ProductsPageContent() {
                 <AccordionTrigger className="text-lg font-medium">Tìm kiếm</AccordionTrigger>
                 <AccordionContent>
                   <div className="relative">
-                     <Input 
-                      type="search" 
-                      placeholder="Tìm trong kết quả..." 
-                      className="pr-10" 
+                    <Input
+                      type="search"
+                      placeholder="Tìm trong kết quả..."
+                      className="pr-10"
                       value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      // This input now only filters the *currently visible* results on the client side
-                      // The main search is driven by the URL param 'q'
+                      onChange={(event) => setSearchQuery(event.target.value)}
                     />
                     <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                   </div>
@@ -185,18 +317,28 @@ function ProductsPageContent() {
                 <AccordionTrigger className="text-lg font-medium">Danh mục</AccordionTrigger>
                 <AccordionContent>
                   <div className="space-y-2">
-                    {categories.map((category: any) => (
-                      <div key={category.id} className="flex items-center space-x-2">
-                        <Checkbox
-                          id={category.id}
-                          checked={selectedCategories.includes(category.name)}
-                          onCheckedChange={() => handleCategoryChange(category.name)}
-                        />
-                        <label htmlFor={category.id} className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                          {category.name}
-                        </label>
-                      </div>
-                    ))}
+                    {categoryOptions.length === 0 ? (
+                      <p className="text-sm text-muted-foreground">Chưa có danh mục nào.</p>
+                    ) : (
+                      categoryOptions.map((category) => {
+                        const token = normalise(category.key);
+                        return (
+                          <div key={category.key} className="flex items-center space-x-2">
+                            <Checkbox
+                              id={`category-${category.key}`}
+                              checked={selectedCategories.includes(token)}
+                              onCheckedChange={() => handleCategoryChange(category.key)}
+                            />
+                            <label
+                              htmlFor={`category-${category.key}`}
+                              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                            >
+                              {category.label}
+                            </label>
+                          </div>
+                        );
+                      })
+                    )}
                   </div>
                 </AccordionContent>
               </AccordionItem>
@@ -206,14 +348,14 @@ function ProductsPageContent() {
                   <div className="space-y-4">
                     <Slider
                       min={0}
-                      max={maxPrice}
-                      step={10}
-                      value={[priceRange[1]]}
+                      max={sliderMax}
+                      step={10_000}
+                      value={[sliderValue]}
                       onValueChange={(value) => setPriceRange([0, value[0]])}
                     />
                     <div className="flex justify-between text-sm text-muted-foreground">
                       <span>₫0</span>
-                      <span>₫{priceRange[1].toLocaleString()}</span>
+                      <span>₫{sliderValue.toLocaleString()}</span>
                     </div>
                   </div>
                 </AccordionContent>
@@ -221,25 +363,32 @@ function ProductsPageContent() {
               <AccordionItem value="material">
                 <AccordionTrigger className="text-lg font-medium">Chất liệu</AccordionTrigger>
                 <AccordionContent>
-                   <div className="space-y-2 max-h-40 overflow-y-auto">
-                    {allMaterials.map((material: any) => (
-                      <div key={material} className="flex items-center space-x-2">
-                        <Checkbox
-                          id={material}
-                          checked={selectedMaterials.includes(material)}
-                          onCheckedChange={() => handleMaterialChange(material)}
-                        />
-                        <label htmlFor={material} className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                          {material}
-                        </label>
-                      </div>
-                    ))}
+                  <div className="space-y-2 max-h-40 overflow-y-auto">
+                    {allMaterials.length === 0 ? (
+                      <p className="text-sm text-muted-foreground">Chưa có dữ liệu chất liệu.</p>
+                    ) : (
+                      allMaterials.map((material) => (
+                        <div key={material} className="flex items-center space-x-2">
+                          <Checkbox
+                            id={`material-${material}`}
+                            checked={selectedMaterials.includes(material)}
+                            onCheckedChange={() => handleMaterialChange(material)}
+                          />
+                          <label
+                            htmlFor={`material-${material}`}
+                            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                          >
+                            {material}
+                          </label>
+                        </div>
+                      ))
+                    )}
                   </div>
                 </AccordionContent>
               </AccordionItem>
             </Accordion>
-             <Button onClick={clearFilters} className="w-full mt-6" variant="outline">
-                Xóa bộ lọc
+            <Button onClick={clearFilters} className="w-full mt-6" variant="outline">
+              Xóa bộ lọc
             </Button>
           </div>
         </aside>
@@ -247,7 +396,7 @@ function ProductsPageContent() {
         <main className="lg:col-span-3">
           <div className="flex justify-between items-center mb-6">
             <p className="text-muted-foreground">{filteredProducts.length} sản phẩm được tìm thấy</p>
-             <Select value={sortOrder} onValueChange={setSortOrder}>
+            <Select value={sortOrder} onValueChange={setSortOrder}>
               <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder="Sắp xếp theo" />
               </SelectTrigger>
@@ -260,17 +409,17 @@ function ProductsPageContent() {
             </Select>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-x-6 gap-y-10">
-            {filteredProducts
-              .filter((p: any) => p.name.toLowerCase().includes(searchQuery.toLowerCase())) // Client-side filtering based on the filter input
-              .map((product: any) => (
+            {filteredProducts.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}
           </div>
           {filteredProducts.length === 0 && (
-             <div className="text-center py-20 col-span-full">
-                <h3 className="font-headline text-2xl">Không tìm thấy sản phẩm nào</h3>
-                <p className="text-muted-foreground mt-2">Hãy thử điều chỉnh bộ lọc của bạn để tìm thấy những gì bạn đang tìm kiếm.</p>
-             </div>
+            <div className="text-center py-20 col-span-full">
+              <h3 className="font-headline text-2xl">Không tìm thấy sản phẩm nào</h3>
+              <p className="text-muted-foreground mt-2">
+                Hãy thử điều chỉnh bộ lọc của bạn để tìm thấy những gì bạn đang tìm kiếm.
+              </p>
+            </div>
           )}
         </main>
       </div>

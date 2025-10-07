@@ -19,7 +19,7 @@ import {
   DialogDescription
 } from "@/components/ui/dialog"
 import { Input } from '../ui/input';
-import { FALLBACK_PRODUCT_IMAGE } from '@/lib/demo-adapter';
+import { DEFAULT_PRODUCT_IMAGE } from '@/lib/constants';
 
 interface ProductCardProps {
   product: Product;
@@ -29,14 +29,22 @@ const ProductCard = ({ product }: ProductCardProps) => {
   const { wishlist, addToWishlist, removeFromWishlist } = useWishlist();
   const { toast } = useToast();
   const isWishlisted = wishlist.some(item => item.id === product.id);
-  const fallbackImage = FALLBACK_PRODUCT_IMAGE;
-  const [cardImage, setCardImage] = useState(product.image || fallbackImage);
-  const previewImage = useMemo(() => product.image || fallbackImage, [product.image]);
+  const [cardImage, setCardImage] = useState(
+    product.image || product.images?.[0] || DEFAULT_PRODUCT_IMAGE,
+  );
+  const previewImage = useMemo(
+    () => product.image || product.images?.[0] || DEFAULT_PRODUCT_IMAGE,
+    [product.image, product.images],
+  );
   const productSlug = product.slug ?? product.id;
+  const rating = product.averageRating ?? product.rating ?? 0;
+  const reviewCount = product.reviewCount ?? product.reviews?.length ?? 0;
+  const availableStock = product.stock ?? 0;
+  const categoryLabel = product.displayCategory || product.category || 'Đang cập nhật';
 
   useEffect(() => {
-    setCardImage(product.image || fallbackImage);
-  }, [product.image]);
+    setCardImage(product.image || product.images?.[0] || DEFAULT_PRODUCT_IMAGE);
+  }, [product.image, product.images]);
 
   const handleWishlistToggle = (e: React.MouseEvent) => {
     e.stopPropagation(); 
@@ -76,7 +84,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
                   width={400}
                   height={400}
                   unoptimized
-                  onError={() => setCardImage(fallbackImage)}
+                  onError={() => setCardImage(DEFAULT_PRODUCT_IMAGE)}
                   className="w-full h-full object-cover object-center transition-transform duration-300 group-hover:scale-105"
                 />
               </div>
@@ -89,15 +97,17 @@ const ProductCard = ({ product }: ProductCardProps) => {
                     height={800}
                     unoptimized
                     onError={({ currentTarget }) => {
-                      currentTarget.src = fallbackImage;
+                      currentTarget.src = DEFAULT_PRODUCT_IMAGE;
                     }}
                     className="w-full h-auto object-contain rounded-md"
                 />
             </DialogContent>
           </Dialog>
         
-        <Badge variant="secondary" className="absolute top-2 right-2">{product.category}</Badge>
-        {product.stock < 5 && <Badge variant="destructive" className="absolute top-10 right-2">Sắp hết hàng</Badge>}
+        <Badge variant="secondary" className="absolute top-2 right-2">{categoryLabel}</Badge>
+        {availableStock < 5 && (
+          <Badge variant="destructive" className="absolute top-10 right-2">Sắp hết hàng</Badge>
+        )}
 
         <Button 
             variant="ghost" 
@@ -116,19 +126,22 @@ const ProductCard = ({ product }: ProductCardProps) => {
             {product.name}
           </Link>
         </h3>
+        {product.brand && (
+          <p className="mt-1 text-xs uppercase tracking-wide text-muted-foreground">{product.brand}</p>
+        )}
         <div className="flex items-center mt-1">
           <div className="flex items-center">
-            {[...Array(5)].map((_, i) => (
-              <Star
-                key={i}
-                className={cn(
-                  'h-4 w-4',
-                  i < Math.round(product.rating) ? 'text-yellow-400 fill-yellow-400' : 'text-muted-foreground/30'
+              {[...Array(5)].map((_, i) => (
+                <Star
+                  key={i}
+                  className={cn(
+                    'h-4 w-4',
+                  i < Math.round(rating) ? 'text-yellow-400 fill-yellow-400' : 'text-muted-foreground/30'
                 )}
               />
             ))}
           </div>
-          <span className="ml-2 text-xs text-muted-foreground">({product.reviews} đánh giá)</span>
+          <span className="ml-2 text-xs text-muted-foreground">({reviewCount} đánh giá)</span>
         </div>
         <div className="flex-1 flex items-end mt-2">
             <div className='flex flex-col'>
@@ -136,7 +149,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
                 {formatPrice(product.price)}
               </p>
               <p className="text-xs text-muted-foreground">
-                Còn lại: {product.stock} sản phẩm
+                Còn lại: {availableStock} sản phẩm
               </p>
             </div>
         </div>

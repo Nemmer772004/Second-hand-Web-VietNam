@@ -34,8 +34,10 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { useQuery } from "@apollo/client";
 import { cn } from "@/lib/utils";
-import { productCategories } from "@/lib/data";
+import { GET_CATEGORIES } from "@/lib/queries";
+import type { Category } from "@/lib/types";
 import Image from "next/image";
 import { CartContext } from "@/context/cart-context";
 import { Badge } from "@/components/ui/badge";
@@ -47,6 +49,28 @@ const SiteHeader = () => {
   const { wishlist } = useWishlist();
   const [searchQuery, setSearchQuery] = useState("");
   const router = useRouter();
+
+  const { data: categoriesData } = useQuery(GET_CATEGORIES);
+  const categories: Category[] = React.useMemo(
+    () => (Array.isArray(categoriesData?.categories) ? categoriesData.categories : []),
+    [categoriesData?.categories]
+  );
+
+  const categoryMenuItems = React.useMemo(
+    () =>
+      categories
+        .map((category) => {
+          const key = (category.id ?? category.name ?? "").toString();
+          if (!key) {
+            return null;
+          }
+          const href = `/products?category=${encodeURIComponent(key)}`;
+          const label = category.name ?? category.id ?? "Danh mục";
+          return { key, href, label };
+        })
+        .filter((item): item is { key: string; href: string; label: string } => item !== null),
+    [categories]
+  );
 
   const handleSearch = (e: FormEvent) => {
     e.preventDefault();
@@ -83,6 +107,7 @@ const SiteHeader = () => {
               <MobileNav
                 closeMenu={() => setIsMobileMenuOpen(false)}
                 menuItems={menuItems}
+                categories={categoryMenuItems}
               />
             </SheetContent>
           </Sheet>
@@ -106,13 +131,17 @@ const SiteHeader = () => {
                       <h3 className="font-headline text-lg mb-2">
                         Mua sắm theo danh mục
                       </h3>
-                      {productCategories.map((category) => (
-                        <ListItem
-                          key={category.name}
+                      {categoryMenuItems.length === 0 ? (
+                        <span className="text-sm text-muted-foreground">Chưa có danh mục</span>
+                      ) : (
+                        categoryMenuItems.map((category) => (
+                          <ListItem
+                          key={category.key}
                           href={category.href}
-                          title={category.name}
+                          title={category.label}
                         />
-                      ))}
+                        ))
+                      )}
                       <Link
                         href="/products"
                         className="p-2 mt-2 rounded-md bg-secondary text-secondary-foreground font-medium block text-sm"
@@ -272,9 +301,11 @@ const SiteHeader = () => {
 const MobileNav = ({
   closeMenu,
   menuItems,
+  categories,
 }: {
   closeMenu: () => void;
   menuItems: any[];
+  categories: { key: string; href: string; label: string }[];
 }) => {
   return (
     <div className="flex flex-col h-full">
@@ -296,26 +327,30 @@ const MobileNav = ({
                 <ChevronDown className="h-4 w-4 transition-transform duration-200" />
               </summary>
               <ul className="pl-4 mt-2 space-y-2">
-                {productCategories.map((category) => (
-                  <li key={category.name}>
-                    <Link
-                      href={category.href}
-                      className="block py-2 text-muted-foreground hover:text-primary"
-                      onClick={closeMenu}
-                    >
-                      {category.name}
-                    </Link>
-                  </li>
-                ))}
+                {categories.length === 0 ? (
+                  <li className="text-sm text-muted-foreground">Chưa có danh mục</li>
+                ) : (
+                  categories.map((category) => (
+                    <li key={category.key}>
+                      <Link
+                        href={category.href}
+                        className="block py-2 text-muted-foreground hover:text-primary"
+                        onClick={closeMenu}
+                      >
+                        {category.label}
+                      </Link>
+                    </li>
+                  ))
+                )}
                 <li>
                   <Link
-                    href="/products"
-                    className="block py-2 font-medium"
-                    onClick={closeMenu}
-                  >
-                    Tất cả sản phẩm
-                  </Link>
-                </li>
+                      href="/products"
+                      className="block py-2 font-medium"
+                      onClick={closeMenu}
+                    >
+                      Tất cả sản phẩm
+                    </Link>
+                  </li>
               </ul>
             </details>
           </li>

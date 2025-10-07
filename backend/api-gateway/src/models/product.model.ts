@@ -3,6 +3,9 @@ import { Document } from 'mongoose';
 
 @Schema()
 export class Product extends Document {
+  @Prop({ alias: 'product_id' })
+  productId?: number;
+
   @Prop({ required: true })
   name: string;
 
@@ -13,16 +16,46 @@ export class Product extends Document {
   price: number;
 
   @Prop()
-  images: string[];
+  imageUrl?: string;
+
+  @Prop({ type: [String], default: [] })
+  images?: string[];
 
   @Prop({ default: 0 })
   stock: number;
 
-  @Prop({ required: true })
-  category: string;
+  @Prop()
+  category?: string;
 
-  @Prop({ required: true })
-  subcategory: string;
+  @Prop()
+  displayCategory?: string;
+
+  @Prop()
+  brand?: string;
+
+  @Prop({ default: 0 })
+  soldCount?: number;
+
+  @Prop({ default: 0 })
+  averageRating?: number;
+
+  @Prop({ default: 0 })
+  numReviews?: number;
+
+  @Prop()
+  slug?: string;
+
+  @Prop()
+  legacyId?: number;
+
+  @Prop({ type: Object, default: null })
+  dimensions?: Record<string, any> | null;
+
+  @Prop({ type: [String], default: [] })
+  features?: string[];
+
+  @Prop()
+  weight?: number;
 
   @Prop({ default: true })
   isActive: boolean;

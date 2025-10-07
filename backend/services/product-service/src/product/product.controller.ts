@@ -1,10 +1,22 @@
-import { Controller, Get, Post, Body, Param, Put, Delete, HttpException, HttpStatus } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Put,
+  Delete,
+  HttpException,
+  HttpStatus,
+} from '@nestjs/common';
 import { ProductService } from './product.service';
 import { Product } from './schemas/product.schema';
 import { CreateProductDto, UpdateProductDto } from './dto/product.dto';
 
 @Controller()
 export class ProductController {
+  private readonly objectIdRegex = /^[0-9a-fA-F]{24}$/;
+
   constructor(private readonly productService: ProductService) {}
 
   @Get('health')
@@ -32,7 +44,16 @@ export class ProductController {
 
   @Get('products/:id')
   async findOne(@Param('id') id: string): Promise<Product> {
-    const product = await this.productService.findOne(id);
+    let product: Product | null = null;
+
+    if (this.objectIdRegex.test(id)) {
+      product = await this.productService.findOne(id);
+    } else if (!Number.isNaN(Number(id))) {
+      product = await this.productService.findByProductId(Number(id));
+    } else {
+      product = await this.productService.findOne(id);
+    }
+
     if (!product) {
       throw new HttpException('Product not found', HttpStatus.NOT_FOUND);
     }

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { FormEvent, useEffect, useState } from 'react';
+import React, { FormEvent, useEffect, useMemo, useState } from 'react';
 import { useAdminAuth } from '../../context/AdminAuthContext';
 import { graphqlRequest } from '../../lib/graphql-client';
 
@@ -15,7 +15,16 @@ const PRODUCTS_QUERY = /* GraphQL */ `
       category
       categoryId
       categoryName
+      displayCategory
+      productId
       image
+      images
+      brand
+      soldCount
+      rating
+      averageRating
+      reviewCount
+      legacyId
       createdAt
       updatedAt
     }
@@ -62,7 +71,17 @@ interface AdminProduct {
   category?: string | null;
   categoryId?: string | null;
   categoryName?: string | null;
+  displayCategory?: string | null;
+  productId?: number | null;
   image?: string | null;
+  images?: string[] | null;
+  brand?: string | null;
+  soldCount?: number | null;
+  rating?: number | null;
+  averageRating?: number | null;
+  reviewCount?: number | null;
+  reviews?: number | null;
+  legacyId?: number | null;
   createdAt?: string | null;
   updatedAt?: string | null;
 }
@@ -74,6 +93,11 @@ const emptyForm: ProductFormState = {
   category: '',
   image: '',
   stock: '',
+  brand: '',
+  soldCount: '',
+  productId: '',
+  imageGallery: '',
+  legacyId: '',
 };
 
 interface ProductFormState {
@@ -83,6 +107,11 @@ interface ProductFormState {
   category: string;
   image: string;
   stock: string;
+  brand: string;
+  soldCount: string;
+  productId: string;
+  imageGallery: string;
+  legacyId: string;
 }
 
 export default function AdminProductsPage() {
@@ -94,6 +123,10 @@ export default function AdminProductsPage() {
   const [formValues, setFormValues] = useState<ProductFormState>(emptyForm);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const currentEditingProduct = useMemo(
+    () => (editingId ? products.find((product) => product.id === editingId) ?? null : null),
+    [editingId, products]
+  );
 
   const fetchProducts = async () => {
     if (!user) return;
@@ -144,6 +177,13 @@ export default function AdminProductsPage() {
       category: product.categoryId || product.category || '',
       image: product.image ?? '',
       stock: product.stock?.toString() ?? '',
+      brand: product.brand ?? '',
+      soldCount: product.soldCount?.toString() ?? '',
+      productId: product.productId?.toString() ?? '',
+      imageGallery: (product.images || [])
+        ?.filter((url): url is string => Boolean(url))
+        .join('\n') ?? '',
+      legacyId: product.legacyId?.toString() ?? '',
     });
   };
 
@@ -172,6 +212,11 @@ export default function AdminProductsPage() {
     setError(null);
     setSuccessMessage(null);
 
+    const parsedImages = formValues.imageGallery
+      .split('\n')
+      .map((line) => line.trim())
+      .filter((line) => line.length > 0);
+
     const payload = {
       name: formValues.name.trim(),
       description: formValues.description.trim(),
@@ -179,6 +224,11 @@ export default function AdminProductsPage() {
       category: formValues.category.trim(),
       image: formValues.image.trim() || undefined,
       stock: formValues.stock === '' ? undefined : Number(formValues.stock),
+      brand: formValues.brand.trim() || undefined,
+      soldCount: formValues.soldCount === '' ? undefined : Number(formValues.soldCount),
+      productId: formValues.productId === '' ? undefined : Number(formValues.productId),
+      images: parsedImages.length > 0 ? parsedImages : undefined,
+      legacyId: formValues.legacyId === '' ? undefined : Number(formValues.legacyId),
     };
 
     if (!payload.name || !payload.description || !payload.category || Number.isNaN(payload.price)) {
@@ -253,9 +303,10 @@ export default function AdminProductsPage() {
           </div>
 
           <div className="admin-form__group">
-            <label className="admin-form__label">Tên sản phẩm</label>
+            <label className="admin-form__label" htmlFor="product-name">Tên sản phẩm</label>
             <input
               className="admin-input"
+              id="product-name"
               value={formValues.name}
               onChange={(e) => handleInputChange('name', e.target.value)}
               required
@@ -263,10 +314,11 @@ export default function AdminProductsPage() {
           </div>
 
           <div className="admin-form__group">
-            <label className="admin-form__label">Danh mục</label>
+            <label className="admin-form__label" htmlFor="product-category">Danh mục</label>
             {categories.length > 0 ? (
               <select
                 className="admin-select"
+                id="product-category"
                 value={formValues.category}
                 onChange={(e) => handleInputChange('category', e.target.value)}
                 required
@@ -281,6 +333,7 @@ export default function AdminProductsPage() {
             ) : (
               <input
                 className="admin-input"
+                id="product-category"
                 value={formValues.category}
                 onChange={(e) => handleInputChange('category', e.target.value)}
                 placeholder="Nhập danh mục"
@@ -290,9 +343,10 @@ export default function AdminProductsPage() {
           </div>
 
           <div className="admin-form__group">
-            <label className="admin-form__label">Giá (VND)</label>
+            <label className="admin-form__label" htmlFor="product-price">Giá (VND)</label>
             <input
               className="admin-input"
+              id="product-price"
               type="number"
               min="0"
               step="1000"
@@ -303,9 +357,10 @@ export default function AdminProductsPage() {
           </div>
 
           <div className="admin-form__group">
-            <label className="admin-form__label">Tồn kho</label>
+            <label className="admin-form__label" htmlFor="product-stock">Tồn kho</label>
             <input
               className="admin-input"
+              id="product-stock"
               type="number"
               min="0"
               step="1"
@@ -315,9 +370,10 @@ export default function AdminProductsPage() {
           </div>
 
           <div className="admin-form__group">
-            <label className="admin-form__label">Ảnh (URL)</label>
+            <label className="admin-form__label" htmlFor="product-image">Ảnh (URL)</label>
             <input
               className="admin-input"
+              id="product-image"
               value={formValues.image}
               onChange={(e) => handleInputChange('image', e.target.value)}
               placeholder="https://example.com/image.jpg"
@@ -325,9 +381,104 @@ export default function AdminProductsPage() {
           </div>
 
           <div className="admin-form__group">
-            <label className="admin-form__label">Mô tả</label>
+            <label className="admin-form__label" htmlFor="product-image-gallery">Bộ sưu tập ảnh (mỗi dòng 1 URL)</label>
             <textarea
               className="admin-textarea"
+              id="product-image-gallery"
+              value={formValues.imageGallery}
+              onChange={(e) => handleInputChange('imageGallery', e.target.value)}
+              rows={3}
+            />
+          </div>
+
+          <div className="admin-grid admin-grid--two-columns" style={{ gap: 16 }}>
+            <div className="admin-form__group">
+              <label className="admin-form__label" htmlFor="product-brand">Thương hiệu</label>
+              <input
+                className="admin-input"
+                id="product-brand"
+                value={formValues.brand}
+                onChange={(e) => handleInputChange('brand', e.target.value)}
+                placeholder="Thương hiệu (nếu có)"
+              />
+            </div>
+            <div className="admin-form__group">
+              <label className="admin-form__label" htmlFor="product-product-id">Mã sản phẩm (product_id)</label>
+              <input
+                className="admin-input"
+                id="product-product-id"
+                type="number"
+                min="1"
+                step="1"
+                value={formValues.productId}
+                onChange={(e) => handleInputChange('productId', e.target.value)}
+                placeholder="VD: 1"
+                required
+              />
+            </div>
+          </div>
+
+          <div className="admin-form__group">
+            <label className="admin-form__label" htmlFor="product-legacy-id">Mã sản phẩm (legacy)</label>
+            <input
+              className="admin-input"
+              id="product-legacy-id"
+              value={formValues.legacyId}
+              onChange={(e) => handleInputChange('legacyId', e.target.value)}
+              placeholder="VD: 101"
+            />
+          </div>
+
+          <div className="admin-grid admin-grid--three-columns" style={{ gap: 16 }}>
+            <div className="admin-form__group">
+              <label className="admin-form__label" htmlFor="product-sold-count">Đã bán</label>
+              <input
+                className="admin-input"
+                id="product-sold-count"
+                type="number"
+                min="0"
+                step="1"
+                value={formValues.soldCount}
+                onChange={(e) => handleInputChange('soldCount', e.target.value)}
+                readOnly
+                disabled
+              />
+            </div>
+            <div className="admin-form__group">
+              <label className="admin-form__label" htmlFor="product-average-rating">Điểm đánh giá (tự động)</label>
+              <input
+                className="admin-input"
+                id="product-average-rating"
+                value={
+                  currentEditingProduct
+                    ? (() => {
+                        const averageValue =
+                          currentEditingProduct.averageRating ?? currentEditingProduct.rating;
+                        return averageValue != null ? Number(averageValue).toFixed(1) : '0';
+                      })()
+                    : '0'
+                }
+                readOnly
+                disabled
+              />
+            </div>
+            <div className="admin-form__group">
+              <label className="admin-form__label" htmlFor="product-review-count">Số lượt đánh giá (tự động)</label>
+              <input
+                className="admin-input"
+                id="product-review-count"
+                value={currentEditingProduct ? String(currentEditingProduct.reviewCount ?? currentEditingProduct.reviews ?? 0) : '0'}
+                readOnly
+                disabled
+              />
+            </div>
+          </div>
+
+          <div className="admin-form__group">
+            <label className="admin-form__label" htmlFor="product-description">Mô tả</label>
+            <textarea
+              className="admin-textarea"
+              id="product-description"
               value={formValues.description}
               onChange={(e) => handleInputChange('description', e.target.value)}
               required
@@ -360,8 +511,10 @@ export default function AdminProductsPage() {
               <tr>
                 <th>Sản phẩm</th>
                 <th>Danh mục</th>
+                <th>Thương hiệu</th>
                 <th>Giá bán</th>
                 <th>Tồn kho</th>
+                <th>Đánh giá</th>
                 <th>Ngày cập nhật</th>
                 <th></th>
               </tr>
@@ -369,7 +522,7 @@ export default function AdminProductsPage() {
             <tbody>
               {products.length === 0 && !loading ? (
                 <tr>
-                  <td colSpan={6} className="admin-empty">
+                  <td colSpan={8} className="admin-empty">
                     Chưa có sản phẩm nào.
                   </td>
                 </tr>
@@ -380,9 +533,13 @@ export default function AdminProductsPage() {
                       <strong>{product.name}</strong>
                       <div className="admin-muted" style={{ fontSize: 12, marginTop: 2 }}>
                         {product.description?.slice(0, 60) || '—'}
+                        {product.soldCount != null && (
+                          <span> • Đã bán {product.soldCount}</span>
+                        )}
                       </div>
                     </td>
                     <td>{product.categoryName || product.displayCategory || product.category || 'Không rõ'}</td>
+                    <td>{product.brand || '—'}</td>
                     <td>
                       {new Intl.NumberFormat('vi-VN', {
                         style: 'currency',
@@ -390,6 +547,18 @@ export default function AdminProductsPage() {
                       }).format(product.price || 0)}
                     </td>
                     <td>{product.stock ?? '—'}</td>
+                    <td>
+                      {product.averageRating != null || product.rating != null ? (
+                        <>
+                          {Number(product.averageRating ?? product.rating ?? 0).toFixed(1)} ★
+                          <div className="admin-muted" style={{ fontSize: 12 }}>
+                            {product.reviewCount ?? product.reviews ?? 0} lượt
+                          </div>
+                        </>
+                      ) : (
+                        <span className="admin-muted">—</span>
+                      )}
+                    </td>
                     <td className="admin-muted">
                       {product.updatedAt ? new Date(product.updatedAt).toLocaleString('vi-VN') : '—'}
                     </td>

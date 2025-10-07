@@ -16,22 +16,41 @@ type DimensionsType {
   depth: Float!
 }
 
+type ReviewType {
+  reviewId: Int!
+  star: Float!
+  reviewerName: String!
+  content: String!
+  time: String
+  variation: String
+  likedCount: Int
+  images: [String!]
+  shopReply: String
+}
+
 type ProductType {
   id: String!
   slug: String
   name: String!
   description: String
   price: Float!
+  productId: Int
   category: String
   categoryId: String
   categoryName: String
   image: String
-  stock: Float
+  images: [String!]
+  stock: Int
   rating: Float
-  reviews: Float
+  averageRating: Float
+  reviewCount: Int
+  reviews: [ReviewType!]
   features: [String!]
   dimensions: DimensionsType
   weight: Float
+  brand: String
+  soldCount: Int
+  legacyId: Int
   createdAt: String
   updatedAt: String
   displayCategory: String
@@ -157,8 +176,26 @@ input ProductInput {
   description: String!
   price: Float!
   category: String!
+  productId: Int
   image: String
-  stock: Float
+  stock: Int
+  brand: String
+  soldCount: Int
+  averageRating: Float
+  numReviews: Int
+  images: [String!]
+  displayCategory: String
+  slug: String
+  legacyId: Int
+  features: [String!]
+  weight: Float
+  dimensions: DimensionsInput
+}
+
+input DimensionsInput {
+  width: Float
+  height: Float
+  depth: Float
 }
 
 input CategoryInput {

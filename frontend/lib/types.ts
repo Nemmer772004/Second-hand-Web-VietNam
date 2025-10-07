@@ -1,21 +1,40 @@
 // Common Product interface for backend data
+export interface ProductReview {
+  reviewId: number;
+  star: number;
+  reviewerName: string;
+  content: string;
+  time?: string;
+  variation?: string;
+  likedCount?: number;
+  images?: string[];
+  shopReply?: string | null;
+}
+
 export interface Product {
   id: string;
   slug?: string;
   name: string;
-  description: string;
+  description?: string;
   price: number;
-  category: string;
+  productId?: number;
+  category?: string;
   displayCategory?: string;
-  image: string;
-  stock: number;
-  rating: number;
-  reviews: number;
-  features: string[];
-  dimensions: { width: number; height: number; depth: number };
-  weight: number;
-  createdAt: string;
-  updatedAt: string;
+  image?: string;
+  images?: string[];
+  brand?: string;
+  soldCount?: number;
+  legacyId?: number;
+  stock?: number;
+  rating?: number;
+  averageRating?: number;
+  reviewCount?: number;
+  reviews?: ProductReview[];
+  features?: string[];
+  dimensions?: { width?: number; height?: number; depth?: number } | null;
+  weight?: number;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 // Category interface

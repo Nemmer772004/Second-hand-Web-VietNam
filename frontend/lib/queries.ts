@@ -9,12 +9,18 @@ export const GET_PRODUCTS = gql`
       name
       description
       price
+      productId
       category
       displayCategory
       image
+      images
+      brand
+      soldCount
+      legacyId
       stock
       rating
-      reviews
+      averageRating
+      reviewCount
       features
       dimensions {
         width
@@ -36,12 +42,29 @@ export const GET_PRODUCT_BY_ID = gql`
       name
       description
       price
+      productId
       category
       displayCategory
       image
+      images
+      brand
+      soldCount
+      legacyId
       stock
       rating
-      reviews
+      averageRating
+      reviewCount
+      reviews {
+        reviewId
+        star
+        reviewerName
+        content
+        time
+        variation
+        likedCount
+        images
+        shopReply
+      }
       features
       dimensions {
         width
@@ -63,11 +86,17 @@ export const GET_PRODUCTS_BY_CATEGORY = gql`
       name
       description
       price
+      productId
       category
       image
+      images
+      brand
+      soldCount
+      legacyId
       stock
       rating
-      reviews
+      averageRating
+      reviewCount
       features
       dimensions {
         width

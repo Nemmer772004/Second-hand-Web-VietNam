@@ -16,11 +16,15 @@ export class ProductMessageController {
     return this.productService.findOne(data.id);
   }
 
+  @MessagePattern('get_product_by_product_id')
+  async getProductByProductId(@Payload() data: { productId: number }) {
+    return this.productService.findByProductId(Number(data.productId));
+  }
+
   @MessagePattern('get_products_by_category')
   async getProductsByCategory(@Payload() data: { category: string }) {
     const all = await this.productService.findAll();
     return all.filter((p: any) => p.category === data.category);
   }
 }
-
 
