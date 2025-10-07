@@ -1,30 +1,30 @@
 import Image from 'next/image';
-import { Building, Users, Recycle, TrendingUp } from 'lucide-react';
+import { Building, Users, Cpu, TrendingUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 
 export default function AboutPage() {
   const timelineEvents = [
-    { year: 2010, event: 'Thành lập với một cửa hàng nhỏ, tập trung thu mua đồ cũ từ các hộ gia đình.' },
-    { year: 2015, event: 'Mở rộng sang lĩnh vực thu mua thiết bị nhà hàng, văn phòng. Khai trương kho hàng đầu tiên tại Hoài Đức.' },
-    { year: 2018, event: 'Trở thành đối tác thanh lý cho nhiều chuỗi nhà hàng lớn tại Hà Nội, khẳng định uy tín.' },
-    { year: 2021, event: 'Ra mắt website, đưa hoạt động kinh doanh lên nền tảng online, tiếp cận nhiều khách hàng hơn.' },
-    { year: 2024, event: 'Kỷ niệm hơn 10 năm phát triển, với 2 chi nhánh và đội ngũ chuyên nghiệp, trở thành một trong những đơn vị hàng đầu trong ngành.' },
+    { year: 2018, event: 'NovaMarket ra mắt với mục tiêu kết nối người mua và nhà bán qua nền tảng thương mại điện tử toàn diện.' },
+    { year: 2020, event: 'Đạt mốc 1 triệu đơn hàng, triển khai ví NovaPay và dịch vụ giao nhanh 2 giờ tại Hà Nội & TP.HCM.' },
+    { year: 2022, event: 'Khánh thành trung tâm NovaFulfillment 20.000m², tích hợp quản lý kho và vận chuyển đa kênh.' },
+    { year: 2023, event: 'Ra mắt hệ sinh thái marketing automation, hỗ trợ nhà bán tăng trưởng doanh thu gấp 3 lần.' },
+    { year: 2024, event: 'Mở rộng cộng đồng lên 5 triệu khách hàng, 50.000 nhà bán và tiếp tục đầu tư vào trải nghiệm cá nhân hóa.' },
   ];
 
   const coreValues = [
-    { icon: <TrendingUp className="h-10 w-10 text-primary" />, title: 'Giá Tốt Nhất', description: 'Chúng tôi cam kết định giá sản phẩm cao và minh bạch, đảm bảo lợi ích cho khách hàng.' },
-    { icon: <Recycle className="h-10 w-10 text-primary" />, title: 'Bền Vững & Tái Chế', description: 'Mỗi sản phẩm được thu mua là một đóng góp vào việc bảo vệ môi trường và vòng đời kinh tế.' },
-    { icon: <Users className="h-10 w-10 text-primary" />, title: 'Chuyên Nghiệp & Nhanh Chóng', description: 'Quy trình thu mua nhanh gọn, đội ngũ tận tâm, hỗ trợ khách hàng từ A-Z.' },
+    { icon: <Users className="h-10 w-10 text-primary" />, title: 'Khách hàng là trọng tâm', description: 'Mọi tính năng đều hướng đến trải nghiệm mua sắm mượt mà và dịch vụ chăm sóc tận tâm.' },
+    { icon: <Cpu className="h-10 w-10 text-primary" />, title: 'Công nghệ thông minh', description: 'Hạ tầng dữ liệu và AI giúp tự động hóa vận hành, cá nhân hóa sản phẩm và dự báo nhu cầu.' },
+    { icon: <TrendingUp className="h-10 w-10 text-primary" />, title: 'Tăng trưởng bền vững', description: 'Hợp tác chặt chẽ với đối tác logistics và nhà bán để xây dựng hệ sinh thái phát triển dài hạn.' },
   ];
 
   return (
     <div className="flex flex-col gap-16 sm:gap-24 md:gap-32 py-12">
       <section className="container mx-auto px-4">
         <div className="text-center max-w-4xl mx-auto">
-          <h1 className="font-headline text-4xl md:text-5xl font-bold">Thu Mua Nhanh Gọn - Thanh Lý Dễ Dàng</h1>
+          <h1 className="font-headline text-4xl md:text-5xl font-bold">NovaMarket – Nền tảng thương mại điện tử toàn diện</h1>
           <p className="mt-4 text-lg text-muted-foreground">
-            Từ năm 2010, Đồ Cũ Bảo Anh đã là cầu nối uy tín giữa người cần thanh lý và người tìm kiếm sản phẩm chất lượng với giá phải chăng. Chúng tôi tin rằng mọi món đồ cũ đều có giá trị và xứng đáng có một cuộc đời mới.
+            Chúng tôi xây dựng môi trường mua sắm thông minh nơi khách hàng tìm thấy sản phẩm yêu thích, nhà bán tăng trưởng bền vững và mọi giao dịch đều được vận hành bởi công nghệ hiện đại.
           </p>
         </div>
       </section>
@@ -71,26 +71,26 @@ export default function AboutPage() {
       <section className="container mx-auto px-4">
         <div className="grid md:grid-cols-2 gap-12 items-center">
           <div>
-            <h2 className="font-headline text-3xl md:text-4xl font-bold">Kho Bãi & Đội Ngũ</h2>
+            <h2 className="font-headline text-3xl md:text-4xl font-bold">Hệ sinh thái NovaFulfillment</h2>
             <p className="mt-4 text-muted-foreground">
-              Kho hàng rộng lớn của chúng tôi tại Hoài Đức là trung tâm xử lý, phân loại và tân trang sản phẩm. Với đội ngũ nhân viên thu mua và kỹ thuật viên lành nghề, chúng tôi đảm bảo mọi sản phẩm bán ra đều được kiểm tra chất lượng. Chúng tôi tự hào là đối tác tin cậy của hàng trăm nhà hàng và doanh nghiệp trên toàn quốc.
+              Trung tâm fulfillment của chúng tôi được trang bị hệ thống quản lý kho tự động, đóng gói tiêu chuẩn và mạng lưới vận chuyển đối tác toàn quốc. Đội ngũ chuyên gia dữ liệu, marketing và chăm sóc khách hàng đồng hành cùng nhà bán để bứt phá doanh thu trên mọi kênh.
             </p>
             <div className="mt-8 flex gap-4">
               <Button asChild size="lg">
                 <Link href="/contact">Liên Hệ</Link>
               </Button>
               <Button asChild size="lg" variant="outline">
-                <Link href="/services/thu-mua">Yêu Cầu Thu Mua</Link>
+                <Link href="/seller">Đăng ký trở thành nhà bán</Link>
               </Button>
             </div>
           </div>
           <div className="relative h-96 w-full rounded-lg overflow-hidden shadow-lg">
             <Image 
-              src="https://picsum.photos/seed/factory/800/600" 
-              alt="Kho hàng đồ cũ Thiên Tiến" 
+              src="https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=1000&q=80" 
+              alt="Trung tâm logistics của NovaMarket" 
               fill 
               className="object-cover"
-              data-ai-hint="second-hand warehouse"
+              data-ai-hint="modern ecommerce logistics center"
             />
           </div>
         </div>

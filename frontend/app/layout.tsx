@@ -10,8 +10,8 @@ import { ApolloWrapper } from '../components/providers/apollo-provider';
 import FloatingSupportButtons from '../components/support/floating-support';
 
 export const metadata: Metadata = {
-  title: 'Đồ Cũ Bảo Anh - Mua Bán Đồ Cũ Giá Tốt',
-  description: 'Chuyên thu mua và thanh lý đồ cũ, thiết bị nhà hàng, điện lạnh, văn phòng tại Hà Nội. Giá cao, uy tín, chuyên nghiệp.',
+  title: 'NovaMarket - Sàn Thương Mại Điện Tử Đa Ngành',
+  description: 'NovaMarket mang đến trải nghiệm mua sắm trực tuyến hiện đại với hàng ngàn sản phẩm chính hãng, ưu đãi độc quyền và dịch vụ hậu mãi tận tâm.',
 };
 
 export default function RootLayout({

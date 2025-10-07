@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useState, useContext, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import {
-  Sofa,
+  ShoppingBag,
   Search,
   Heart,
   ShoppingCart,
@@ -34,14 +34,14 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { useQuery } from "@apollo/client";
 import { cn } from "@/lib/utils";
-import { GET_CATEGORIES } from "@/lib/queries";
-import type { Category } from "@/lib/types";
 import Image from "next/image";
 import { CartContext } from "@/context/cart-context";
 import { Badge } from "@/components/ui/badge";
 import { useWishlist } from "@/context/wishlist-context";
+import { useQuery } from "@apollo/client";
+import { GET_CATEGORIES } from "@/lib/queries";
+import type { Category } from "@/lib/types";
 
 const SiteHeader = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -50,26 +50,45 @@ const SiteHeader = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const router = useRouter();
 
-  const { data: categoriesData } = useQuery(GET_CATEGORIES);
-  const categories: Category[] = React.useMemo(
-    () => (Array.isArray(categoriesData?.categories) ? categoriesData.categories : []),
-    [categoriesData?.categories]
+  const FALLBACK_CATEGORIES = React.useMemo(
+    () => [
+      { key: "dien-tu", href: "/products?category=dien-tu", label: "Điện tử & Công nghệ" },
+      { key: "gia-dung", href: "/products?category=gia-dung", label: "Gia dụng thông minh" },
+      { key: "thoi-trang", href: "/products?category=thoi-trang", label: "Thời trang & Phụ kiện" },
+      { key: "lam-dep", href: "/products?category=suc-khoe-lam-dep", label: "Sức khỏe & Làm đẹp" },
+    ],
+    []
   );
+
+  const { data: categoriesData, error: categoriesError } = useQuery(GET_CATEGORIES, {
+    fetchPolicy: "cache-first",
+    nextFetchPolicy: "cache-first",
+  });
+
+  const categories: Category[] = React.useMemo(() => {
+    if (categoriesError || !Array.isArray(categoriesData?.categories)) {
+      return [];
+    }
+    return categoriesData?.categories as Category[];
+  }, [categoriesData?.categories, categoriesError]);
 
   const categoryMenuItems = React.useMemo(
     () =>
-      categories
-        .map((category) => {
-          const key = (category.id ?? category.name ?? "").toString();
-          if (!key) {
-            return null;
-          }
-          const href = `/products?category=${encodeURIComponent(key)}`;
-          const label = category.name ?? category.id ?? "Danh mục";
-          return { key, href, label };
-        })
-        .filter((item): item is { key: string; href: string; label: string } => item !== null),
-    [categories]
+      categories.length
+        ? categories
+            .map((category) => {
+              const rawKey = (category.id ?? category.name ?? "").toString();
+              const key = rawKey.trim();
+              if (!key) {
+                return null;
+              }
+              const href = `/products?category=${encodeURIComponent(key)}`;
+              const label = category.name ?? category.id ?? "Danh mục";
+              return { key, href, label };
+            })
+            .filter((item): item is { key: string; href: string; label: string } => item !== null)
+        : FALLBACK_CATEGORIES,
+    [categories, FALLBACK_CATEGORIES]
   );
 
   const handleSearch = (e: FormEvent) => {
@@ -80,15 +99,21 @@ const SiteHeader = () => {
 
   const menuItems = [
     {
-      name: "Dịch Vụ",
+      name: "Ưu Đãi",
       subItems: [
-        { name: "Thu Mua Đồ Cũ", href: "/services/thu-mua" },
-        { name: "Setup Nhà Hàng", href: "/services/setup-nha-hang" },
+        { name: "Flash Sale", href: "/promotions/flash-sale" },
+        { name: "Voucher Độc Quyền", href: "/promotions/voucher" },
       ],
     },
-    { name: "Cảm Hứng", href: "/inspiration" },
-    { name: "Về Chúng Tôi", href: "/about" },
-    { name: "Liên Hệ", href: "/contact" },
+    {
+      name: "Bộ Sưu Tập",
+      subItems: [
+        { name: "Hàng Mới Về", href: "/collections/new-arrivals" },
+        { name: "Xu Hướng 2024", href: "/collections/trending" },
+      ],
+    },
+    { name: "Blog", href: "/blog" },
+    { name: "Hỗ Trợ", href: "/support" },
   ];
 
   return (
@@ -114,9 +139,9 @@ const SiteHeader = () => {
 
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 mr-4 lg:mr-8">
-            <Sofa className="h-7 w-7 text-primary" />
+            <ShoppingBag className="h-7 w-7 text-primary" />
             <span className="font-headline text-2xl font-bold hidden sm:inline-block">
-              Đồ Cũ
+              NovaMarket
             </span>
           </Link>
 
@@ -131,17 +156,13 @@ const SiteHeader = () => {
                       <h3 className="font-headline text-lg mb-2">
                         Mua sắm theo danh mục
                       </h3>
-                      {categoryMenuItems.length === 0 ? (
-                        <span className="text-sm text-muted-foreground">Chưa có danh mục</span>
-                      ) : (
-                        categoryMenuItems.map((category) => (
+                      {categoryMenuItems.map((category) => (
                           <ListItem
                           key={category.key}
                           href={category.href}
                           title={category.label}
                         />
-                        ))
-                      )}
+                        ))}
                       <Link
                         href="/products"
                         className="p-2 mt-2 rounded-md bg-secondary text-secondary-foreground font-medium block text-sm"
@@ -151,16 +172,16 @@ const SiteHeader = () => {
                     </li>
                     <li className="col-span-2 relative h-full w-full overflow-hidden rounded-md">
                       <Image
-                        src="https://picsum.photos/seed/nav/600/400"
-                        alt="Thiết bị nhà hàng cũ"
+                        src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=900&q=80"
+                        alt="Gian hàng thương mại điện tử hiện đại"
                         fill
                         className="object-cover"
-                        data-ai-hint="used restaurant equipment"
+                        data-ai-hint="modern ecommerce showcase"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                       <div className="absolute bottom-4 left-4 text-primary-foreground">
-                        <h4 className="font-bold">Hàng Mới Về</h4>
-                        <p className="text-sm">Tủ lạnh công nghiệp, bếp á...</p>
+                        <h4 className="font-bold">Siêu Sale Cuối Tuần</h4>
+                        <p className="text-sm">Miễn phí vận chuyển & voucher đến 500K</p>
                       </div>
                     </li>
                   </ul>
@@ -200,8 +221,8 @@ const SiteHeader = () => {
           <div className="flex flex-1 items-center justify-end gap-2">
             <div className="hidden lg:flex items-center gap-2">
               <Phone className="h-5 w-5 text-primary" />
-              <a href="tel:0984115339" className="font-bold text-sm">
-                0984115339
+              <a href="tel:19001234" className="font-bold text-sm">
+                1900 1234
               </a>
             </div>
 
@@ -223,7 +244,7 @@ const SiteHeader = () => {
                 <form onSubmit={handleSearch} className="flex relative w-full">
                   <Input
                     type="search"
-                    placeholder="Tìm tủ lạnh cũ, bàn ghế nhà hàng..."
+                    placeholder="Tìm điện thoại, máy giặt, voucher..."
                     className="pr-10 h-12"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
@@ -245,7 +266,7 @@ const SiteHeader = () => {
             >
               <Input
                 type="search"
-                placeholder="Tìm tủ lạnh cũ, bàn ghế..."
+                placeholder="Tìm sản phẩm bạn yêu thích..."
                 className="pr-10"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -253,6 +274,7 @@ const SiteHeader = () => {
               <button
                 type="submit"
                 className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground"
+                aria-label="Thực hiện tìm kiếm"
               >
                 <Search className="h-full w-full" />
               </button>
@@ -311,8 +333,8 @@ const MobileNav = ({
     <div className="flex flex-col h-full">
       <div className="flex items-center justify-between p-4 border-b">
         <Link href="/" className="flex items-center gap-2" onClick={closeMenu}>
-          <Sofa className="h-7 w-7 text-primary" />
-          <span className="font-headline text-xl font-bold">Đồ Cũ</span>
+          <ShoppingBag className="h-7 w-7 text-primary" />
+          <span className="font-headline text-xl font-bold">NovaMarket</span>
         </Link>
         <Button variant="ghost" size="icon" onClick={closeMenu}>
           <X className="h-6 w-6" />
@@ -392,7 +414,7 @@ const MobileNav = ({
       <div className="p-4 border-t">
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <Phone className="h-4 w-4" />
-          <span>Hotline: 0984115339</span>
+          <span>Hotline: 1900 1234</span>
         </div>
       </div>
     </div>

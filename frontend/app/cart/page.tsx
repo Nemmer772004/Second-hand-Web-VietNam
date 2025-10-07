@@ -177,8 +177,14 @@ export default function CartPage() {
                       />
                     </div>
                     <div>
-                      <h3 className="font-medium mb-2">Phương thức thanh toán</h3>
+                      <label
+                        htmlFor="payment-method"
+                        className="block font-medium mb-2"
+                      >
+                        Phương thức thanh toán
+                      </label>
                       <select
+                        id="payment-method"
                         className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         value={paymentMethod}
                         onChange={(e) => setPaymentMethod(e.target.value as 'paid_online' | 'cod')}

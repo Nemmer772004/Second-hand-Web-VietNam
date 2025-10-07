@@ -12,7 +12,7 @@ type ChatMessage = {
   content: string;
 };
 
-const zaloUrl = 'https://zalo.me/0984115339';
+const zaloUrl = 'https://zalo.me/19001234';
 const facebookUrl = 'https://www.facebook.com/profile.php?id=61569785816152';
 
 const BOT_PRESETS: Record<string, string> = {

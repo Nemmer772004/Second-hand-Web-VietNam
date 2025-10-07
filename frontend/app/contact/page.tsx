@@ -45,7 +45,7 @@ export default function ContactPage() {
       <div className="text-center max-w-3xl mx-auto mb-12">
         <h1 className="font-headline text-4xl md:text-5xl font-bold">Liên Hệ</h1>
         <p className="mt-4 text-lg text-muted-foreground">
-          Bạn có câu hỏi hoặc cần hỗ trợ? Đội ngũ của chúng tôi luôn sẵn lòng giúp đỡ. Hãy liên hệ với chúng tôi qua biểu mẫu dưới đây, email, điện thoại hoặc ghé thăm phòng trưng bày của chúng tôi.
+          NovaMarket luôn sẵn sàng đồng hành cùng bạn 24/7. Vui lòng liên hệ qua biểu mẫu, email, hotline hoặc ghé trung tâm dịch vụ khách hàng để được hỗ trợ nhanh nhất.
         </p>
       </div>
 
@@ -88,7 +88,7 @@ export default function ContactPage() {
                   <FormItem>
                     <FormLabel>Chủ đề</FormLabel>
                     <FormControl>
-                      <Input placeholder="Yêu cầu về Sofa Nhung Mơ Mộng" {...field} />
+                      <Input placeholder="Ví dụ: Hỗ trợ đơn Flash Sale, kích hoạt voucher" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -101,7 +101,7 @@ export default function ContactPage() {
                   <FormItem>
                     <FormLabel>Nội dung</FormLabel>
                     <FormControl>
-                      <Textarea placeholder="Hãy cho chúng tôi biết chúng tôi có thể giúp gì cho bạn..." className="min-h-[150px]" {...field} />
+                      <Textarea placeholder="Mô tả vấn đề hoặc nhu cầu của bạn, NovaMarket sẽ phản hồi trong vòng 2 giờ làm việc." className="min-h-[150px]" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -117,26 +117,26 @@ export default function ContactPage() {
         <div className="space-y-8">
             <h2 className="font-headline text-2xl font-bold">Thông Tin Liên Hệ</h2>
             <div className="space-y-4">
-                <Link href="mailto:haitien2709@gmail.com" className="flex items-center gap-4 group">
+                <Link href="mailto:support@novamarket.vn" className="flex items-center gap-4 group">
                     <Mail className="h-6 w-6 text-primary" />
-                    <span className="text-muted-foreground group-hover:text-primary">haitien2709@gmail.com</span>
+                    <span className="text-muted-foreground group-hover:text-primary">support@novamarket.vn</span>
                 </Link>
-                <Link href="tel:0984115339" className="flex items-center gap-4 group">
+                <Link href="tel:19001234" className="flex items-center gap-4 group">
                     <Phone className="h-6 w-6 text-primary" />
-                    <span className="text-muted-foreground group-hover:text-primary">0984115339</span>
+                    <span className="text-muted-foreground group-hover:text-primary">1900 1234</span>
                 </Link>
                 <div className="flex items-start gap-4">
                     <MapPin className="h-6 w-6 text-primary mt-1" />
                     <p className="text-muted-foreground">
-                        Số 150 Ngõ 1277 Giải Phóng<br />
-                        Hoàng Mai, Hà Nội<br />
+                        Tầng 12, NovaMall Tower<br />
+                        35 Nguyễn Huệ, Quận 1, TP.HCM<br />
                         Việt Nam
                     </p>
                 </div>
             </div>
             <div>
               <iframe
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3725.399516641571!2d105.84369417594043!3d20.97693528066224!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3135ac5dfa705a39%3A0x8d3132e407f35319!2zMTIzMiDEkC4gR2nhuqNpIFBow7NuZywgSG_DoG5nIE1haSwgSMOgIE7hu5lpLCBWaeG7h3QgTmFt!5e0!3m2!1svi!2s!4v1719213898090!5m2!1svi!2s"
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3919.493935640602!2d106.69940967642088!3d10.773374959221112!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31752f3d9f6fa5c1%3A0xf7b8f10c1d0d70bd!2sNguyen%20Hue%20Walking%20Street!5e0!3m2!1svi!2s!4v1725690000000!5m2!1svi!2s"
                 width="100%"
                 height="250"
                 style={{ border: 0 }}

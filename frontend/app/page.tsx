@@ -72,8 +72,8 @@ export default function Home() {
 
       <section aria-labelledby="featured-products-heading" className="container mx-auto px-4">
         <div className="text-center">
-          <h2 id="featured-products-heading" className="font-headline text-3xl md:text-4xl font-bold">Sản Phẩm Đồ Cũ Nổi Bật</h2>
-          <p className="mt-2 text-lg text-muted-foreground">Khám phá các sản phẩm đã qua sử dụng, được kiểm tra kỹ lưỡng với giá tốt nhất.</p>
+          <h2 id="featured-products-heading" className="font-headline text-3xl md:text-4xl font-bold">Sản Phẩm Nổi Bật Hôm Nay</h2>
+          <p className="mt-2 text-lg text-muted-foreground">Săn deal chính hãng từ các thương hiệu yêu thích, giá sốc mỗi ngày và ưu đãi vận chuyển siêu tốc.</p>
           <Button 
             variant="outline" 
             size="sm" 
@@ -103,21 +103,21 @@ export default function Home() {
         )}
         <div className="mt-12 text-center">
           <Button asChild size="lg" variant="outline">
-            <Link href="/products">Xem Tất Cả Sản Phẩm</Link>
+            <Link href="/products">Khám phá toàn bộ danh mục</Link>
           </Button>
         </div>
       </section>
-      
-      <section aria-labelledby="brand-intro-heading" className="relative h-[500px] bg-fixed bg-cover bg-center" style={{backgroundImage: "url('https://picsum.photos/seed/brandintro/1920/1080')"}} data-ai-hint="second-hand warehouse">
+
+      <section aria-labelledby="brand-intro-heading" className="relative h-[500px] bg-fixed bg-cover bg-center" style={{backgroundImage: "url('https://images.unsplash.com/photo-1483478550801-ceba5fe50e8e?auto=format&fit=crop&w=1920&q=80')"}} data-ai-hint="modern ecommerce logistics warehouse">
         <div className="absolute inset-0 bg-secondary/80" />
         <div className="relative h-full flex items-center justify-center">
           <div className="text-center p-8 max-w-3xl bg-background/90 rounded-lg shadow-xl mx-4">
-            <h2 id="brand-intro-heading" className="font-headline text-3xl md:text-4xl font-bold">Hơn 10 Năm Kinh Nghiệm</h2>
+            <h2 id="brand-intro-heading" className="font-headline text-3xl md:text-4xl font-bold">NovaMarket – Nơi Mua Sắm Bắt Đầu</h2>
             <p className="mt-4 text-lg text-muted-foreground">
-              Với hơn một thập kỷ trong ngành, chúng tôi tự hào là đơn vị thu mua và thanh lý đồ cũ uy tín tại Hà Nội. Cam kết của chúng tôi về giá cả minh bạch, chất lượng và tái sử dụng vì môi trường là trọng tâm của mọi hoạt động.
+              Chúng tôi kết nối hàng triệu người mua và nhà bán qua nền tảng thương mại điện tử toàn diện: quản lý kho, thanh toán, vận chuyển và chiến dịch marketing chỉ trong một bảng điều khiển duy nhất.
             </p>
             <Button asChild size="lg" className="mt-6">
-              <Link href="/about">Tìm Hiểu Thêm</Link>
+              <Link href="/seller">Gia nhập nhà bán NovaMarket</Link>
             </Button>
           </div>
         </div>
@@ -125,8 +125,8 @@ export default function Home() {
 
       <section aria-labelledby="inspiration-heading" className="container mx-auto px-4">
         <div className="text-center">
-          <h2 id="inspiration-heading" className="font-headline text-3xl md:text-4xl font-bold">Góc Cảm Hứng</h2>
-          <p className="mt-2 text-lg text-muted-foreground">Ý tưởng setup nhà hàng, quán ăn từ những món đồ cũ chất lượng.</p>
+          <h2 id="inspiration-heading" className="font-headline text-3xl md:text-4xl font-bold">Cảm Hứng Mua Sắm</h2>
+          <p className="mt-2 text-lg text-muted-foreground">Bộ sưu tập gợi ý được tuyển chọn bởi NovaMarket dành cho mọi phong cách sống.</p>
         </div>
         <Carousel
           opts={{
@@ -161,8 +161,8 @@ export default function Home() {
 
       <section aria-labelledby="newsletter-heading" className="bg-secondary">
         <div className="container mx-auto px-4 py-16 text-center">
-           <h2 id="newsletter-heading" className="font-headline text-3xl font-bold">Đừng Bỏ Lỡ Hàng Tốt</h2>
-           <p className="mt-2 text-lg text-muted-foreground">Đăng ký để nhận thông tin về các sản phẩm mới về và chương trình khuyến mãi đặc biệt.</p>
+           <h2 id="newsletter-heading" className="font-headline text-3xl font-bold">Kết nối cùng NovaMarket</h2>
+           <p className="mt-2 text-lg text-muted-foreground">Nhận ngay tin mới về flash sale, voucher độc quyền và xu hướng mua sắm mới nhất.</p>
            <form className="mt-6 max-w-md mx-auto flex gap-2">
             <div className="relative flex-grow">
               <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />

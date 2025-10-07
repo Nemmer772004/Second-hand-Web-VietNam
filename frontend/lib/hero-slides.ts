@@ -1,29 +1,29 @@
 export const heroSlides = [
   {
-    title: "Thu Mua Đồ Cũ Giá Cao",
-    subtitle: "Thanh lý đồ cũ, thiết bị nhà hàng, điện lạnh với giá tốt nhất thị trường. Tiết kiệm đến 50% khi mua đồ đã qua sử dụng!",
-    image: "/images/hero/snow-mountain.jpg",
-    alt: "Phong cảnh núi tuyết hùng vĩ",
-    link: "/services/thu-mua",
-    cta: "Yêu Cầu Thu Mua Ngay",
-    hint: "snow mountain landscape with dramatic lighting"
+    title: "Mega Sale 10.10",
+    subtitle: "Săn deal đỉnh lên tới 70%, miễn phí vận chuyển toàn quốc và hoàn tiền tới 15% khi thanh toán bằng NovaPay.",
+    image: "https://images.unsplash.com/photo-1545239351-1141bd82e8a6?auto=format&fit=crop&w=1920&q=80",
+    alt: "Khung cảnh mua sắm trực tuyến sôi động với nhiều màu sắc",
+    link: "/promotions/mega-sale",
+    cta: "Khám phá ưu đãi",
+    hint: "vibrant ecommerce sale banner"
   },
   {
-    title: "Setup Nhà Hàng Trọn Gói",
-    subtitle: "Dịch vụ setup nhà hàng, quán ăn từ A-Z với chi phí tối ưu. Tư vấn miễn phí, báo giá nhanh chóng.",
-    image: "/images/hero/restaurant.jpg",
-    alt: "Không gian nhà hàng sang trọng",
-    link: "/services/setup-nha-hang",
-    cta: "Tư Vấn Miễn Phí",
-    hint: "modern restaurant interior with ambient lighting"
+    title: "Hàng Mới Về Mỗi Ngày",
+    subtitle: "Cập nhật xu hướng thời trang, công nghệ và lifestyle mới nhất chỉ trong một cú nhấp chuột.",
+    image: "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=1920&q=80",
+    alt: "Người trẻ mua sắm online trên điện thoại",
+    link: "/collections/new-arrivals",
+    cta: "Mua ngay",
+    hint: "young shoppers browsing mobile shopping app"
   },
   {
-    title: "Tư Vấn Thiết Kế",
-    subtitle: "Đội ngũ chuyên gia với hơn 10 năm kinh nghiệm sẽ giúp bạn tạo nên không gian kinh doanh độc đáo và tiết kiệm.",
-    image: "/images/hero/design.jpg",
-    alt: "Bản vẽ thiết kế chuyên nghiệp",
-    link: "/design-consultation",
-    cta: "Đặt Lịch Tư Vấn",
-    hint: "professional design blueprint and mood board"
+    title: "Nền Tảng Bán Hàng Toàn Diện",
+    subtitle: "Tham gia NovaMarket để tiếp cận hàng triệu khách hàng, quản lý kho, vận chuyển và marketing trong một dashboard duy nhất.",
+    image: "https://images.unsplash.com/photo-1545239351-ef35f43d514b?auto=format&fit=crop&w=1920&q=80",
+    alt: "Doanh nhân quản lý cửa hàng trực tuyến trên laptop",
+    link: "/seller",
+    cta: "Trở thành nhà bán",
+    hint: "entrepreneur managing ecommerce business dashboard"
   }
 ];
