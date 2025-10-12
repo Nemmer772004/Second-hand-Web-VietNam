@@ -1,21 +1,25 @@
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
+import { ConfigService } from '@nestjs/config';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
+import { AppModule } from './app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  
-  // Configure CORS
+  const config = app.get(ConfigService);
+  const serviceHost = config.get<string>('HOST', '0.0.0.0');
+  const port = Number(config.get<string>('PORT') ?? 3001);
+  const microserviceHost = config.get<string>('MS_HOST', serviceHost);
+  const microservicePort = Number(config.get<string>('MS_PORT') ?? 3011);
+  const allowedOrigins = (config.get<string>('CORS_ORIGIN') || '')
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+
   app.enableCors({
-    origin: [
-      'http://localhost:3005', // Admin frontend
-      'http://localhost:9002', // Main frontend
-      'http://localhost:4000', // API Gateway
-      'http://api-gateway:4000' // Internal API Gateway
-    ],
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    origin: allowedOrigins.length ? allowedOrigins : true,
+    methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Accept', 'Authorization'],
-    credentials: true
+    credentials: true,
   });
 
   // Add global request logging
@@ -28,16 +32,18 @@ async function bootstrap() {
   app.connectMicroservice<MicroserviceOptions>({
     transport: Transport.TCP,
     options: {
-      host: process.env.HOST || '0.0.0.0',
-      port: Number(process.env.MS_PORT || 3011),
+      host: microserviceHost,
+      port: microservicePort,
     },
   });
 
   await app.startAllMicroservices();
 
-  await app.listen(3001, '0.0.0.0', () => {
-    console.log('Product service is running on port 3001');
-    console.log('CORS enabled for:', process.env.CORS_ORIGIN || 'http://localhost:3005,http://localhost:9002');
+  await app.listen(port, serviceHost, () => {
+    console.log(`Product service is running on port ${port}`);
+    if (allowedOrigins.length) {
+      console.log('CORS enabled for:', allowedOrigins.join(', '));
+    }
   });
 }
 bootstrap();

@@ -140,6 +140,7 @@ const Carousel = React.forwardRef<
           className={cn("relative", className)}
           role="region"
           aria-roledescription="carousel"
+          suppressHydrationWarning
           {...props}
         >
           {children}
@@ -157,14 +158,17 @@ const CarouselContent = React.forwardRef<
   const { carouselRef, orientation } = useCarousel()
 
   return (
-    <div ref={carouselRef} className="overflow-hidden">
+    <div ref={carouselRef} className="overflow-hidden" suppressHydrationWarning>
       <div
         ref={ref}
         className={cn(
           "flex",
           orientation === "horizontal" ? "-ml-4" : "-mt-4 flex-col",
+          // Nguồn dữ liệu bên ngoài có thể chèn attr khác nhau ở client,
+          // tránh cảnh báo hydrate sai lệch.
           className
         )}
+        suppressHydrationWarning
         {...props}
       />
     </div>

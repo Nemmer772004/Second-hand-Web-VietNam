@@ -8,24 +8,13 @@ import {
   ApolloNextAppProvider,
   SSRMultipartLink
 } from "@apollo/experimental-nextjs-app-support/ssr";
-import { setContext } from '@apollo/client/link/context';
+import { DEFAULT_GRAPHQL_URI } from '@/lib/apollo-client';
+
+const graphqlUri = process.env.NEXT_PUBLIC_GRAPHQL_PROXY_URL || DEFAULT_GRAPHQL_URI;
 
 const httpLink = new HttpLink({
-  uri: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/graphql',
-  credentials: 'include'
-});
-
-const authLink = setContext((_, { headers }) => {
-  // Get the authentication token from local storage if it exists
-  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-  
-  // Return the headers to the context so httpLink can read them
-  return {
-    headers: {
-      ...headers,
-      authorization: token ? `Bearer ${token}` : "",
-    }
-  };
+  uri: graphqlUri,
+  credentials: 'include',
 });
 
 function makeClient() {
@@ -33,13 +22,11 @@ function makeClient() {
     cache: new NextSSRInMemoryCache(),
     link:
       typeof window === 'undefined'
-        ? authLink.concat(
-            new SSRMultipartLink({
-              stripDefer: true,
-              cutoffDelay: 5000,
-            }).concat(httpLink)
-          )
-        : authLink.concat(httpLink),
+        ? new SSRMultipartLink({
+            stripDefer: true,
+            cutoffDelay: 5000,
+          }).concat(httpLink)
+        : httpLink,
   });
 }
 

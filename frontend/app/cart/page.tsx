@@ -12,6 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Minus, Plus, Trash2, ShoppingCart } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { CREATE_ORDER } from '@/lib/queries';
+import { logInteraction } from '@/lib/interaction-tracker';
 
 export default function CartPage() {
   const router = useRouter();
@@ -55,18 +56,45 @@ export default function CartPage() {
 
     try {
       setOrderError(null);
-      await createOrderMutation({
+      const orderItemsPayload = cart.map((item) => ({
+        cartItemId: item.id,
+        productId: item.productId,
+        productName: item.product?.name,
+        quantity: item.quantity,
+        unitPrice: item.product?.price ?? 0,
+        lineTotal: (item.product?.price ?? 0) * item.quantity,
+      }));
+      const orderItemsInput = orderItemsPayload.map((item) => ({
+        productId: item.productId,
+        quantity: item.quantity,
+      }));
+
+      const result = await createOrderMutation({
         variables: {
           input: {
-            items: cart.map((item) => ({
-              productId: item.productId,
-              quantity: item.quantity,
-            })),
+            items: orderItemsInput,
             shippingAddress: shippingAddress.trim(),
             paymentMethod,
             paymentStatus: paymentMethod === 'cod' ? 'pending' : 'paid',
             note: note.trim() || undefined,
           },
+        },
+      });
+      const createdOrder = result.data?.createOrder;
+
+      void logInteraction({
+        eventType: 'purchase',
+        userId: user.id,
+        metadata: {
+          orderId: createdOrder?.id,
+          totalAmount: createdOrder?.totalAmount ?? total,
+          paymentMethod,
+          paymentStatus: paymentMethod === 'cod' ? 'pending' : 'paid',
+          shippingFee: shipping,
+          itemCount: orderItemsPayload.length,
+          items: orderItemsPayload,
+          shippingAddressProvided: Boolean(shippingAddress.trim()),
+          noteProvided: Boolean(note.trim()),
         },
       });
 

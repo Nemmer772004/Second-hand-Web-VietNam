@@ -8,6 +8,15 @@ import { RegisterDto, LoginDto } from './dto/auth.dto';
 export class AuthController {
   constructor(private authService: AuthService) {}
 
+  @Get('health')
+  health() {
+    return {
+      status: 'ok',
+      service: 'auth-service',
+      timestamp: new Date().toISOString(),
+    };
+  }
+
   @Post('register')
   async register(@Body() registerDto: RegisterDto) {
     return this.authService.register(registerDto);

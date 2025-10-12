@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState, useContext, useEffect } from 'react';
+import { useMemo, useState, useContext, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { useQuery } from '@apollo/client';
 import Link from 'next/link';
@@ -16,6 +16,8 @@ import { useWishlist } from '@/context/wishlist-context';
 import { Badge } from '@/components/ui/badge';
 import type { Product as CatalogProduct } from '@/lib/types';
 import { DEFAULT_PRODUCT_IMAGE } from '@/lib/constants';
+import { useAuth } from '@/context/auth-context';
+import { logInteraction } from '@/lib/interaction-tracker';
 
 function ProductDetailPage({ params }: { params: { id: string } }) {
   const [mounted, setMounted] = useState(false);
@@ -24,6 +26,8 @@ function ProductDetailPage({ params }: { params: { id: string } }) {
   const { addToCart } = useContext(CartContext);
   const { wishlist, addToWishlist, removeFromWishlist } = useWishlist();
   const [quantity, setQuantity] = useState(1);
+  const { user } = useAuth();
+  const loggedViewProductIdRef = useRef<string | null>(null);
 
   const {
     data: productData,
@@ -146,6 +150,29 @@ function ProductDetailPage({ params }: { params: { id: string } }) {
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  useEffect(() => {
+    if (!product?.id) {
+      return;
+    }
+
+    if (loggedViewProductIdRef.current === product.id) {
+      return;
+    }
+
+    loggedViewProductIdRef.current = product.id;
+
+    void logInteraction({
+      eventType: 'view',
+      userId: user?.id,
+      productId: product.id,
+      metadata: {
+        name: product.name,
+        price: product.price,
+        category: product.category,
+      },
+    });
+  }, [product?.id, product?.name, product?.price, product?.category, user?.id]);
 
   if (!mounted) {
     return (

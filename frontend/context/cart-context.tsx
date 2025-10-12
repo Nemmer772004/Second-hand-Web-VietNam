@@ -11,6 +11,7 @@ import {
   CLEAR_CART
 } from '../services/cart';
 import { useAuth } from './auth-context';
+import { logInteraction } from '@/lib/interaction-tracker';
 
 interface CartProduct {
   id: string;
@@ -94,7 +95,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }
     setLoading(true);
     try {
-      await client.mutate({
+      const response = await client.mutate({
         mutation: ADD_TO_CART,
         variables: {
           input: {
@@ -103,6 +104,16 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
           },
         },
         refetchQueries: [{ query: GET_CART }]
+      });
+      void logInteraction({
+        eventType: 'add_to_cart',
+        userId: user?.id,
+        productId: product.id,
+        metadata: {
+          quantity,
+          price: product.price,
+          cartItemId: response.data?.addToCart?.id,
+        },
       });
       await fetchCart();
     } catch (err) {

@@ -154,6 +154,50 @@ docker compose up --build
 - Admin: `3005`
 - Microservices: `3001 – 3007`
 
+### Chatbot Service (FastAPI)
+- Kích hoạt môi trường Python tại `Chatbot/venv` (hoặc tạo mới) và cài phụ thuộc:
+  ```bash
+  pip install -r Chatbot/service/requirements.txt
+  ```
+- Khởi động dịch vụ inference:
+  ```bash
+  cd Chatbot
+  python -m service.app  # mặc định mở cổng 8008
+  ```
+- Có thể tùy chỉnh thông số qua biến môi trường:
+  - `CHATBOT_MODEL_PATH`: đường dẫn file `.pth` cụ thể nếu không dùng checkpoint mới nhất.
+  - `CHATBOT_PORT`: cổng chạy FastAPI (mặc định `8008`).
+  - `CHATBOT_TOPK`: số sản phẩm đề xuất mặc định.
+- Frontend đọc cấu hình `CHATBOT_SERVICE_URL` (mặc định `http://localhost:8008`) để proxy `POST /api/chatbot`. Thêm biến này vào `.env.local` nếu deploy khác máy.
+
+### AI Service (NestJS + PostgreSQL)
+- Service `backend/services/ai-service` lưu toàn bộ hành vi phiên vào bảng PostgreSQL.
+  ```bash
+  # ví dụ file .env cho ai-service
+  AI_PG_HOST=localhost
+  AI_PG_PORT=5432
+  AI_PG_USER=postgres
+  AI_PG_PASSWORD=postgres
+  AI_PG_DB=secondhand_ai
+  PORT=3008           # REST
+  MS_PORT=3018        # TCP microservice dùng cho API Gateway
+  ```
+- Chạy development:
+  ```bash
+  yarn workspace ai-service start:dev
+  ```
+- API REST:
+  - `POST /interactions` ghi một hành vi (view/click/add_to_cart/purchase/chat/recommendation...).
+  - `POST /interactions/bulk` ghi nhiều hành vi cùng lúc.
+- API Gateway đã thêm mutation GraphQL `recordInteraction` và `recordInteractions` để các client khác (dashboard, automation) có thể đẩy dữ liệu dễ dàng.
+- Frontend (`/api/chatbot`) tự động gọi `POST /interactions/bulk` để lưu:
+  - Tin nhắn khách hàng gửi tới chatbot (`eventType = chat`).
+  - Danh sách sản phẩm được chatbot gợi ý (`eventType = recommendation`).
+- Cấu hình Next.js:
+  - `AI_SERVICE_URL` trỏ tới REST endpoint (mặc định `http://localhost:3008`).
+  - Token người dùng được lấy từ session và đính kèm trong payload.
+- Docker Compose hiện mount script `backend/services/ai-service/db/init.sql` vào Postgres để tạo sẵn bảng `ai_interaction_events` và `ai_recommendations` ngay lần khởi động đầu tiên.
+
 ### Triển khai Production
 - Container hóa từng service; quản lý secret/connection string qua biến môi trường hoặc secret manager.
 - CI/CD khuyến nghị: lint → typecheck → test → build → deploy (staging/production).
@@ -168,4 +212,3 @@ docker compose up --build
 - **Genkit Sandbox**: `yarn workspace frontend genkit:dev` để thử nghiệm luồng gợi ý AI.
 
 ---
-

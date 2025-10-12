@@ -26,6 +26,7 @@ class CartPage(BasePage):
     PAYMENT_SELECT = (By.NAME, "paymentMethod")
     NOTE_TEXTAREA = (By.NAME, "note")
     ERROR_ALERT = (By.CSS_SELECTOR, "div.text-destructive, p.text-destructive")
+    ITEM_TOTAL = (By.CSS_SELECTOR, "div.text-right > p.font-semibold")
 
     def __init__(self, driver: WebDriver) -> None:
         super().__init__(driver)
@@ -67,6 +68,10 @@ class CartPage(BasePage):
     def clear_cart(self) -> None:
         if self.is_displayed(self.CLEAR_CART_BUTTON):
             self.click(self.CLEAR_CART_BUTTON)
+
+    def item_total_text(self, item_index: int = 0) -> str:
+        item = self.items()[item_index]
+        return item.find_element(*self.ITEM_TOTAL).text.strip()
 
     def fill_shipping(self, address: str, note: str | None = None) -> None:
         self.fill_input(self.ADDRESS_TEXTAREA, address)

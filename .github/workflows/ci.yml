@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: yarn
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Build API Gateway
+        run: yarn workspace api-gateway build
+
+      - name: Build Auth Service
+        run: yarn workspace auth-service build
+
+      - name: Build User Service
+        run: yarn workspace user-service build
+
+      - name: Build Cart Service
+        run: yarn workspace cart-service build
+
+      - name: Test Cart Service
+        run: yarn workspace cart-service test --runInBand

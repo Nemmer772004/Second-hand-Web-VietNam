@@ -4,414 +4,228 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$ROOT_DIR"
 
-declare -i GIT_AVAILABLE=0
-PRE_PULL_HEAD=""
-declare -A CHANGED_INDEX=()
-declare -a CHANGED_PATHS=()
+LOG_DIR="${ROOT_DIR}/logs"
+mkdir -p "$LOG_DIR"
 
-add_changed_path() {
-  local path="$1"
-  [[ -z "$path" ]] && return
-  path="${path#./}"
-  if [[ -z "${CHANGED_INDEX["$path"]+1}" ]]; then
-    CHANGED_INDEX["$path"]=1
-    CHANGED_PATHS+=("$path")
-  fi
-}
+declare -A SERVICE_PIDS=()
 
-collect_worktree_changes() {
-  if (( ! GIT_AVAILABLE )); then
-    return
-  fi
-
-  while IFS= read -r line; do
-    [[ -z "$line" ]] && continue
-    local status="${line:0:2}"
-    local payload="${line:3}"
-
-    if [[ "$status" =~ ^R ]]; then
-      local old="${payload%% -> *}"
-      local new="${payload##* -> }"
-      add_changed_path "$old"
-      add_changed_path "$new"
-    else
-      add_changed_path "$payload"
-    fi
-  done < <(git status --porcelain)
-}
-
-collect_pull_diff() {
-  if (( ! GIT_AVAILABLE )); then
-    return
-  fi
-
-  local current_head
-  current_head=$(git rev-parse HEAD 2>/dev/null || echo "")
-  if [[ -n "$PRE_PULL_HEAD" && -n "$current_head" && "$current_head" != "$PRE_PULL_HEAD" ]]; then
-    while IFS= read -r file; do
-      [[ -z "$file" ]] && continue
-      add_changed_path "$file"
-    done < <(git diff --name-only "$PRE_PULL_HEAD" "$current_head")
-  fi
-  PRE_PULL_HEAD="$current_head"
-}
-
-has_changes_in_prefix() {
-  local prefix="$1"
-  for file in "${CHANGED_PATHS[@]}"; do
-    if [[ "$file" == "$prefix"* ]]; then
-      return 0
-    fi
-  done
-  return 1
-}
-
-has_path_changed() {
-  local target="$1"
-  for file in "${CHANGED_PATHS[@]}"; do
-    if [[ "$file" == "$target" ]]; then
-      return 0
-    fi
-  done
-  return 1
-}
-
-print_change_summary() {
-  if ((${#CHANGED_PATHS[@]} > 0)); then
-    echo "📝 Detected source changes:"
-    for path in "${CHANGED_PATHS[@]}"; do
-      echo "   • $path"
-    done
-    echo ""
-  else
-    echo "ℹ️ No tracked code changes detected; performing clean restart."
-    echo ""
-  fi
-}
-
-ensure_dependencies() {
-  local label="$1"; shift
-  local marker_dir="$1"; shift
-  local -a watch_paths=()
-  while (($#)); do
-    if [[ "$1" == "--" ]]; then
-      shift
-      break
-    fi
-    watch_paths+=("$1")
-    shift
-  done
-  local -a cmd=("$@")
-
-  local needs_install=0
-  if [[ ! -d "$marker_dir" || -z "$(ls -A "$marker_dir" 2>/dev/null)" ]]; then
-    needs_install=1
-  else
-    for path in "${watch_paths[@]}"; do
-      if has_path_changed "$path"; then
-        needs_install=1
-        break
-      fi
-    done
-  fi
-
-  if (( needs_install )); then
-    echo "📦 Updating $label dependencies..."
-    "${cmd[@]}"
-  else
-    echo "📦 $label dependencies are up to date"
-  fi
-}
-
-refresh_dist_if_needed() {
-  local label="$1"
-  local service_path="$2"
-  local force="${3:-0}"
-  local dist_path="$service_path/dist"
-
-  local should_refresh=0
-  if (( force )); then
-    should_refresh=1
-  fi
-
-  if has_changes_in_prefix "${service_path%/}/"; then
-    should_refresh=1
-  fi
-
-  if [[ ! -d "$dist_path" ]]; then
-    should_refresh=1
-  fi
-
-  if (( should_refresh )) && [[ -d "$dist_path" ]]; then
-    echo "♻️  Clearing $label dist output..."
-    rm -rf "$dist_path"
-  fi
-}
-
-refresh_next_cache() {
-  local label="$1"
-  local app_path="$2"
-  local force="${3:-0}"
-  local cache_dir="$app_path/.next"
-
-  local should_refresh=0
-  if (( force )); then
-    should_refresh=1
-  fi
-
-  if has_changes_in_prefix "${app_path%/}/"; then
-    should_refresh=1
-  fi
-
-  if (( should_refresh )) && [[ -d "$cache_dir" ]]; then
-    echo "♻️  Clearing $label Next.js cache..."
-    rm -rf "$cache_dir"
-  fi
-}
-
-declare -A RESTART_NOTE_INDEX=()
-declare -a RESTART_NOTES=()
-add_restart_note() {
-  local label="$1"
-  if [[ -z "${RESTART_NOTE_INDEX["$label"]+1}" ]]; then
-    RESTART_NOTE_INDEX["$label"]=1
-    RESTART_NOTES+=("$label")
-  fi
-}
-
-echo "🚀 Starting Studio Project..."
-
-if command -v git >/dev/null 2>&1 && git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
-  GIT_AVAILABLE=1
-  PRE_PULL_HEAD=$(git rev-parse HEAD 2>/dev/null || echo "")
-  collect_worktree_changes
-else
-  echo "ℹ️ Git repository not detected or git unavailable; skipping change detection."
-fi
-
-echo "🛑 Stopping existing services..."
-pkill -f "yarn workspace" 2>/dev/null || true
-pkill -f "backend/services/user-service/dist/index.js" 2>/dev/null || true
-pkill -f "admin/node_modules/.bin/next" 2>/dev/null || true
-pkill -f "nest start" 2>/dev/null || true
-if compgen -G "logs/*.pid" > /dev/null; then
-  for pid_file in logs/*.pid; do
-    [ -f "$pid_file" ] || continue
-    pid=$(cat "$pid_file" 2>/dev/null || echo "")
-    if [[ "$pid" =~ ^[0-9]+$ ]]; then
-      if kill -0 "$pid" 2>/dev/null; then
-        kill "$pid" 2>/dev/null || true
-        sleep 0.2
-        kill -9 "$pid" 2>/dev/null || true
+PYTHON_CMD="${ROOT_DIR}/ai-agent/venv/bin/python"
+if [[ ! -x "$PYTHON_CMD" ]]; then
+  if command -v python3 >/dev/null 2>&1; then
+    echo "⚙️  Khởi tạo virtualenv cho ai-agent..."
+    python3 -m venv "${ROOT_DIR}/ai-agent/venv"
+    PYTHON_CMD="${ROOT_DIR}/ai-agent/venv/bin/python"
+    if [[ -x "$PYTHON_CMD" ]]; then
+      "$PYTHON_CMD" -m pip install --upgrade pip >/dev/null 2>&1 || true
+      if [[ -f "${ROOT_DIR}/ai-agent/requirements.txt" ]]; then
+        echo "📦  Cài đặt phụ thuộc cho ai-agent..."
+        "$PYTHON_CMD" -m pip install -r "${ROOT_DIR}/ai-agent/requirements.txt" >/dev/null 2>&1 || true
       fi
     fi
-  done
-fi
-docker compose stop 2>/dev/null || true
-
-if (( GIT_AVAILABLE )); then
-  echo "🔄 Pulling latest changes from git..."
-  if ! git pull --rebase --autostash; then
-    echo "⚠️  Unable to pull latest changes. Please resolve conflicts and rerun."
-    exit 1
+  elif command -v python >/dev/null 2>&1; then
+    echo "⚠️  Không tìm thấy python3, sử dụng python system. Vui lòng tạo venv thủ công."
+    PYTHON_CMD=$(command -v python)
+  else
+    PYTHON_CMD=""
   fi
-  collect_pull_diff
-  collect_worktree_changes
 fi
 
-backend_shared_changed=0
-api_gateway_changed=0
-product_service_changed=0
-category_service_changed=0
-order_service_changed=0
-cart_service_changed=0
-user_service_changed=0
-frontend_changed=0
-admin_changed=0
-
-if has_changes_in_prefix "backend/shared/"; then backend_shared_changed=1; fi
-if has_changes_in_prefix "backend/api-gateway/"; then api_gateway_changed=1; fi
-if has_changes_in_prefix "backend/services/product-service/"; then product_service_changed=1; fi
-if has_changes_in_prefix "backend/services/category-service/"; then category_service_changed=1; fi
-if has_changes_in_prefix "backend/services/order-service/"; then order_service_changed=1; fi
-if has_changes_in_prefix "backend/services/cart-service/"; then cart_service_changed=1; fi
-if has_changes_in_prefix "backend/services/user-service/"; then user_service_changed=1; fi
-if has_changes_in_prefix "frontend/"; then frontend_changed=1; fi
-if has_changes_in_prefix "admin/"; then admin_changed=1; fi
-
-print_change_summary
-
-if (( product_service_changed || backend_shared_changed )); then add_restart_note "Product Service"; fi
-if (( category_service_changed || backend_shared_changed )); then add_restart_note "Category Service"; fi
-if (( order_service_changed || backend_shared_changed )); then add_restart_note "Order Service"; fi
-if (( cart_service_changed || backend_shared_changed )); then add_restart_note "Cart Service"; fi
-if (( api_gateway_changed || backend_shared_changed )); then add_restart_note "API Gateway"; fi
-if (( user_service_changed || backend_shared_changed )); then add_restart_note "User Service"; fi
-if (( frontend_changed )); then add_restart_note "Frontend App"; fi
-if (( admin_changed )); then add_restart_note "Admin Dashboard"; fi
-if (( backend_shared_changed )); then add_restart_note "Shared Types"; fi
-
-if ((${#RESTART_NOTES[@]} > 0)); then
-  echo "🔁 Refresh required for: ${RESTART_NOTES[*]}"
+log_section() {
   echo ""
-fi
+  echo "=============================================="
+  echo "🚀 $1"
+  echo "=============================================="
+  echo ""
+}
 
-mkdir -p logs
+start_service() {
+  local label="$1"
+  shift
+  local safe_label="${label// /-}"
+  local logfile="${LOG_DIR}/${safe_label}.log"
 
-ensure_dependencies "root workspace" "node_modules" "package.json" "yarn.lock" "package-lock.json" -- yarn install --frozen-lockfile
-ensure_dependencies "API Gateway" "backend/api-gateway/node_modules" "backend/api-gateway/package.json" -- yarn --cwd backend/api-gateway install --frozen-lockfile
-ensure_dependencies "User Service" "backend/services/user-service/node_modules" \
-  "backend/services/user-service/package.json" "backend/services/user-service/package-lock.json" -- \
-  npm install --prefix backend/services/user-service --legacy-peer-deps
-ensure_dependencies "Admin app" "admin/node_modules" "admin/package.json" "admin/package-lock.json" -- \
-  npm install --prefix admin --legacy-peer-deps
+  echo ""
+  echo "▶ Đang khởi động ${label}..."
+  echo "   • Ghi log tại: ${logfile}"
 
-refresh_dist_if_needed "Product Service" "backend/services/product-service" "$backend_shared_changed"
-refresh_dist_if_needed "Category Service" "backend/services/category-service" "$backend_shared_changed"
-refresh_dist_if_needed "Order Service" "backend/services/order-service" "$backend_shared_changed"
-refresh_dist_if_needed "Cart Service" "backend/services/cart-service" "$backend_shared_changed"
-refresh_dist_if_needed "API Gateway" "backend/api-gateway" "$backend_shared_changed"
-refresh_dist_if_needed "User Service" "backend/services/user-service" "$backend_shared_changed"
-refresh_next_cache "Frontend App" "frontend"
-refresh_next_cache "Admin Dashboard" "admin"
+  (
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] Starting ${label}"
+    "$@"
+  ) >>"$logfile" 2>&1 &
 
-needs_user_build=0
-if (( user_service_changed || backend_shared_changed )); then
-  needs_user_build=1
-elif [[ ! -d "backend/services/user-service/dist" ]]; then
-  needs_user_build=1
-else
-  if find backend/services/user-service/src -type f -newer backend/services/user-service/dist 2>/dev/null | head -n1 >/dev/null; then
-    needs_user_build=1
+  local pid=$!
+  SERVICE_PIDS["$label"]=$pid
+  echo "   • PID: ${pid}"
+}
+
+cleanup() {
+  if ((${#SERVICE_PIDS[@]} == 0)); then
+    return
   fi
+
+  echo ""
+  echo "🛑 Đang dừng toàn bộ tiến trình nền..."
+  for label in "${!SERVICE_PIDS[@]}"; do
+    local pid=${SERVICE_PIDS["$label"]}
+    if kill -0 "$pid" 2>/dev/null; then
+      echo "   • Killing ${label} (PID: ${pid})"
+      kill "$pid" 2>/dev/null || true
+    fi
+  done
+  wait || true
+  echo "✅ Hoàn tất dọn dẹp."
+}
+trap cleanup EXIT INT TERM
+
+log_section "Khởi động dự án Second-hand Web VietNam"
+
+echo "🐳 Đảm bảo PostgreSQL & MongoDB sẵn sàng..."
+docker compose up -d postgres mongodb
+docker compose ps postgres mongodb
+
+# echo ""
+# echo "📦 Cài đặt phụ thuộc (yarn workspace root)..."
+# yarn install --frozen-lockfile >/dev/null
+
+echo ""
+echo "🛠️  Biên dịch user-service..."
+if ! yarn --cwd backend/services/user-service build >"${LOG_DIR}/user-service-build.log" 2>&1; then
+  echo "❌ Build user-service thất bại. Kiểm tra ${LOG_DIR}/user-service-build.log"
+  tail -n 40 "${LOG_DIR}/user-service-build.log" || true
+  exit 1
 fi
 
-if (( needs_user_build )); then
-  echo "🔁 Building User Service (3004)..."
-  if ! yarn workspace user-service build > logs/user-service-build.log 2>&1; then
-    echo "❌ User Service build failed. Check logs/user-service-build.log for details."
-    tail -n 50 logs/user-service-build.log || true
-    exit 1
-  fi
+if [[ -n "$PYTHON_CMD" ]]; then
+  start_service "ai-retrain-scheduler" \
+    env \
+    PYTHONPATH="${ROOT_DIR}/ai-agent:${PYTHONPATH:-}" \
+    AI_RETRAIN_INTERVAL="${AI_RETRAIN_INTERVAL:-43200}" \
+    bash -lc '
+      echo "[AI Retrain] starting scheduler (interval: ${AI_RETRAIN_INTERVAL}s)"
+      while true; do
+        start_ts=$(date "+%Y-%m-%d %H:%M:%S")
+        echo "[AI Retrain] ${start_ts} - running pipeline"
+        if ! '"$PYTHON_CMD"' '"${ROOT_DIR}"'/ai-agent/tasks/retrain.py; then
+          echo "[AI Retrain] pipeline failed (see logs/retrain.log)" >&2
+        fi
+        echo "[AI Retrain] sleeping for ${AI_RETRAIN_INTERVAL}s"
+        sleep "${AI_RETRAIN_INTERVAL}"
+      done
+    '
+
+  start_service "chatbot-service" \
+    bash -lc \
+    "cd '${ROOT_DIR}/ai-agent' && CHATBOT_TOPK=5 '${PYTHON_CMD}' -m uvicorn services.api.app:app --host 0.0.0.0 --port 8008"
 else
-  echo "ℹ️ User Service build is up to date."
+  echo "⚠️  Không tìm thấy Python phù hợp để chạy chatbot-service. Vui lòng khởi động thủ công (python -m uvicorn ai_agent.services.api.app:app --port 8008)."
 fi
 
-echo "📦 Starting MongoDB..."
-docker compose up -d mongodb
-sleep 3
+start_service "product-service" \
+  env \
+  MONGODB_URI='mongodb://admin:adminpassword@localhost:27017/luxhome?authSource=admin' \
+  CORS_ORIGIN='http://localhost:9002,http://localhost:4000,http://localhost:3005' \
+  NODE_ENV=development \
+  yarn --cwd backend/services/product-service start:dev
 
-echo "⏳ Waiting for MongoDB to be ready..."
-until docker exec mongodb mongosh --eval "db.runCommand('ping').ok" --quiet; do
-  echo "Waiting for MongoDB..."
-  sleep 2
+start_service "category-service" \
+  env \
+  MONGODB_URI='mongodb://admin:adminpassword@localhost:27017/luxhome?authSource=admin' \
+  yarn --cwd backend/services/category-service start:dev
+
+start_service "order-service" \
+  env \
+  DB_HOST=localhost \
+  DB_PORT=5432 \
+  DB_USERNAME=nemmer \
+  DB_PASSWORD=nemmer \
+  DB_NAME=secondhand_ai \
+  ORDER_PG_DB=secondhand_ai \
+  ORDER_PG_SYNC=true \
+  MONGODB_URI='mongodb://admin:adminpassword@localhost:27017/luxhome?authSource=admin' \
+  yarn --cwd backend/services/order-service start:dev
+
+start_service "auth-service" \
+  env \
+  DB_HOST=localhost \
+  DB_PORT=5432 \
+  DB_USERNAME=nemmer \
+  DB_PASSWORD=nemmer \
+  DB_NAME=studio_auth \
+  JWT_SECRET='your_jwt_secret_key' \
+  yarn --cwd backend/services/auth-service start:dev
+
+start_service "user-service" \
+  env \
+  DB_HOST=localhost \
+  DB_PORT=5432 \
+  DB_USERNAME=nemmer \
+  DB_PASSWORD=nemmer \
+  DB_NAME=studio_auth \
+  AUTH_SERVICE_URL='http://localhost:3006/auth' \
+  node backend/services/user-service/dist/index.js
+
+start_service "cart-service" \
+  env \
+  DB_HOST=localhost \
+  DB_PORT=5432 \
+  DB_USERNAME=nemmer \
+  DB_PASSWORD=nemmer \
+  DB_NAME=secondhand_ai \
+  MONGODB_URI='mongodb://admin:adminpassword@localhost:27017/luxhome?authSource=admin' \
+  PRODUCT_SERVICE_HOST=localhost \
+  PRODUCT_SERVICE_PORT=3001 \
+  yarn --cwd backend/services/cart-service start:dev
+
+start_service "ai-service" \
+  env \
+  AI_PG_HOST=localhost \
+  AI_PG_PORT=5432 \
+  AI_PG_USER=nemmer \
+  AI_PG_PASSWORD=nemmer \
+  AI_PG_DB=secondhand_ai \
+  yarn --cwd backend/services/ai-service start:dev
+
+start_service "api-gateway" \
+  env \
+  PORT=4000 \
+  AUTH_SERVICE_HOST=localhost \
+  AUTH_SERVICE_PORT=3006 \
+  PRODUCT_SERVICE_HOST=localhost \
+  PRODUCT_SERVICE_PORT=3001 \
+  RECOMMENDER_SERVICE_URL='http://localhost:8008' \
+  CATEGORY_SERVICE_HOST=localhost \
+  CATEGORY_SERVICE_PORT=3002 \
+  ORDER_SERVICE_HOST=localhost \
+  ORDER_SERVICE_PORT=3003 \
+  USER_SERVICE_HOST=localhost \
+  USER_SERVICE_PORT=3004 \
+  CART_SERVICE_HOST=localhost \
+  CART_SERVICE_TCP_PORT=3017 \
+  CART_SERVICE_PORT=3007 \
+  MONGODB_URI='mongodb://admin:adminpassword@localhost:27017/luxhome?authSource=admin' \
+  yarn --cwd backend/api-gateway start:dev
+
+start_service "frontend" \
+  env \
+  NEXT_PUBLIC_API_URL='http://localhost:4000/graphql' \
+  CHATBOT_SERVICE_URL='http://localhost:8008' \
+  AI_SERVICE_URL='http://localhost:3008' \
+  PRODUCT_SERVICE_URL='http://localhost:3001' \
+  yarn --cwd frontend dev
+
+start_service "admin" \
+  env \
+  NEXT_PUBLIC_API_URL='http://localhost:4000/graphql' \
+  npm run dev --prefix admin
+
+echo ""
+echo "=============================================="
+echo "🎉 Tất cả dịch vụ đã được khởi động!"
+echo "📄 Theo dõi log tại thư mục logs/"
+echo "🔁 Nhấn Ctrl+C để dừng toàn bộ."
+echo "=============================================="
+
+wait -n || true
+while true; do
+  wait -n || true
 done
-echo "✅ MongoDB is ready!"
-
-echo "🔧 Starting microservices..."
-
-echo "Starting Product Service (3001 HTTP, 3011 MS)..."
-MONGODB_URI='mongodb://admin:adminpassword@localhost:27017/luxhome?authSource=admin' \
-CORS_ORIGIN='http://localhost:9002,http://localhost:4000,http://localhost:3005' \
-MS_PORT=3011 \
-yarn workspace product-service start:dev > logs/product-service.log 2>&1 &
-PRODUCT_PID=$!
-
-echo "Starting Category Service (3002)..."
-MONGODB_URI='mongodb://admin:adminpassword@localhost:27017/luxhome?authSource=admin' \
-yarn workspace category-service start:dev > logs/category-service.log 2>&1 &
-CATEGORY_PID=$!
-
-echo "Starting Order Service (3003)..."
-MONGODB_URI='mongodb://admin:adminpassword@localhost:27017/luxhome?authSource=admin' \
-yarn workspace order-service start:dev > logs/order-service.log 2>&1 &
-ORDER_PID=$!
-
-echo "Starting User Service (3004)..."
-MONGODB_URI='mongodb://admin:adminpassword@localhost:27017/luxhome?authSource=admin' \
-JWT_SECRET='your_jwt_secret_key' \
-node backend/services/user-service/dist/index.js > logs/user-service.log 2>&1 &
-USER_PID=$!
-
-echo "Starting Cart Service (3007)..."
-MONGODB_URI='mongodb://admin:adminpassword@localhost:27017/luxhome?authSource=admin' \
-PRODUCT_SERVICE_HOST=localhost PRODUCT_SERVICE_PORT=3011 \
-yarn workspace cart-service start:dev > logs/cart-service.log 2>&1 &
-CART_PID=$!
-
-echo "⏳ Waiting for microservices to start..."
-sleep 10
-echo "👤 Ensuring administrator account..."
-ADMIN_EMAIL=${ADMIN_EMAIL:-admin@studio.local}
-ADMIN_PASSWORD=${ADMIN_PASSWORD:-Admin@123}
-ADMIN_NAME=${ADMIN_NAME:-"Quản trị viên"}
-set +e
-ADMIN_STATUS=$(curl -s -o /tmp/admin-create.log -w "%{http_code}" \
-  -X POST http://localhost:3004/users \
-  -H 'Content-Type: application/json' \
-  -d "{\"email\":\"$ADMIN_EMAIL\",\"password\":\"$ADMIN_PASSWORD\",\"name\":\"$ADMIN_NAME\",\"role\":\"admin\"}" )
-if [ "$ADMIN_STATUS" = "201" ]; then
-  echo "✅ Admin account created ($ADMIN_EMAIL)"
-elif [ "$ADMIN_STATUS" = "409" ]; then
-  echo "ℹ️ Admin account already exists ($ADMIN_EMAIL)"
-else
-  echo "⚠️ Unable to ensure admin account (HTTP $ADMIN_STATUS)"
-  cat /tmp/admin-create.log
-fi
-set -e
-
-echo "Starting API Gateway (4000)..."
-MONGODB_URI='mongodb://admin:adminpassword@localhost:27017/luxhome?authSource=admin' \
-PRODUCT_SERVICE_HOST=localhost PRODUCT_SERVICE_PORT=3011 \
-CATEGORY_SERVICE_HOST=localhost CATEGORY_SERVICE_PORT=3002 \
-ORDER_SERVICE_HOST=localhost ORDER_SERVICE_PORT=3003 \
-USER_SERVICE_HOST=localhost USER_SERVICE_PORT=3004 \
-CART_SERVICE_HOST=localhost CART_SERVICE_PORT=3007 \
-API_GATEWAY_PORT=4000 \
-yarn workspace api-gateway start:dev > logs/api-gateway.log 2>&1 &
-GATEWAY_PID=$!
-
-echo "⏳ Waiting for API Gateway to start..."
-sleep 10
-
-echo "Starting Frontend (9002)..."
-NEXT_PUBLIC_API_URL='http://localhost:4000/graphql' \
-USER_SERVICE_URL='http://localhost:3004/users' \
-yarn workspace nextn dev > logs/frontend.log 2>&1 &
-FRONTEND_PID=$!
-
-echo "Starting Admin Dashboard (3005)..."
-NEXT_PUBLIC_API_URL='http://localhost:4000/graphql' \
-npm run dev --prefix admin > logs/admin.log 2>&1 &
-ADMIN_PID=$!
-
-echo $PRODUCT_PID > logs/product-service.pid
-echo $CATEGORY_PID > logs/category-service.pid
-echo $ORDER_PID > logs/order-service.pid
-echo $USER_PID > logs/user-service.pid
-echo $CART_PID > logs/cart-service.pid
-echo $GATEWAY_PID > logs/api-gateway.pid
-echo $FRONTEND_PID > logs/frontend.pid
-echo $ADMIN_PID > logs/admin.pid
-
-echo ""
-echo "🎉 All services started successfully!"
-echo ""
-echo "📊 Service Status:"
-echo "  • MongoDB: http://localhost:27017"
-echo "  • Product Service: http://localhost:3001"
-echo "  • Category Service: http://localhost:3002"
-echo "  • Order Service: http://localhost:3003"
-echo "  • User Service: http://localhost:3004"
-echo "  • Cart Service: http://localhost:3007"
-echo "  • API Gateway: http://localhost:4000"
-echo "  • GraphQL Playground: http://localhost:4000/graphql"
-echo "  • Frontend: http://localhost:9002"
-echo "  • Admin Dashboard: http://localhost:3005"
-echo ""
-echo "📝 Logs are saved in ./logs/ directory"
-echo "🛑 To stop all services: ./stop.sh"
-echo ""
-echo "✨ Opening Frontend in browser..."
-sleep 5
-xdg-open http://localhost:9002 2>/dev/null || echo "Please open http://localhost:9002 in your browser"

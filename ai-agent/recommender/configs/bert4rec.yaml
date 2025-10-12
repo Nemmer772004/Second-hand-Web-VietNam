@@ -1,0 +1,32 @@
+model: BERT4Rec
+data_path: ./dataset
+dataset: ecommerce
+USER_ID_FIELD: user_id
+ITEM_ID_FIELD: item_id
+TIME_FIELD: timestamp
+RATING_FIELD: label
+load_col:
+    inter: [user_id, item_id, timestamp, label]
+neg_sampling: ~
+train_neg_sample_args: ~
+train_batch_size: 1024
+eval_batch_size: 1024
+epochs: 50
+learning_rate: 0.001
+embedding_size: 64
+hidden_size: 64
+num_layers: 2
+num_heads: 2
+dropout_prob: 0.2
+mask_ratio: 0.2
+seq_len: 50
+metrics: ['Recall', 'MRR', 'NDCG', 'Hit', 'Precision']
+topk: [5, 10]
+valid_metric: MRR@10
+eval_args:
+    split: {'RS': [0.8,0.1,0.1]}
+    group_by: user
+    order: TO
+    mode: full
+use_gpu: True
+gpu_id: 0

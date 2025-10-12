@@ -14,11 +14,19 @@ export default function AdminLoginPage() {
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
     setFormError(null);
+    
+    if (!email.trim() || !password.trim()) {
+      setFormError('Vui lòng nhập đầy đủ thông tin đăng nhập');
+      return;
+    }
+
     try {
       await login(email.trim(), password);
-      router.replace('/');
+      router.replace('/admin');
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Đăng nhập thất bại';
+      const message = err instanceof Error 
+        ? err.message 
+        : 'Đăng nhập thất bại. Vui lòng thử lại.';
       setFormError(message);
     }
   };

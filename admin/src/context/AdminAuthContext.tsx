@@ -26,8 +26,17 @@ const ADMIN_TOKEN_KEY = 'admin_token';
 const ADMIN_USER_KEY = 'admin_user';
 
 const LOGIN_MUTATION = /* GraphQL */ `
-  mutation AdminLogin($input: LoginInputGql!) {
-    login(input: $input)
+  mutation AdminLogin($input: LoginInput!) {
+    login(input: $input) {
+      access_token
+      user {
+        id
+        email
+        name
+        avatar
+        isAdmin
+      }
+    }
   }
 `;
 
@@ -88,25 +97,30 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
     setLoading(true);
     setError(null);
     try {
-      const response = await graphqlRequest(LOGIN_MUTATION, { input: { email, password } });
-      const receivedToken = response?.login;
-      if (!receivedToken) {
-        throw new Error('Không nhận được token.');
+      const response = await graphqlRequest(LOGIN_MUTATION, { 
+        input: { 
+          email, 
+          password, 
+          isAdminLogin: true 
+        } 
+      });
+
+      const { access_token, user: userData } = response?.login;
+      
+      if (!access_token || !userData) {
+        throw new Error('Đăng nhập không thành công.');
       }
 
-      const meData = await graphqlRequest(ME_QUERY, undefined, receivedToken);
-      if (!meData?.me) {
-        throw new Error('Không lấy được thông tin người dùng.');
-      }
-      if (!meData.me.isAdmin) {
+      if (!userData.isAdmin) {
         throw new Error('Tài khoản không có quyền quản trị.');
       }
 
-      setToken(receivedToken);
-      setUser(meData.me);
+      setToken(access_token);
+      setUser(userData);
+      
       if (typeof window !== 'undefined') {
-        localStorage.setItem(ADMIN_TOKEN_KEY, receivedToken);
-        localStorage.setItem(ADMIN_USER_KEY, JSON.stringify(meData.me));
+        localStorage.setItem(ADMIN_TOKEN_KEY, access_token);
+        localStorage.setItem(ADMIN_USER_KEY, JSON.stringify(userData));
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Đăng nhập thất bại';

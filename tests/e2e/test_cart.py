@@ -26,9 +26,14 @@ class TestCart:
         initial_items = cart_page.items()
         assert initial_items, "Cart should have items after add-to-cart"
 
+        first_total = cart_page.item_total_text()
+        assert first_total, "Cart item total price should be rendered"
+
         # Update quantity and remove
         cart_page.increase_quantity()
         cart_page.wait.until(EC.staleness_of(initial_items[0])) # Wait for DOM update
+        increased_total = cart_page.item_total_text()
+        assert increased_total and increased_total != first_total
         cart_page.decrease_quantity()
         cart_page.wait.until(EC.staleness_of(cart_page.items()[0])) # Wait for DOM update
         cart_page.remove_item()

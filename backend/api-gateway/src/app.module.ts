@@ -10,6 +10,9 @@ import { CategoryResolver } from './resolvers/category.resolver';
 import { CartResolver } from './resolvers/cart.resolver';
 import { OrderResolver } from './resolvers/order.resolver';
 import { UserResolver } from './resolvers/user.resolver';
+import { VoucherResolver } from './resolvers/voucher.resolver';
+import { AIResolver } from './resolvers/ai.resolver';
+import { RecommendationResolver } from './resolvers/recommendation.resolver';
 
 @Module({
   imports: [
@@ -31,32 +34,61 @@ import { UserResolver } from './resolvers/user.resolver';
             : null;
 
           if (token) {
-            const host = configService.get<string>('USER_SERVICE_HOST') || 'localhost';
-            const port = configService.get<string>('USER_SERVICE_PORT') || '3004';
-            const baseUrl = process.env.USER_SERVICE_INTERNAL_URL || `http://${host}:${port}`;
+            const userHost = configService.get<string>('USER_SERVICE_HOST') || 'localhost';
+            const userPort = configService.get<string>('USER_SERVICE_PORT') || '3004';
+            const authHost = configService.get<string>('AUTH_SERVICE_HOST') || 'localhost';
+            const authPort = configService.get<string>('AUTH_SERVICE_PORT') || '3006';
+
+            const authBase =
+              process.env.AUTH_SERVICE_INTERNAL_URL || `http://${authHost}:${authPort}`;
+            const userBase =
+              process.env.USER_SERVICE_INTERNAL_URL || `http://${userHost}:${userPort}/users`;
 
             try {
-              const response = await fetch(`${baseUrl}/users/me/current`, {
+              const authResponse = await fetch(`${authBase}/auth/profile`, {
                 headers: {
                   Authorization: `Bearer ${token}`,
                 },
               });
 
-              if (response.ok) {
-                const rawUser = await response.json();
-                const normalizedUser = {
-                  ...rawUser,
-                  isAdmin: typeof rawUser.isAdmin === 'boolean'
-                    ? rawUser.isAdmin
-                    : (rawUser.role === 'admin'),
-                };
-
-                req.user = normalizedUser;
-                const derivedUserId = normalizedUser?.id || normalizedUser?._id || normalizedUser?.userId;
-                if (derivedUserId) {
-                  req.headers['x-user-id'] = String(derivedUserId);
-                }
+              if (!authResponse.ok) {
+                return { req };
               }
+
+              const authUser = await authResponse.json();
+              let profile: any = null;
+
+              try {
+                const profileRes = await fetch(`${userBase}/auth/${authUser.id}`);
+                if (profileRes.ok) {
+                  profile = await profileRes.json();
+                }
+              } catch {
+                /* ignore profile lookup errors */
+              }
+
+              const isAdmin =
+                typeof authUser.isAdmin === 'boolean'
+                  ? authUser.isAdmin
+                  : profile?.role === 'admin';
+
+              const normalizedUser: Record<string, any> = {
+                id: authUser.id,
+                authId: authUser.id,
+                email: authUser.email,
+                name: profile?.name || authUser.name,
+                avatar: authUser.avatar || profile?.avatar,
+                role: profile?.role || (isAdmin ? 'admin' : 'user'),
+                phone: profile?.phone || null,
+                address: profile?.address || null,
+                isAdmin,
+                profileId: profile?.profileId || profile?._id,
+                createdAt: profile?.createdAt || authUser.createdAt,
+                updatedAt: profile?.updatedAt || authUser.updatedAt,
+              };
+
+              req.user = normalizedUser;
+              req.headers['x-user-id'] = String(normalizedUser.id);
             } catch (error) {
               console.warn('GraphQL context: failed to attach user', error);
             }
@@ -123,7 +155,24 @@ import { UserResolver } from './resolvers/user.resolver';
           transport: Transport.TCP,
           options: {
             host: configService.get<string>('CART_SERVICE_HOST') || 'localhost',
-            port: Number(configService.get<string>('CART_SERVICE_PORT') || 3007),
+            port: Number(
+              configService.get<string>('CART_SERVICE_TCP_PORT') ||
+                configService.get<string>('CART_SERVICE_MS_PORT') ||
+                configService.get<string>('CART_SERVICE_PORT') ||
+                3017,
+            ),
+          },
+        }),
+        inject: [ConfigService],
+      },
+      {
+        name: 'AI_SERVICE',
+        imports: [ConfigModule],
+        useFactory: (configService: ConfigService) => ({
+          transport: Transport.TCP,
+          options: {
+            host: configService.get<string>('AI_SERVICE_HOST') || 'localhost',
+            port: Number(configService.get<string>('AI_SERVICE_PORT') || 3008),
           },
         }),
         inject: [ConfigService],
@@ -131,12 +180,16 @@ import { UserResolver } from './resolvers/user.resolver';
     ]),
   ],
   providers: [
-    AuthResolver, 
-    ProductResolver, 
-    CategoryResolver, 
-    CartResolver, 
-    OrderResolver, 
-    UserResolver
+    AuthResolver,
+    ProductResolver,
+    CategoryResolver,
+    CartResolver,
+    OrderResolver,
+    UserResolver,
+    VoucherResolver,
+    // AI
+    AIResolver,
+    RecommendationResolver,
   ],
 })
 export class AppModule {}

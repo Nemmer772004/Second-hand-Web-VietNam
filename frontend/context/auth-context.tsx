@@ -1,13 +1,7 @@
 'use client';
 
-import {
-  createContext,
-  useContext,
-  useState,
-  useCallback,
-  useEffect,
-  ReactNode,
-} from 'react';
+import { createContext, useContext, useState, useCallback, useEffect, ReactNode } from 'react';
+import { toast } from '@/hooks/use-toast';
 
 interface User {
   id: string;
@@ -28,35 +22,72 @@ interface AuthContextType {
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-const TOKEN_KEY = 'token';
-const USER_KEY = 'user';
+const USER_CACHE_KEY = 'frontend_cached_user';
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    try {
-      const storedToken = localStorage.getItem(TOKEN_KEY);
-      const storedUser = localStorage.getItem(USER_KEY);
-
-      if (storedToken && storedUser) {
-        setUser(JSON.parse(storedUser));
-      }
-    } catch (err) {
-      console.error('Failed to restore auth state:', err);
-    } finally {
-      setLoading(false);
+  const persistUser = useCallback((sessionUser: User | null) => {
+    setUser(sessionUser);
+    if (typeof window === 'undefined') {
+      return;
+    }
+    if (sessionUser) {
+      window.sessionStorage.setItem(USER_CACHE_KEY, JSON.stringify(sessionUser));
+    } else {
+      window.sessionStorage.removeItem(USER_CACHE_KEY);
     }
   }, []);
 
-  const persistSession = (token: string, sessionUser: User) => {
-    localStorage.setItem(TOKEN_KEY, token);
-    localStorage.setItem(USER_KEY, JSON.stringify(sessionUser));
-    setUser(sessionUser);
-  };
+  useEffect(() => {
+    const restoreFromCache = () => {
+      if (typeof window === 'undefined') {
+        return;
+      }
+      try {
+        const raw = window.sessionStorage.getItem(USER_CACHE_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw) as User;
+          setUser(parsed);
+        }
+      } catch (error) {
+        console.warn('Không thể khôi phục người dùng từ cache phiên', error);
+      }
+    };
+
+    const loadSession = async () => {
+      try {
+        const response = await fetch('/api/auth/me', {
+          method: 'GET',
+          credentials: 'include',
+        });
+
+        if (!response.ok) {
+          persistUser(null);
+          return;
+        }
+
+        const data = await response.json();
+        if (data?.user) {
+          persistUser({
+            ...data.user,
+            isAdmin: Boolean(data.user.isAdmin),
+          });
+        } else {
+          persistUser(null);
+        }
+      } catch (err) {
+        console.warn('Không thể tải trạng thái đăng nhập hiện tại', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    restoreFromCache();
+    void loadSession();
+  }, [persistUser]);
 
   const login = useCallback(async (email: string, password: string) => {
     setLoading(true);
@@ -66,24 +97,47 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ email, password }),
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || 'Đăng nhập thất bại');
+        throw new Error(data.message || 'Thông tin đăng nhập không chính xác');
       }
 
-      persistSession(data.access_token, data.user);
+      if (!data.user || typeof data.user.isAdmin !== 'boolean') {
+        throw new Error('Không thể xác thực thông tin người dùng');
+      }
+
+      persistUser({
+        ...data.user,
+        isAdmin: Boolean(data.user.isAdmin),
+      });
+
+      toast({
+        title: 'Đăng nhập thành công',
+        description: data.user.isAdmin
+          ? 'Chào mừng quản trị viên đã quay trở lại!'
+          : 'Chào mừng bạn đã quay trở lại!',
+      });
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Đăng nhập thất bại';
+      const message =
+        err instanceof Error
+          ? err.message
+          : 'Không thể đăng nhập vào hệ thống. Vui lòng thử lại.';
       setError(message);
+      toast({
+        title: 'Lỗi đăng nhập',
+        description: message,
+        variant: 'destructive',
+      });
       throw err;
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [persistUser]);
 
   const register = useCallback(async (email: string, password: string, name: string) => {
     setLoading(true);
@@ -93,6 +147,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const response = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ email, password, name }),
       });
 
@@ -102,7 +157,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         throw new Error(data.message || 'Đăng ký thất bại');
       }
 
-      persistSession(data.access_token, data.user);
+      if (!data.user) {
+        throw new Error('Không thể đăng ký. Vui lòng thử lại.');
+      }
+
+      persistUser({
+        ...data.user,
+        isAdmin: Boolean(data.user.isAdmin),
+      });
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Đăng ký thất bại';
       setError(message);
@@ -110,28 +172,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [persistUser]);
 
   const logout = useCallback(async () => {
     setLoading(true);
     setError(null);
 
     try {
-      const token = localStorage.getItem(TOKEN_KEY);
       await fetch('/api/auth/logout', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token }),
+        credentials: 'include',
       });
     } catch (err) {
       console.error('Logout error:', err);
     } finally {
-      localStorage.removeItem(TOKEN_KEY);
-      localStorage.removeItem(USER_KEY);
-      setUser(null);
+      persistUser(null);
       setLoading(false);
     }
-  }, []);
+  }, [persistUser]);
 
   const value: AuthContextType = {
     user,

@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { CategoryModule } from './category/category.module';
 
 @Module({
@@ -9,10 +9,17 @@ import { CategoryModule } from './category/category.module';
       isGlobal: true,
       envFilePath: '.env',
     }),
-    MongooseModule.forRoot(
-      process.env.MONGODB_URI ||
-        'mongodb://admin:adminpassword@localhost:27017/luxhome?authSource=admin',
-    ),
+    MongooseModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: (configService: ConfigService) => ({
+        uri:
+          configService.get<string>('MONGODB_URI') ||
+          'mongodb://admin:adminpassword@localhost:27017/luxhome?authSource=admin',
+        retryAttempts: Number(configService.get<string>('MONGODB_RETRY_ATTEMPTS') ?? 3),
+        retryDelay: Number(configService.get<string>('MONGODB_RETRY_DELAY_MS') ?? 1000),
+      }),
+      inject: [ConfigService],
+    }),
     CategoryModule,
   ],
 })

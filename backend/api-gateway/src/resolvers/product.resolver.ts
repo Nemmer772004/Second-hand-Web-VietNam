@@ -1,7 +1,8 @@
 import { Resolver, Query, Args, ObjectType, Field, InputType, Mutation, Context, Int, Float } from '@nestjs/graphql';
-import { Injectable, Inject, ForbiddenException } from '@nestjs/common';
+import { Injectable, Inject, ForbiddenException, UnauthorizedException } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
+import { fetchWithRetry } from '../utils/http';
 
 @ObjectType()
 class DimensionsType {
@@ -192,10 +193,27 @@ class ProductInput {
   dimensions?: DimensionsInput;
 }
 
+@InputType()
+class CreateReviewInput {
+  @Field(() => Int)
+  star: number;
+
+  @Field()
+  content: string;
+
+  @Field({ nullable: true })
+  reviewerName?: string;
+}
+
 @Resolver()
 @Injectable()
 export class ProductResolver {
   private readonly baseUrl = process.env.PRODUCT_SERVICE_URL || 'http://localhost:3001';
+  private readonly orderBaseUrl =
+    process.env.ORDER_SERVICE_URL ||
+    `http://${process.env.ORDER_SERVICE_HOST || 'localhost'}:${
+      process.env.ORDER_SERVICE_PORT || '3003'
+    }`;
 
   private readonly objectIdRegex = /^[0-9a-fA-F]{24}$/;
 
@@ -225,7 +243,7 @@ export class ProductResolver {
       }
 
       try {
-        const res = await fetch(`${this.baseUrl}/products/${id}`);
+        const res = await fetchWithRetry(`${this.baseUrl}/products/${id}`);
         if (res.ok) {
           const data = await res.json();
           if (data) return this.mapProduct(data);
@@ -314,7 +332,7 @@ export class ProductResolver {
       weight: input.weight,
     };
 
-    const res = await fetch(`${this.baseUrl}/products`, {
+    const res = await fetchWithRetry(`${this.baseUrl}/products`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
@@ -356,7 +374,7 @@ export class ProductResolver {
       weight: input.weight,
     };
 
-    const res = await fetch(`${this.baseUrl}/products/${id}`, {
+    const res = await fetchWithRetry(`${this.baseUrl}/products/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
@@ -377,7 +395,7 @@ export class ProductResolver {
   ) {
     this.ensureAdmin(context);
 
-    const res = await fetch(`${this.baseUrl}/products/${id}`, {
+    const res = await fetchWithRetry(`${this.baseUrl}/products/${id}`, {
       method: 'DELETE',
     });
 
@@ -390,6 +408,39 @@ export class ProductResolver {
     }
 
     return true;
+  }
+
+  @Mutation(() => ReviewType)
+  async createProductReview(
+    @Args('productId') productId: string,
+    @Args('input') input: CreateReviewInput,
+    @Context() context: any,
+  ) {
+    const userId = context?.req?.user?.id || context?.req?.user?._id || context?.req?.headers?.['x-user-id'];
+
+    if (!userId) {
+      throw new UnauthorizedException('Authentication required');
+    }
+
+    const reviewerName = input.reviewerName || context?.req?.user?.name || 'Khách hàng NovaMarket';
+
+    const res = await fetchWithRetry(`${this.baseUrl}/products/${productId}/reviews`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        reviewerName,
+        star: input.star,
+        content: input.content,
+        userId,
+      }),
+    });
+
+    if (!res.ok) {
+      throw new Error(`Unable to create review (${res.status})`);
+    }
+
+    const review = await res.json();
+    return this.mapReview(review);
   }
 
   private mapProduct = (p: any) => {
@@ -487,7 +538,7 @@ export class ProductResolver {
     }
 
     try {
-      const res = await fetch(`${this.baseUrl}/products`);
+      const res = await fetchWithRetry(`${this.baseUrl}/products`);
       if (!res.ok) throw new Error(`REST /products returned ${res.status}`);
       const data = await res.json();
       return Array.isArray(data) ? data : [];
@@ -527,7 +578,7 @@ export class ProductResolver {
     }
 
     try {
-      const res = await fetch(`${this.baseUrl}/products/${id}`);
+      const res = await fetchWithRetry(`${this.baseUrl}/products/${id}`);
       if (res.ok) {
         return await res.json();
       }

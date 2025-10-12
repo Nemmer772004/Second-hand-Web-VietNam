@@ -15,14 +15,14 @@ export class OrdersController {
     return this.ordersService.findAll();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.ordersService.findOne(id);
-  }
-
   @Get('user/:userId')
   findByUserId(@Param('userId') userId: string) {
     return this.ordersService.findByUserId(userId);
+  }
+
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this.ordersService.findOne(id);
   }
 
   @Patch(':id')
@@ -41,5 +41,31 @@ export class OrdersController {
     @Body('status') status: string,
   ) {
     return this.ordersService.updateStatus(id, status);
+  }
+
+  @Patch(':id/user-update')
+  updateByUser(
+    @Param('id') id: string,
+    @Body('userId') userId: string,
+    @Body('shippingAddress') shippingAddress?: string,
+    @Body('note') note?: string,
+  ) {
+    return this.ordersService.updateByUser(id, userId, { shippingAddress, note });
+  }
+
+  @Patch(':id/cancel')
+  cancelByUser(
+    @Param('id') id: string,
+    @Body('userId') userId: string,
+  ) {
+    return this.ordersService.cancelByUser(id, userId);
+  }
+
+  @Patch(':id/confirm-receipt')
+  confirmReceipt(
+    @Param('id') id: string,
+    @Body('userId') userId: string,
+  ) {
+    return this.ordersService.confirmReceipt(id, userId);
   }
 }

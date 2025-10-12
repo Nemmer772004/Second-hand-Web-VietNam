@@ -12,8 +12,8 @@ services:
       - PORT=3002
       - DB_HOST=postgres
       - DB_PORT=5432
-      - DB_USERNAME=postgres
-      - DB_PASSWORD=postgres
+      - DB_USERNAME=nemmer
+      - DB_PASSWORD=nemmer
       - DB_NAME=cart_service_db
     depends_on:
       - postgres
@@ -23,8 +23,8 @@ services:
     ports:
       - "5432:5432"
     environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_USER=nemmer
+      - POSTGRES_PASSWORD=nemmer
       - POSTGRES_DB=cart_service_db
     volumes:
       - postgres_data:/var/lib/postgresql/data

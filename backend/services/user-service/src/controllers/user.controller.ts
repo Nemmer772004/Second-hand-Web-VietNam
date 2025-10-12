@@ -1,189 +1,347 @@
 import { Request, Response } from 'express';
-import jwt from 'jsonwebtoken';
-import User from '../models/user.model.js';
-import Session from '../models/session.model.js';
+import { AppDataSource } from '../database.js';
+import { UserProfile } from '../entities/user-profile.entity.js';
 
-// Get all users
-export const getAllUsers = async (req: Request, res: Response) => {
+const AUTH_SERVICE_BASE = (process.env.AUTH_SERVICE_URL || 'http://localhost:3006/auth').replace(/\/$/, '');
+
+type AuthUser = {
+  id: string;
+  email: string;
+  name: string;
+  avatar?: string | null;
+  isAdmin?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+};
+
+type AuthResponse = {
+  access_token: string;
+  user: AuthUser;
+};
+
+type FetchInit = {
+  method?: string;
+  headers?: Record<string, string>;
+  body?: any;
+};
+
+const ensurePath = (path: string) => (path.startsWith('/') ? path : `/${path}`);
+
+const authFetch = (path: string, init: FetchInit = {}) => {
+  const url = `${AUTH_SERVICE_BASE}${ensurePath(path)}`;
+  const headers: Record<string, string> = {
+    ...(init.headers as Record<string, string> | undefined),
+  };
+  if (!headers['Accept']) {
+    headers['Accept'] = 'application/json';
+  }
+  if (init.body && !headers['Content-Type']) {
+    headers['Content-Type'] = 'application/json';
+  }
+  return fetch(url, { ...init, headers });
+};
+
+const userRepository = () => AppDataSource.getRepository(UserProfile);
+
+const normalizeAddress = (address: any): Record<string, any> | null => {
+  if (!address) return null;
+  if (typeof address === 'object') {
+    return {
+      street: address.street ?? null,
+      city: address.city ?? null,
+      state: address.state ?? null,
+      zipCode: address.zipCode ?? null,
+      country: address.country ?? null,
+    };
+  }
+  return { raw: String(address) };
+};
+
+const toISO = (value?: Date | string | null) => {
+  if (!value) return undefined;
+  if (value instanceof Date) return value.toISOString();
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? undefined : parsed.toISOString();
+};
+
+const resolveRole = (role?: string, fallback: 'admin' | 'user' = 'user'): 'admin' | 'user' => {
+  if (role === 'admin') return 'admin';
+  if (role === 'user') return 'user';
+  return fallback;
+};
+
+const ensureUserProfile = async (
+  authUser: AuthUser,
+  options: {
+    name?: string;
+    role?: string;
+    phone?: string;
+    address?: any;
+  } = {},
+) => {
+  const repo = userRepository();
+  const role = resolveRole(options.role, authUser.isAdmin ? 'admin' : 'user');
+
+  let profile = await repo.findOne({ where: [{ authId: authUser.id }, { email: authUser.email }] });
+
+  if (!profile) {
+    profile = repo.create({
+      authId: authUser.id,
+      email: authUser.email,
+      name: options.name || authUser.name,
+      role,
+      phone: options.phone ?? null,
+      address: normalizeAddress(options.address),
+      avatar: authUser.avatar ?? null,
+    });
+  } else {
+    profile.authId = authUser.id;
+    profile.email = authUser.email;
+    profile.name = options.name || authUser.name || profile.name;
+    profile.role = resolveRole(options.role, profile.role);
+    profile.phone = typeof options.phone === 'string' ? options.phone : profile.phone;
+    profile.address = options.address !== undefined ? normalizeAddress(options.address) : profile.address;
+    profile.avatar = authUser.avatar ?? profile.avatar ?? null;
+  }
+
+  return repo.save(profile);
+};
+
+const toClientUser = (authUser: AuthUser, profile?: UserProfile | null) => {
+  const isAdmin = Boolean(authUser.isAdmin) || profile?.role === 'admin';
+  return {
+    id: authUser.id,
+    authId: authUser.id,
+    profileId: profile?.id,
+    email: authUser.email,
+    name: profile?.name || authUser.name,
+    avatar: authUser.avatar || profile?.avatar || null,
+    isAdmin,
+    role: profile?.role || (isAdmin ? 'admin' : 'user'),
+    phone: profile?.phone ?? null,
+    address: profile?.address ?? null,
+    createdAt: toISO(profile?.createdAt) || authUser.createdAt,
+    updatedAt: toISO(profile?.updatedAt) || authUser.updatedAt,
+  };
+};
+
+const toProfileResponse = (profile: UserProfile | null) => {
+  if (!profile) return null;
+  return {
+    id: profile.id,
+    profileId: profile.id,
+    authId: profile.authId,
+    email: profile.email,
+    name: profile.name,
+    role: profile.role,
+    phone: profile.phone,
+    address: profile.address,
+    createdAt: toISO(profile.createdAt),
+    updatedAt: toISO(profile.updatedAt),
+  };
+};
+
+export const getAllUsers = async (_req: Request, res: Response) => {
   try {
-    const users = await User.find().select('-password');
-    res.json(users);
+    const users = await userRepository().find({ order: { createdAt: 'ASC' } });
+    res.json(users.map(toProfileResponse));
   } catch (error) {
+    console.error('getAllUsers error', error);
     res.status(500).json({ message: 'Error fetching users' });
   }
 };
 
-// Get user by ID
 export const getUserById = async (req: Request, res: Response) => {
   try {
-    const user = await User.findById(req.params.id).select('-password');
+    const user = await userRepository().findOne({ where: { id: req.params.id } });
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
-    res.json(user);
+    res.json(toProfileResponse(user));
   } catch (error) {
+    console.error('getUserById error', error);
     res.status(500).json({ message: 'Error fetching user' });
   }
 };
 
-// Create user
-const buildAuthResponse = (user: any, token: string) => {
-  const userWithoutPassword = user.toObject ? user.toObject() : user;
-  const { password: _pw, _id, ...userResponse } = userWithoutPassword;
-  return {
-    access_token: token,
-    user: {
-      id: _id?.toString?.() || userWithoutPassword.id,
-      ...userResponse,
-    },
-  };
-};
-
-const persistSession = async (userId: string, token: string) => {
+export const getUserByAuthId = async (req: Request, res: Response) => {
   try {
-    await Session.create({
-      userId,
-      token,
-    });
+    const user = await userRepository().findOne({ where: { authId: req.params.authId } });
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    res.json(toProfileResponse(user));
   } catch (error) {
-    console.warn('Failed to persist session', error);
+    console.error('getUserByAuthId error', error);
+    res.status(500).json({ message: 'Error fetching user' });
   }
 };
 
 export const createUser = async (req: Request, res: Response) => {
   try {
-    const user = new User(req.body);
-    const savedUser = await user.save();
-    const token = jwt.sign(
-      { userId: savedUser._id, role: savedUser.role },
-      process.env.JWT_SECRET || 'secret',
-      { expiresIn: '24h' }
-    );
-    await persistSession(String(savedUser._id), token);
-    res.status(201).json(buildAuthResponse(savedUser, token));
-  } catch (error) {
-    if ((error as any)?.code === 11000) {
+    const { email, password, name, phone, role, address } = req.body || {};
+    if (!email || !password || !name) {
+      return res.status(400).json({ message: 'name, email and password are required' });
+    }
+
+    const authRes = await authFetch('/register', {
+      method: 'POST',
+      body: JSON.stringify({
+        email,
+        password,
+        name,
+        isAdmin: role === 'admin',
+      }),
+    });
+
+    if (!authRes.ok) {
+      const errorPayload = await authRes.json().catch(() => ({}));
+      return res.status(authRes.status).json(errorPayload);
+    }
+
+    const authData = (await authRes.json()) as AuthResponse;
+    const profile = await ensureUserProfile(authData.user, {
+      name,
+      phone,
+      role: resolveRole(role),
+      address,
+    });
+
+    res.status(201).json({
+      access_token: authData.access_token,
+      user: toClientUser(authData.user, profile),
+    });
+  } catch (error: any) {
+    if (error?.code === '23505') {
       return res.status(409).json({ message: 'Email already in use' });
     }
+    console.error('createUser error', error);
     res.status(500).json({ message: 'Error creating user' });
   }
 };
 
-// Update user
 export const updateUser = async (req: Request, res: Response) => {
   try {
-    const user = await User.findByIdAndUpdate(
-      req.params.id,
-      { ...req.body, updatedAt: Date.now() },
-      { new: true }
-    ).select('-password');
+    const repo = userRepository();
+    const user = await repo.findOne({ where: { id: req.params.id } });
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
-    res.json(user);
+
+    const { name, phone, role, address } = req.body || {};
+    if (typeof name === 'string') user.name = name;
+    if (typeof phone === 'string') user.phone = phone;
+    if (typeof role === 'string') user.role = resolveRole(role, user.role);
+    if (address !== undefined) {
+      user.address = normalizeAddress(address);
+    }
+
+    const saved = await repo.save(user);
+    res.json(toProfileResponse(saved));
   } catch (error) {
+    console.error('updateUser error', error);
     res.status(500).json({ message: 'Error updating user' });
   }
 };
 
-// Delete user
 export const deleteUser = async (req: Request, res: Response) => {
   try {
-    const user = await User.findByIdAndDelete(req.params.id);
-    if (!user) {
+    const repo = userRepository();
+    const result = await repo.delete({ id: req.params.id });
+    if (!result.affected) {
       return res.status(404).json({ message: 'User not found' });
     }
     res.status(204).end();
   } catch (error) {
+    console.error('deleteUser error', error);
     res.status(500).json({ message: 'Error deleting user' });
   }
 };
 
-// Login
 export const login = async (req: Request, res: Response) => {
   try {
-    const { email, password: inputPassword } = req.body;
-    const user = await User.findOne({ email });
-    
-    if (!user) {
-      return res.status(401).json({ message: 'Invalid email or password' });
+    const { email, password } = req.body || {};
+    if (!email || !password) {
+      return res.status(400).json({ message: 'email and password are required' });
     }
 
-    const isValidPassword = await user.comparePassword(inputPassword);
-    if (!isValidPassword) {
-      return res.status(401).json({ message: 'Invalid email or password' });
+    const authRes = await authFetch('/login', {
+      method: 'POST',
+      body: JSON.stringify({ email, password }),
+    });
+
+    if (!authRes.ok) {
+      const errorPayload = await authRes.json().catch(() => ({}));
+      return res.status(authRes.status).json(errorPayload);
     }
 
-    const token = jwt.sign(
-      { userId: user._id, role: user.role },
-      process.env.JWT_SECRET || 'secret',
-      { expiresIn: '24h' }
-    );
-    await persistSession(String(user._id), token);
-
-    res.json(buildAuthResponse(user, token));
+    const authData = (await authRes.json()) as AuthResponse;
+    const profile = await ensureUserProfile(authData.user, { name: authData.user.name });
+    res.json({
+      access_token: authData.access_token,
+      user: toClientUser(authData.user, profile),
+    });
   } catch (error) {
+    console.error('login error', error);
     res.status(500).json({ message: 'Error during login' });
   }
 };
 
-export const logout = async (req: Request, res: Response) => {
-  try {
-    const authHeader = req.headers.authorization || req.body?.token;
-    const token = typeof authHeader === 'string' && authHeader.startsWith('Bearer ')
-      ? authHeader.split(' ')[1]
-      : authHeader;
-
-    if (!token) {
-      return res.status(400).json({ message: 'Token is required' });
-    }
-
-    await Session.deleteOne({ token });
-    res.json({ success: true });
-  } catch (error) {
-    res.status(500).json({ message: 'Error during logout' });
-  }
+export const logout = async (_req: Request, res: Response) => {
+  res.json({ success: true });
 };
 
 export const getCurrentUser = async (req: Request, res: Response) => {
   try {
-    const authHeader = req.headers.authorization || req.query?.token as string;
+    const authHeader = (req.headers.authorization ||
+      (typeof req.query?.token === 'string' ? req.query.token : undefined)) as string | undefined;
     if (!authHeader) {
       return res.status(401).json({ message: 'Missing token' });
     }
 
     const token = authHeader.startsWith('Bearer ')
-      ? authHeader.split(' ')[1]
+      ? authHeader.slice('Bearer '.length)
       : authHeader;
 
-    const session = await Session.findOne({ token });
-    if (!session) {
-      return res.status(401).json({ message: 'Invalid session' });
-    }
-
-    let payload: { userId: string };
-    try {
-      payload = jwt.verify(token, process.env.JWT_SECRET || 'secret') as { userId: string };
-    } catch {
-      return res.status(401).json({ message: 'Invalid token' });
-    }
-    const user = await User.findById(payload.userId).select('-password');
-
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
-    }
-
-    res.json({
-      id: user._id?.toString?.() || user.id,
-      email: user.email,
-      name: user.name,
-      role: user.role,
-      phone: user.phone,
-      address: user.address,
-      createdAt: user.createdAt,
-      updatedAt: user.updatedAt,
+    const authRes = await authFetch('/profile', {
+      headers: { Authorization: `Bearer ${token}` },
     });
+
+    if (!authRes.ok) {
+      const errorPayload = await authRes.json().catch(() => ({}));
+      return res.status(authRes.status).json(errorPayload);
+    }
+
+    const authUser = (await authRes.json()) as AuthUser;
+    const profile =
+      (await userRepository().findOne({ where: { authId: authUser.id } })) ||
+      (await ensureUserProfile(authUser, { name: authUser.name }));
+
+    res.json(toClientUser(authUser, profile));
   } catch (error) {
+    console.error('getCurrentUser error', error);
     res.status(500).json({ message: 'Error fetching current user' });
+  }
+};
+
+export const syncProfile = async (req: Request, res: Response) => {
+  try {
+    const { authUser, profile: profilePayload } = req.body || {};
+
+    if (!authUser?.id || !authUser?.email) {
+      return res.status(400).json({ message: 'Invalid auth user payload' });
+    }
+
+    const saved = await ensureUserProfile(authUser, {
+      name: authUser.name,
+      role: profilePayload?.role,
+      phone: profilePayload?.phone,
+      address: profilePayload?.address,
+    });
+
+    res.json(toProfileResponse(saved));
+  } catch (error) {
+    console.error('syncProfile error', error);
+    res.status(500).json({ message: 'Error syncing profile' });
   }
 };

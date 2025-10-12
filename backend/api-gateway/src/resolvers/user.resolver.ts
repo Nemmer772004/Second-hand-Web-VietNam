@@ -2,11 +2,18 @@ import { Resolver, Query, Args, ObjectType, Field, InputType, Mutation, Context 
 import { Inject, ForbiddenException } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
+import { fetchWithRetry } from '../utils/http';
 
 @ObjectType()
 class UserType {
   @Field()
   id: string;
+
+  @Field({ nullable: true })
+  authId?: string;
+
+  @Field({ nullable: true })
+  profileId?: string;
 
   @Field()
   name: string;
@@ -74,7 +81,9 @@ export class UserResolver {
 
   private mapUser(user: any): UserType | null {
     if (!user) return null;
-    const id = user.id || user._id?.toString?.() || user._id;
+    const authId = user.authId || user.id || user._id?.toString?.() || user._id;
+    const profileId = user.profileId || user._id?.toString?.() || undefined;
+    const id = authId || profileId;
     const rawAddress = user.address;
     let addressText: string | undefined;
     if (rawAddress && typeof rawAddress === 'object') {
@@ -88,6 +97,8 @@ export class UserResolver {
 
     return {
       id,
+      authId,
+      profileId,
       name: user.name,
       email: user.email,
       phone: user.phone,
@@ -135,7 +146,7 @@ export class UserResolver {
 
   private async fetchUsersRest(): Promise<UserType[]> {
     try {
-      const res = await fetch(this.baseUrl);
+      const res = await fetchWithRetry(this.baseUrl);
       if (!res.ok) return [];
       const data = await res.json();
       return Array.isArray(data)
@@ -149,7 +160,7 @@ export class UserResolver {
 
   private async fetchUserRest(id: string): Promise<UserType | null> {
     try {
-      const res = await fetch(`${this.baseUrl}/${id}`);
+      const res = await fetchWithRetry(`${this.baseUrl}/${id}`);
       if (!res.ok) return null;
       return this.mapUser(await res.json());
     } catch (error) {
@@ -172,7 +183,7 @@ export class UserResolver {
       role: input.role || 'user',
     };
 
-    const res = await fetch(this.baseUrl, {
+    const res = await fetchWithRetry(this.baseUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
@@ -199,7 +210,7 @@ export class UserResolver {
     if (typeof input.phone === 'string') body.phone = input.phone;
     if (typeof input.role === 'string') body.role = input.role;
 
-    const res = await fetch(`${this.baseUrl}/${id}`, {
+    const res = await fetchWithRetry(`${this.baseUrl}/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
@@ -223,7 +234,7 @@ export class UserResolver {
   ) {
     this.ensureAdmin(context);
 
-    const res = await fetch(`${this.baseUrl}/${id}`, {
+    const res = await fetchWithRetry(`${this.baseUrl}/${id}`, {
       method: 'DELETE',
     });
 

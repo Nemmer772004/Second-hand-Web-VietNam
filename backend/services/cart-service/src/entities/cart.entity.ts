@@ -1,22 +1,29 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, Index } from 'typeorm';
 
-@Entity()
+@Entity({ name: 'cart_items' })
+@Index(['userId', 'productId'], { unique: true })
 export class Cart {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column('uuid')
+  @Column({ type: 'varchar', length: 128 })
   userId: string;
 
-  @Column('uuid')
+  @Column({ type: 'varchar', length: 128 })
   productId: string;
 
-  @Column()
+  @Column({ type: 'int', default: 1 })
   quantity: number;
+
+  @Column({ type: 'float', default: 0 })
+  unitPrice: number;
+
+  @Column({ type: 'float', default: 0 })
+  totalPrice: number;
 
   @CreateDateColumn()
   createdAt: Date;
 
   @UpdateDateColumn()
   updatedAt: Date;
-  } 
+}

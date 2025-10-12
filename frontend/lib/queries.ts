@@ -278,6 +278,28 @@ export const GET_ORDER_BY_ID = gql`
   }
 `;
 
+export const GET_MY_VOUCHERS = gql`
+  query MyVouchers {
+    myVouchers {
+      id
+      code
+      status
+      discountType
+      discountValue
+      minOrderValue
+      maxDiscountValue
+      description
+      validFrom
+      validUntil
+      usageLimit
+      usageCount
+      sourceOrderId
+      createdAt
+      updatedAt
+    }
+  }
+`;
+
 // Order Mutations
 export const CREATE_ORDER = gql`
   mutation CreateOrder($input: CreateOrderInput!) {
@@ -359,3 +381,51 @@ export const DELETE_USER = gql`
     }
   }
 `;
+export const CONFIRM_ORDER_RECEIPT = gql`
+  mutation ConfirmOrderReceipt($id: String!) {
+    confirmOrderReceipt(id: $id) {
+      id
+      status
+      paymentStatus
+      updatedAt
+    }
+  }
+`;
+
+export const CANCEL_ORDER = gql`
+  mutation CancelOrder($id: String!) {
+    cancelOrder(id: $id) {
+      id
+      status
+      paymentStatus
+      updatedAt
+    }
+  }
+`;
+
+export const UPDATE_ORDER = gql`
+  mutation UpdateOrder($id: String!, $input: UpdateOrderInput!) {
+    updateOrder(id: $id, input: $input) {
+      id
+      status
+      paymentStatus
+      updatedAt
+      notes
+      shippingAddress
+    }
+  }
+`;
+
+export const CREATE_PRODUCT_REVIEW = gql`
+  mutation CreateProductReview($productId: String!, $input: CreateReviewInput!) {
+    createProductReview(productId: $productId, input: $input) {
+      reviewId
+      productId
+      reviewerName
+      star
+      content
+      time
+    }
+  }
+`;
+

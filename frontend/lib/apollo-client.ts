@@ -1,28 +1,38 @@
-import { ApolloClient, InMemoryCache, createHttpLink } from '@apollo/client';
-import { setContext } from '@apollo/client/link/context';
+import { ApolloClient, InMemoryCache, createHttpLink, from } from '@apollo/client';
+import { onError } from '@apollo/client/link/error';
+import { toast } from '@/hooks/use-toast';
 
-const httpLink = createHttpLink({
-  uri: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/graphql'
-});
+export const DEFAULT_GRAPHQL_URI = '/api/graphql';
 
-// Auth link to attach token to requests
-const authLink = setContext((_, { headers }) => {
-  let token;
-  // Only try to access localStorage on the client side
-  if (typeof window !== 'undefined') {
-    token = localStorage.getItem('token');
+const errorLink = onError(({ graphQLErrors, networkError }) => {
+  if (graphQLErrors) {
+    graphQLErrors.forEach(({ message }) => {
+      toast({
+        title: 'Có lỗi xảy ra',
+        description: 'Không thể thực hiện thao tác. Vui lòng thử lại.',
+        variant: 'destructive',
+      });
+    });
   }
 
-  return {
-    headers: {
-      ...headers,
-      authorization: token ? `Bearer ${token}` : '',
-    }
-  };
+  if (networkError) {
+    toast({
+      title: 'Lỗi kết nối',
+      description: 'Không thể kết nối tới hệ thống. Vui lòng kiểm tra lại đường truyền mạng và thử lại.',
+      variant: 'destructive',
+    });
+  }
+});
+
+const httpLink = createHttpLink({
+  uri: process.env.NEXT_PUBLIC_GRAPHQL_PROXY_URL || DEFAULT_GRAPHQL_URI,
+  fetchOptions: {
+    credentials: 'include',
+  },
 });
 
 export const client = new ApolloClient({
-  link: authLink.concat(httpLink),
+  link: from([errorLink, httpLink]),
   cache: new InMemoryCache({
     typePolicies: {
       Query: {
@@ -48,6 +58,9 @@ export const client = new ApolloClient({
     },
     query: {
       fetchPolicy: 'network-only',
+      errorPolicy: 'all'
+    },
+    mutate: {
       errorPolicy: 'all'
     }
   }

@@ -96,4 +96,19 @@ export class ProductController {
       throw new HttpException('Product not found', HttpStatus.NOT_FOUND);
     }
   }
+
+  @Post('products/:id/reviews')
+  async addReview(
+    @Param('id') id: string,
+    @Body() body: { reviewerName?: string; star: number; content: string },
+  ) {
+    try {
+      return await this.productService.addReview(id, body);
+    } catch (error) {
+      throw new HttpException(
+        (error as Error)?.message || 'Unable to create review',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
 }

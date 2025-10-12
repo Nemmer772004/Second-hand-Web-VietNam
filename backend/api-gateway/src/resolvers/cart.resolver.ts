@@ -2,12 +2,16 @@ import { Resolver, Query, Mutation, Args, Context, InputType, Field, ObjectType 
 import { Inject } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
+import { fetchWithRetry } from '../utils/http';
 
 interface CartItem {
   id: string;
   quantity: number;
   productId: string;
   userId: string;
+  unitPrice?: number;
+  totalPrice?: number;
+  price?: number;
 }
 
 @ObjectType()
@@ -45,6 +49,9 @@ class CartItemType {
   @Field({ nullable: true })
   price?: number;
 
+  @Field({ nullable: true })
+  unitPrice?: number;
+
   @Field(() => ProductMiniType, { nullable: true })
   product?: ProductMiniType;
 
@@ -77,6 +84,95 @@ export class CartResolver {
     @Inject('PRODUCT_SERVICE') private readonly productClient: ClientProxy,
   ) {}
 
+  private get productServiceBase(): string {
+    const configured = process.env.PRODUCT_SERVICE_URL;
+    if (configured) {
+      return configured.replace(/\/$/, '');
+    }
+    const host = process.env.PRODUCT_SERVICE_HOST || 'localhost';
+    const port = process.env.PRODUCT_SERVICE_PORT || '3001';
+    return `http://${host}:${port}`;
+  }
+
+  private get cartServiceBase(): string {
+    const configured = process.env.CART_SERVICE_URL;
+    if (configured) {
+      return configured.replace(/\/$/, '');
+    }
+    const host = process.env.CART_SERVICE_HOST || 'localhost';
+    const port =
+      process.env.CART_SERVICE_HTTP_PORT ||
+      process.env.CART_SERVICE_REST_PORT ||
+      process.env.CART_SERVICE_PORT_HTTP ||
+      process.env.PORT_CART_SERVICE ||
+      '3007';
+    return `http://${host}:${port}`;
+  }
+
+  private async loadProduct(productId: string): Promise<any> {
+    if (!productId) {
+      return null;
+    }
+    try {
+      const product = await firstValueFrom(
+        this.productClient.send('get_product', { id: productId }),
+      );
+      if (product) {
+        return product;
+      }
+    } catch {
+      /* ignore microservice errors */
+    }
+
+    try {
+      const response = await fetchWithRetry(`${this.productServiceBase}/products/${productId}`);
+      if (response.ok) {
+        return response.json();
+      }
+    } catch {
+      /* ignore REST errors */
+    }
+    return null;
+  }
+
+  private async enrichCartItem(raw: any): Promise<CartItem> {
+    const product = await this.loadProduct(raw?.productId);
+    const quantity = Number(raw?.quantity) || 0;
+    const unitPrice =
+      typeof raw?.unitPrice === 'number'
+        ? Number(raw.unitPrice)
+        : product?.price != null
+        ? Number(product.price)
+        : quantity > 0 && typeof raw?.price === 'number'
+        ? Number(raw.price) / quantity
+        : undefined;
+
+    const totalPrice =
+      typeof raw?.totalPrice === 'number'
+        ? Number(raw.totalPrice)
+        : typeof raw?.price === 'number'
+        ? Number(raw.price)
+        : unitPrice != null
+        ? Number(unitPrice) * quantity
+        : undefined;
+
+    return {
+      ...raw,
+      unitPrice: unitPrice != null ? Number(unitPrice) : undefined,
+      price: totalPrice != null ? Number(totalPrice) : undefined,
+      totalPrice: totalPrice != null ? Number(totalPrice) : undefined,
+      product: product
+        ? {
+            id: product.id || product._id?.toString?.() || product._id,
+            name: product.name,
+            price: Number(product.price),
+            image: product.image,
+            stock: product.stock,
+          }
+        : undefined,
+    };
+  }
+
   @Query(() => [CartItemType])
   async cart(@Context() context: any): Promise<CartItem[]> {
     const { req } = context;
@@ -91,7 +187,7 @@ export class CartResolver {
     // REST fallback
     if (!items) {
       try {
-        const res = await fetch(`http://localhost:3007/cart?userId=${userId}`, {
+        const res = await fetchWithRetry(`${this.cartServiceBase}/cart?userId=${userId}`, {
           headers: { 'x-user-id': String(userId) }
         });
         const data = await res.json();
@@ -100,27 +196,9 @@ export class CartResolver {
     }
     items = items || [];
 
-    // Enrich with product and price
-    const enriched = await Promise.all((items || []).map(async (item: any) => {
-      try {
-        const product = await firstValueFrom(
-          this.productClient.send('get_product', { id: item.productId })
-        );
-        return {
-          ...item,
-          product: product ? {
-            id: product.id || product._id?.toString?.() || product._id,
-            name: product.name,
-            price: product.price,
-            image: product.image,
-            stock: product.stock,
-          } : undefined,
-          price: product ? Number(product.price) * Number(item.quantity) : undefined,
-        };
-      } catch {
-        return item;
-      }
-    }));
+    const enriched = await Promise.all(
+      (items || []).map((item: any) => this.enrichCartItem(item)),
+    );
 
     return enriched as any;
   }
@@ -144,7 +222,7 @@ export class CartResolver {
 
     if (!item) {
       try {
-        const res = await fetch(`http://localhost:3007/cart/${id}?userId=${userId}`);
+        const res = await fetchWithRetry(`${this.cartServiceBase}/cart/${id}?userId=${userId}`);
         if (res.ok) {
           item = await res.json();
         }
@@ -154,24 +232,7 @@ export class CartResolver {
     }
 
     if (!item) return null;
-    try {
-      const product = await firstValueFrom(
-        this.productClient.send('get_product', { id: item.productId })
-      );
-      return {
-        ...item,
-        product: product ? {
-          id: product.id || product._id?.toString?.() || product._id,
-          name: product.name,
-          price: product.price,
-          image: product.image,
-          stock: product.stock,
-        } : undefined,
-        price: product ? Number(product.price) * Number(item.quantity) : undefined,
-      } as any;
-    } catch {
-      return item as any;
-    }
+    return (await this.enrichCartItem(item)) as any;
   }
 
   @Mutation(() => CartItemType)
@@ -193,7 +254,7 @@ export class CartResolver {
 
     if (!item) {
       try {
-        const res = await fetch('http://localhost:3007/cart', {
+        const res = await fetchWithRetry(`${this.cartServiceBase}/cart`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -210,24 +271,7 @@ export class CartResolver {
         throw error;
       }
     }
-    try {
-      const product = await firstValueFrom(
-        this.productClient.send('get_product', { id: item.productId })
-      );
-      return {
-        ...item,
-        product: product ? {
-          id: product.id || product._id?.toString?.() || product._id,
-          name: product.name,
-          price: product.price,
-          image: product.image,
-          stock: product.stock,
-        } : undefined,
-        price: product ? Number(product.price) * Number(item.quantity) : undefined,
-      } as any;
-    } catch {
-      return item as any;
-    }
+    return (await this.enrichCartItem(item)) as any;
   }
 
   @Mutation(() => CartItemType)
@@ -250,7 +294,7 @@ export class CartResolver {
 
     if (!item) {
       try {
-        const res = await fetch(`http://localhost:3007/cart/${id}?userId=${userId}`, {
+        const res = await fetchWithRetry(`${this.cartServiceBase}/cart/${id}?userId=${userId}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -267,25 +311,7 @@ export class CartResolver {
         throw error;
       }
     }
-
-    try {
-      const product = await firstValueFrom(
-        this.productClient.send('get_product', { id: item.productId })
-      );
-      return {
-        ...item,
-        product: product ? {
-          id: product.id || product._id?.toString?.() || product._id,
-          name: product.name,
-          price: product.price,
-          image: product.image,
-          stock: product.stock,
-        } : undefined,
-        price: product ? Number(product.price) * Number(item.quantity) : undefined,
-      } as any;
-    } catch {
-      return item as any;
-    }
+    return (await this.enrichCartItem(item)) as any;
   }
 
   @Mutation(() => Boolean)
@@ -305,7 +331,7 @@ export class CartResolver {
     }
 
     try {
-      const res = await fetch(`http://localhost:3007/cart/${id}?userId=${userId}`, {
+      const res = await fetchWithRetry(`${this.cartServiceBase}/cart/${id}?userId=${userId}`, {
         method: 'DELETE',
         headers: {
           'x-user-id': String(userId),
@@ -335,7 +361,7 @@ export class CartResolver {
     }
 
     try {
-      const res = await fetch(`http://localhost:3007/cart?userId=${userId}`, {
+      const res = await fetchWithRetry(`${this.cartServiceBase}/cart?userId=${userId}`, {
         method: 'DELETE',
         headers: {
           'x-user-id': String(userId),

@@ -1,35 +1,52 @@
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { Cart } from './entities/cart.entity';
-import { CartService } from './cart.service';
-import { CartController } from './cart.controller';
+import { ConfigService } from '@nestjs/config';
 import { ClientsModule, Transport } from '@nestjs/microservices';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { CartController } from './cart.controller';
+import { CartMessageController } from './cart.message.controller';
+import { CartService } from './cart.service';
+import { Cart } from './entities/cart.entity';
+
+const truthy = (value?: string) =>
+  typeof value === 'string' && ['1', 'true', 'yes', 'on'].includes(value.toLowerCase());
 
 @Module({
   imports: [
-    TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: process.env.DB_HOST || 'localhost',
-      port: parseInt(process.env.DB_PORT) || 5432,
-      username: process.env.DB_USERNAME || 'postgres',
-      password: process.env.DB_PASSWORD || 'postgres',
-      database: process.env.DB_NAME || 'studio_cart',
-      entities: [Cart],
-      synchronize: true,
+    TypeOrmModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
+        type: 'postgres',
+        host: config.get<string>('DB_HOST', 'localhost'),
+        port: Number(config.get<string>('DB_PORT') ?? 5432),
+        username: config.get<string>('DB_USERNAME', 'nemmer'),
+        password: config.get<string>('DB_PASSWORD', 'nemmer'),
+        database: config.get<string>('DB_NAME', 'studio_cart'),
+        entities: [Cart],
+        synchronize: truthy(config.get<string>('TYPEORM_SYNC') ?? 'true'),
+        logging: truthy(config.get<string>('TYPEORM_LOGGING') ?? 'false'),
+      }),
     }),
     TypeOrmModule.forFeature([Cart]),
-    ClientsModule.register([
+    ClientsModule.registerAsync([
       {
         name: 'PRODUCT_SERVICE',
-        transport: Transport.TCP,
-        options: {
-          host: process.env.PRODUCT_SERVICE_HOST || 'product-service',
-          port: parseInt(process.env.PRODUCT_SERVICE_PORT) || 3001,
-        },
+        inject: [ConfigService],
+        useFactory: (config: ConfigService) => ({
+          transport: Transport.TCP,
+          options: {
+            host: config.get<string>('PRODUCT_SERVICE_HOST', 'localhost'),
+            port: Number(
+              config.get<string>('PRODUCT_SERVICE_MS_PORT') ??
+                config.get<string>('PRODUCT_SERVICE_TCP_PORT') ??
+                config.get<string>('PRODUCT_SERVICE_PORT') ??
+                3011,
+            ),
+          },
+        }),
       },
     ]),
   ],
-  controllers: [CartController],
+  controllers: [CartController, CartMessageController],
   providers: [CartService],
   exports: [CartService],
 })

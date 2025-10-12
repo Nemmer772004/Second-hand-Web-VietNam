@@ -10,6 +10,11 @@ type AuthUserType {
   isAdmin: Boolean
 }
 
+type AuthPayloadType {
+  access_token: String!
+  user: AuthUserType!
+}
+
 type DimensionsType {
   width: Float!
   height: Float!
@@ -79,6 +84,7 @@ type CartItemType {
   productId: String!
   userId: String!
   price: Float
+  unitPrice: Float
   product: ProductMiniType
   createdAt: String
   updatedAt: String
@@ -113,6 +119,8 @@ type OrderType {
 
 type UserType {
   id: String!
+  authId: String
+  profileId: String
   name: String!
   email: String!
   phone: String
@@ -120,6 +128,52 @@ type UserType {
   role: String
   createdAt: String
   updatedAt: String
+}
+
+type VoucherType {
+  id: String!
+  code: String!
+  status: String!
+  discountType: String!
+  discountValue: Float!
+  minOrderValue: Float
+  maxDiscountValue: Float
+  userId: String!
+  description: String
+  validFrom: String
+  validUntil: String
+  usageLimit: Float
+  usageCount: Float
+  sourceOrderId: String
+  createdAt: String
+  updatedAt: String
+}
+
+type RecordInteractionPayload {
+  id: String!
+  occurredAt: String!
+  createdAt: String!
+}
+
+type RecordInteractionsResult {
+  created: Float!
+  ids: [String!]!
+}
+
+type RecommendationProductType {
+  productId: String!
+  productName: String
+  productSlug: String
+  image: String
+  price: Float
+  score: Float
+}
+
+type RecommendationResultType {
+  userId: String!
+  reply: String
+  generatedAt: String!
+  items: [RecommendationProductType!]!
 }
 
 type Query {
@@ -136,15 +190,19 @@ type Query {
   myOrders: [OrderType!]!
   users: [UserType!]!
   user(id: String!): UserType
+  myVouchers: [VoucherType!]!
+  vouchers: [VoucherType!]!
+  recommendations(userId: String!, topK: Int): RecommendationResultType!
 }
 
 type Mutation {
-  login(input: LoginInputGql!): String!
-  register(input: RegisterInputGql!): String!
+  login(input: LoginInput!): AuthPayloadType!
+  register(input: RegisterInput!): AuthPayloadType!
   logout: Boolean!
   createProduct(input: ProductInput!): ProductType!
   updateProduct(id: String!, input: ProductInput!): ProductType!
   deleteProduct(id: String!): Boolean!
+  createProductReview(productId: String!, input: CreateReviewInput!): ReviewType!
   createCategory(input: CategoryInput!): CategoryType!
   updateCategory(id: String!, input: CategoryInput!): CategoryType!
   deleteCategory(id: String!): Boolean!
@@ -154,18 +212,25 @@ type Mutation {
   clearCart: Boolean!
   createOrder(input: CreateOrderInput!): OrderType!
   updateOrderStatus(id: String!, status: String!): OrderType
+  confirmOrderReceipt(id: String!): OrderType!
+  cancelOrder(id: String!): OrderType!
+  updateOrder(id: String!, input: UpdateOrderInput!): OrderType!
   deleteOrder(id: String!): Boolean!
   createUser(input: CreateUserInput!): UserType!
   updateUser(id: String!, input: UpdateUserInput!): UserType
   deleteUser(id: String!): Boolean!
+  createVoucher(input: CreateVoucherInput!): VoucherType!
+  recordInteraction(input: RecordInteractionInput!): RecordInteractionPayload!
+  recordInteractions(input: RecordInteractionsInput!): RecordInteractionsResult!
 }
 
-input LoginInputGql {
+input LoginInput {
   email: String!
   password: String!
+  isAdminLogin: Boolean = false
 }
 
-input RegisterInputGql {
+input RegisterInput {
   email: String!
   password: String!
   name: String!
@@ -198,6 +263,12 @@ input DimensionsInput {
   depth: Float
 }
 
+input CreateReviewInput {
+  star: Int!
+  content: String!
+  reviewerName: String
+}
+
 input CategoryInput {
   name: String!
   description: String
@@ -227,6 +298,11 @@ input OrderItemInput {
   quantity: Float!
 }
 
+input UpdateOrderInput {
+  shippingAddress: String
+  note: String
+}
+
 input CreateUserInput {
   name: String!
   email: String!
@@ -239,4 +315,33 @@ input UpdateUserInput {
   name: String
   phone: String
   role: String
+}
+
+input CreateVoucherInput {
+  userId: String!
+  code: String
+  discountType: String
+  discountValue: Float!
+  minOrderValue: Float
+  maxDiscountValue: Float
+  description: String
+  validFrom: String
+  validUntil: String
+}
+
+input RecordInteractionInput {
+  userId: String
+  sessionId: String
+  productId: String
+  eventType: String!
+
+  """ISO timestamp"""
+  occurredAt: String
+
+  """JSON string metadata"""
+  metadata: String
+}
+
+input RecordInteractionsInput {
+  events: [RecordInteractionInput!]!
 }

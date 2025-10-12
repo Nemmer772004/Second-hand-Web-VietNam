@@ -16,6 +16,7 @@ import {
 import { ClientProxy } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
 import { timeout } from 'rxjs/operators';
+import { fetchWithRetry } from '../utils/http';
 
 @ObjectType()
 class OrderItemType {
@@ -116,6 +117,15 @@ class CreateOrderInput {
   transactionId?: string;
 }
 
+@InputType()
+class UpdateOrderInput {
+  @Field({ nullable: true })
+  shippingAddress?: string;
+
+  @Field({ nullable: true })
+  note?: string;
+}
+
 @Resolver()
 export class OrderResolver {
   constructor(
@@ -180,6 +190,15 @@ export class OrderResolver {
     };
   }
 
+  private extractUserId(context: any): string | null {
+    return (
+      context?.req?.user?.id ||
+      context?.req?.user?._id ||
+      context?.req?.headers?.['x-user-id'] ||
+      null
+    );
+  }
+
   private ensureAdmin(context: any) {
     const isAdmin = context?.req?.user?.isAdmin;
     if (!isAdmin) {
@@ -221,7 +240,7 @@ export class OrderResolver {
     }
 
     try {
-      const res = await fetch(`${this.productBaseUrl}/products/${productId}`);
+      const res = await fetchWithRetry(`${this.productBaseUrl}/products/${productId}`);
       if (res.ok) {
         return await res.json();
       }
@@ -234,7 +253,7 @@ export class OrderResolver {
   private async fetchUserProfile(userId: string): Promise<any | null> {
     if (!userId) return null;
     try {
-      const res = await fetch(`${this.userBaseUrl}/${userId}`);
+      const res = await fetchWithRetry(`${this.userBaseUrl}/${userId}`);
       if (res.ok) {
         return await res.json();
       }
@@ -246,7 +265,7 @@ export class OrderResolver {
 
   private async restFetchOrders(): Promise<any[]> {
     try {
-      const res = await fetch(`${this.baseUrl}/orders`);
+      const res = await fetchWithRetry(`${this.baseUrl}/orders`);
       if (!res.ok) return [];
       const data = await res.json();
       return Array.isArray(data) ? data : [];
@@ -258,7 +277,7 @@ export class OrderResolver {
 
   private async restFetchOrder(id: string): Promise<any | null> {
     try {
-      const res = await fetch(`${this.baseUrl}/orders/${id}`);
+      const res = await fetchWithRetry(`${this.baseUrl}/orders/${id}`);
       if (!res.ok) return null;
       return await res.json();
     } catch (error) {
@@ -269,7 +288,7 @@ export class OrderResolver {
 
   private async restFetchOrdersByUser(userId: string): Promise<any[]> {
     try {
-      const res = await fetch(`${this.baseUrl}/orders/user/${userId}`);
+      const res = await fetchWithRetry(`${this.baseUrl}/orders/user/${userId}`);
       if (!res.ok) return [];
       const data = await res.json();
       return Array.isArray(data) ? data : [];
@@ -422,7 +441,7 @@ export class OrderResolver {
       notes: input.note,
     };
 
-    const res = await fetch(`${this.baseUrl}/orders`, {
+    const res = await fetchWithRetry(`${this.baseUrl}/orders`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
@@ -444,7 +463,7 @@ export class OrderResolver {
       );
     } catch (error) {
       try {
-        await fetch(`${this.cartBaseUrl}/cart?userId=${requester.id}`, {
+        await fetchWithRetry(`${this.cartBaseUrl}/cart?userId=${requester.id}`, {
           method: 'DELETE',
         });
       } catch (cleanupError) {
@@ -462,7 +481,7 @@ export class OrderResolver {
     @Context() context: any,
   ) {
     this.ensureAdmin(context);
-    const res = await fetch(`${this.baseUrl}/orders/${id}/status`, {
+    const res = await fetchWithRetry(`${this.baseUrl}/orders/${id}/status`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status }),
@@ -479,13 +498,106 @@ export class OrderResolver {
     return this.mapOrder(await res.json());
   }
 
+  @Mutation(() => OrderType)
+  async confirmOrderReceipt(
+    @Args('id') id: string,
+    @Context() context: any,
+  ) {
+    const userId = this.extractUserId(context);
+
+    if (!userId) {
+      throw new UnauthorizedException('Authentication required');
+    }
+
+    const res = await fetchWithRetry(`${this.baseUrl}/orders/${id}/confirm-receipt`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId }),
+    });
+
+    if (res.status === 404) {
+      throw new ForbiddenException('Không tìm thấy đơn hàng');
+    }
+
+    if (!res.ok) {
+      throw new Error(`Unable to confirm receipt (${res.status})`);
+    }
+
+    return this.mapOrder(await res.json());
+  }
+
+  @Mutation(() => OrderType)
+  async cancelOrder(
+    @Args('id') id: string,
+    @Context() context: any,
+  ) {
+    const userId = this.extractUserId(context);
+
+    if (!userId) {
+      throw new UnauthorizedException('Authentication required');
+    }
+
+    const res = await fetchWithRetry(`${this.baseUrl}/orders/${id}/cancel`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId }),
+    });
+
+    if (res.status === 404) {
+      throw new ForbiddenException('Không tìm thấy đơn hàng');
+    }
+
+    if (!res.ok) {
+      throw new Error(`Unable to cancel order (${res.status})`);
+    }
+
+    return this.mapOrder(await res.json());
+  }
+
+  @Mutation(() => OrderType)
+  async updateOrder(
+    @Args('id') id: string,
+    @Args('input') input: UpdateOrderInput,
+    @Context() context: any,
+  ) {
+    const userId = this.extractUserId(context);
+
+    if (!userId) {
+      throw new UnauthorizedException('Authentication required');
+    }
+
+    const payload: Record<string, any> = { userId };
+    if (typeof input.shippingAddress === 'string') {
+      payload.shippingAddress = input.shippingAddress;
+    }
+    if (typeof input.note === 'string') {
+      payload.note = input.note;
+    }
+
+    const res = await fetchWithRetry(`${this.baseUrl}/orders/${id}/user-update`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+
+    if (res.status === 404) {
+      throw new ForbiddenException('Không tìm thấy đơn hàng');
+    }
+
+    if (!res.ok) {
+      throw new Error(`Unable to update order (${res.status})`);
+    }
+
+    return this.mapOrder(await res.json());
+  }
+
   @Mutation(() => Boolean)
   async deleteOrder(
     @Args('id') id: string,
     @Context() context: any,
   ) {
     this.ensureAdmin(context);
-    const res = await fetch(`${this.baseUrl}/orders/${id}`, {
+    const res = await fetchWithRetry(`${this.baseUrl}/orders/${id}`, {
       method: 'DELETE',
     });
 

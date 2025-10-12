@@ -9,6 +9,7 @@ const menuItems = [
   { href: '/categories', label: 'Danh mục', icon: '🗂️' },
   { href: '/orders', label: 'Đơn hàng', icon: '🧾' },
   { href: '/users', label: 'Người dùng', icon: '👥' },
+  { href: '/recommendations', label: 'Gợi ý realtime', icon: '🤖' },
 ];
 
 function AdminSidebar() {

@@ -29,6 +29,11 @@ logs/
 # misc
 .DS_Store
 *.pem
+**/__pycache__/
+**/.pytest_cache/
+**/.venv/
+Chatbot/venv/
+ai-agent/venv/
 
 # debug
 npm-debug.log*

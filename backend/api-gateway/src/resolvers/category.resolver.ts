@@ -2,6 +2,7 @@ import { Resolver, Query, Args, ObjectType, Field, InputType, Mutation, Context 
 import { Inject, ForbiddenException } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
+import { fetchWithRetry } from '../utils/http';
 
 @ObjectType()
 class CategoryType {
@@ -80,7 +81,7 @@ export class CategoryResolver {
     }
     // Fallback REST
     try {
-      const res = await fetch(`${this.baseUrl}/categories`);
+      const res = await fetchWithRetry(`${this.baseUrl}/categories`);
       const data = await res.json();
       return Array.isArray(data) ? data.map(this.mapCategory).filter(x => x && x.id) : [];
     } catch {
@@ -99,7 +100,7 @@ export class CategoryResolver {
       console.error('Error fetching category:', error);
     }
     try {
-      const res = await fetch(`${this.baseUrl}/categories/${encodeURIComponent(id)}`);
+      const res = await fetchWithRetry(`${this.baseUrl}/categories/${encodeURIComponent(id)}`);
       if (res.ok) return this.mapCategory(await res.json());
     } catch {}
     return null;
@@ -111,7 +112,7 @@ export class CategoryResolver {
     @Context() context: any,
   ) {
     this.ensureAdmin(context);
-    const res = await fetch(`${this.baseUrl}/categories`, {
+    const res = await fetchWithRetry(`${this.baseUrl}/categories`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -135,7 +136,7 @@ export class CategoryResolver {
     @Context() context: any,
   ) {
     this.ensureAdmin(context);
-    const res = await fetch(`${this.baseUrl}/categories/${id}`, {
+    const res = await fetchWithRetry(`${this.baseUrl}/categories/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -162,7 +163,7 @@ export class CategoryResolver {
     @Context() context: any,
   ) {
     this.ensureAdmin(context);
-    const res = await fetch(`${this.baseUrl}/categories/${id}`, {
+    const res = await fetchWithRetry(`${this.baseUrl}/categories/${id}`, {
       method: 'DELETE',
     });
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useRef } from 'react';
 import { useAdminAuth } from '../../context/AdminAuthContext';
 import { graphqlRequest } from '../../lib/graphql-client';
 
@@ -75,6 +75,16 @@ const PAYMENT_STATUS_LABELS: Record<string, string> = {
   refunded: 'Đã hoàn tiền',
 };
 
+const FILTER_PRESETS: { key: string; label: string; matcher: (order: AdminOrder) => boolean }[] = [
+  { key: 'all', label: 'Tất cả', matcher: () => true },
+  { key: 'pending_confirmation', label: 'Chờ xác nhận', matcher: (order) => order.status === 'pending_confirmation' },
+  { key: 'shipping', label: 'Vận chuyển', matcher: (order) => order.status === 'shipped' },
+  { key: 'ready_to_deliver', label: 'Chờ giao hàng', matcher: (order) => ['confirmed', 'processing'].includes(order.status ?? '') },
+  { key: 'completed', label: 'Hoàn thành', matcher: (order) => ['delivered', 'completed'].includes(order.status ?? '') },
+  { key: 'cancelled', label: 'Đã huỷ', matcher: (order) => order.status === 'cancelled' },
+  { key: 'refunded', label: 'Trả hàng/Hoàn tiền', matcher: (order) => order.paymentStatus === 'refunded' || order.status === 'returned' },
+];
+
 interface OrderItem {
   productId: string;
   productName?: string | null;
@@ -108,6 +118,11 @@ export default function AdminOrdersPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [activeFilter, setActiveFilter] = useState<string>('all');
+  const [searchTerm, setSearchTerm] = useState<string>('');
+  const [info, setInfo] = useState<string | null>(null);
+  const completedIdsRef = useRef<Set<string>>(new Set());
+  const cancelledIdsRef = useRef<Set<string>>(new Set());
 
   const formatCurrency = (value: number) =>
     new Intl.NumberFormat('vi-VN', {
@@ -121,7 +136,34 @@ export default function AdminOrdersPage() {
     setError(null);
     try {
       const data = await graphqlRequest<{ orders: AdminOrder[] }>(ORDERS_QUERY);
-      setOrders(data?.orders || []);
+      const incoming = data?.orders || [];
+      setOrders(incoming);
+
+      const currentCompleted = new Set(
+        incoming.filter((order) => order.status === 'completed').map((order) => order.id),
+      );
+      const currentCancelled = new Set(
+        incoming.filter((order) => order.status === 'cancelled').map((order) => order.id),
+      );
+
+      const newlyCompleted = Array.from(currentCompleted).filter(
+        (id) => !completedIdsRef.current.has(id),
+      );
+      const newlyCancelled = Array.from(currentCancelled).filter(
+        (id) => !cancelledIdsRef.current.has(id),
+      );
+
+      const messages: string[] = [];
+      if (newlyCompleted.length > 0) {
+        messages.push(`${newlyCompleted.length} đơn hàng đã được khách xác nhận nhận hàng.`);
+      }
+      if (newlyCancelled.length > 0) {
+        messages.push(`${newlyCancelled.length} đơn hàng đã bị khách huỷ.`);
+      }
+      setInfo(messages.length ? messages.join(' ') : null);
+
+      completedIdsRef.current = currentCompleted;
+      cancelledIdsRef.current = currentCancelled;
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Không thể tải danh sách đơn hàng';
       setError(message);
@@ -139,6 +181,7 @@ export default function AdminOrdersPage() {
   const handleStatusChange = async (orderId: string, status: string) => {
     setError(null);
     setSuccess(null);
+    setInfo(null);
     setLoading(true);
     try {
       await graphqlRequest(UPDATE_ORDER_STATUS_MUTATION, { id: orderId, status });
@@ -156,6 +199,7 @@ export default function AdminOrdersPage() {
     if (!confirm('Bạn có chắc chắn muốn xoá đơn hàng này?')) return;
     setError(null);
     setSuccess(null);
+    setInfo(null);
     setLoading(true);
     try {
       await graphqlRequest(DELETE_ORDER_MUTATION, { id: orderId });
@@ -169,7 +213,32 @@ export default function AdminOrdersPage() {
     }
   };
 
-  const noOrders = useMemo(() => !loading && orders.length === 0, [loading, orders.length]);
+  const filteredOrders = useMemo(() => {
+    const matcher =
+      FILTER_PRESETS.find((preset) => preset.key === activeFilter) ?? FILTER_PRESETS[0];
+    const keyword = searchTerm.trim().toLowerCase();
+
+    return orders.filter((order) => {
+      if (!matcher.matcher(order)) {
+        return false;
+      }
+
+      if (!keyword) {
+        return true;
+      }
+
+      const matchesId = order.id.toLowerCase().includes(keyword);
+      const matchesCustomer = (order.customerName || '').toLowerCase().includes(keyword);
+      const matchesItem = order.items?.some((item) =>
+        (item.productName || item.productId || '').toLowerCase().includes(keyword),
+      );
+      return matchesId || matchesCustomer || matchesItem;
+    });
+  }, [orders, activeFilter, searchTerm]);
+
+  const emptyAllOrders = !loading && orders.length === 0;
+  const emptyFiltered =
+    !loading && orders.length > 0 && filteredOrders.length === 0;
 
   if (!user && !authLoading) {
     return null;
@@ -192,19 +261,23 @@ export default function AdminOrdersPage() {
         </button>
       </div>
 
-      {(error || success) && (
+      {(error || success || info) && (
         <div className={`admin-alert ${error ? 'admin-alert--error' : 'admin-alert--success'}`}>
-          {error || success}
+          {error || success || info}
         </div>
       )}
 
-      {noOrders ? (
+      {emptyAllOrders ? (
         <div className="admin-card admin-empty" style={{ textAlign: 'center', padding: 40 }}>
           <p>Chưa có đơn hàng nào.</p>
         </div>
+      ) : emptyFiltered ? (
+        <div className="admin-card admin-empty" style={{ textAlign: 'center', padding: 40 }}>
+          <p>Không có đơn hàng phù hợp bộ lọc hiện tại.</p>
+        </div>
       ) : (
         <div className="admin-grid" style={{ gap: 16 }}>
-          {orders.map((order) => {
+          {filteredOrders.map((order) => {
             const prettyStatus =
               ORDER_STATUSES.find((item) => item.value === order.status)?.label || 'Không rõ';
             const paymentMethodLabel = PAYMENT_METHOD_LABELS[order.paymentMethod || ''] || 'Không rõ';
@@ -230,6 +303,7 @@ export default function AdminOrdersPage() {
                       value={order.status || 'pending_confirmation'}
                       onChange={(e) => handleStatusChange(order.id, e.target.value)}
                       disabled={loading}
+                      aria-label={`Cập nhật trạng thái đơn hàng ${order.id}`}
                     >
                       {ORDER_STATUSES.map((status) => (
                         <option key={status.value} value={status.value}>

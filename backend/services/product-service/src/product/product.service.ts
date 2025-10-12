@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { Product, ProductDocument } from './schemas/product.schema';
 import { Review, ReviewDocument } from './schemas/review.schema';
 import { CreateProductDto, UpdateProductDto } from './dto/product.dto';
@@ -341,5 +341,87 @@ export class ProductService {
   async delete(id: string): Promise<boolean> {
     const result = await this.productModel.findByIdAndDelete(id).exec();
     return result !== null;
+  }
+
+  async addReview(
+    productId: string,
+    payload: { userId?: string; reviewerName?: string; star: number; content: string },
+  ) {
+    const trimmedId = String(productId ?? '').trim();
+    if (!trimmedId) {
+      throw new Error('Invalid product id');
+    }
+
+    const searchConditions: Record<string, any>[] = [];
+
+    if (Types.ObjectId.isValid(trimmedId)) {
+      searchConditions.push({ _id: new Types.ObjectId(trimmedId) });
+    }
+
+    const numericCandidate = Number(trimmedId);
+    if (!Number.isNaN(numericCandidate)) {
+      searchConditions.push({ productId: numericCandidate });
+      searchConditions.push({ product_id: numericCandidate });
+      searchConditions.push({ legacyId: numericCandidate });
+      searchConditions.push({ legacy_id: numericCandidate });
+    }
+
+    if (!searchConditions.length) {
+      throw new Error('Invalid product id');
+    }
+
+    const productDoc = await this.productModel
+      .findOne({ $or: searchConditions })
+      .exec();
+
+    if (!productDoc) {
+      throw new Error('Product not found');
+    }
+
+    const normalizedProduct = this.normalizeProductDocument(productDoc.toObject());
+    const resolvedNumericProductId =
+      this.resolveNumericProductId(normalizedProduct) ??
+      (!Number.isNaN(numericCandidate) ? numericCandidate : undefined);
+
+    if (resolvedNumericProductId == null) {
+      throw new Error('Product is missing a numeric identifier');
+    }
+
+    const rating = Math.min(5, Math.max(1, Number(payload.star) || 5));
+    const review = await this.reviewModel.create({
+      productId: resolvedNumericProductId,
+      reviewId: Date.now(),
+      reviewerName: payload.reviewerName?.trim() || 'Khách hàng NovaMarket',
+      star: rating,
+      content: payload.content || '',
+      time: new Date().toISOString(),
+    });
+
+    const matchValues = [resolvedNumericProductId, String(resolvedNumericProductId)];
+    const stats = await this.reviewModel.aggregate([
+      {
+        $match: {
+          $or: [
+            { productId: { $in: matchValues } },
+            { product_id: { $in: matchValues } },
+          ],
+        },
+      },
+      {
+        $group: {
+          _id: '$productId',
+          average: { $avg: '$star' },
+          count: { $sum: 1 },
+        },
+      },
+    ]);
+
+    if (stats.length) {
+      productDoc.averageRating = stats[0].average;
+      productDoc.numReviews = stats[0].count;
+      await productDoc.save();
+    }
+
+    return this.normalizeReviewDocument(review.toObject());
   }
 }

@@ -1,0 +1,6 @@
+fastapi>=0.110.0
+uvicorn[standard]>=0.26.0
+pandas>=1.5.0
+torch>=2.0.0
+recbole>=1.2.0
+numpy>=1.23.0
