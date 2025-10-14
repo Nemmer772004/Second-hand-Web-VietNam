@@ -1,0 +1,401 @@
+Sun 12 Oct 2025 21:32:04 INFO  ['./train_bert4rec.py']
+Sun 12 Oct 2025 21:32:04 INFO  
+General Hyper Parameters:
+gpu_id = 0
+use_gpu = True
+seed = 2020
+state = INFO
+reproducibility = True
+data_path = /home/nemmer/Nemmer-Workflow/Project/Second-hand-Web-VietNam/ai-agent/recommender/dataset/ecommerce
+checkpoint_dir = saved
+show_progress = True
+save_dataset = False
+dataset_save_path = None
+save_dataloaders = False
+dataloaders_save_path = None
+log_wandb = False
+
+Training Hyper Parameters:
+epochs = 50
+train_batch_size = 1024
+learner = adam
+learning_rate = 0.001
+train_neg_sample_args = {'distribution': 'none', 'sample_num': 'none', 'alpha': 'none', 'dynamic': False, 'candidate_num': 0}
+eval_step = 1
+stopping_step = 10
+clip_grad_norm = None
+weight_decay = 0.0
+loss_decimal_place = 4
+
+Evaluation Hyper Parameters:
+eval_args = {'split': {'RS': [0.8, 0.1, 0.1]}, 'order': 'TO', 'group_by': 'user', 'mode': {'valid': 'full', 'test': 'full'}}
+repeatable = True
+metrics = ['Recall', 'MRR', 'NDCG', 'Hit', 'Precision']
+topk = [5, 10]
+valid_metric = MRR@10
+valid_metric_bigger = True
+eval_batch_size = 1024
+metric_decimal_place = 4
+
+Dataset Hyper Parameters:
+field_separator = 	
+seq_separator =  
+USER_ID_FIELD = user_id
+ITEM_ID_FIELD = item_id
+RATING_FIELD = label
+TIME_FIELD = timestamp
+seq_len = 50
+LABEL_FIELD = label
+threshold = None
+NEG_PREFIX = neg_
+load_col = {'inter': ['user_id', 'item_id', 'timestamp', 'label']}
+unload_col = None
+unused_col = None
+additional_feat_suffix = None
+rm_dup_inter = None
+val_interval = None
+filter_inter_by_user_or_item = True
+user_inter_num_interval = [0,inf)
+item_inter_num_interval = [0,inf)
+alias_of_user_id = None
+alias_of_item_id = None
+alias_of_entity_id = None
+alias_of_relation_id = None
+preload_weight = None
+normalize_field = None
+normalize_all = None
+ITEM_LIST_LENGTH_FIELD = item_length
+LIST_SUFFIX = _list
+MAX_ITEM_LIST_LENGTH = 50
+POSITION_FIELD = position_id
+HEAD_ENTITY_ID_FIELD = head_id
+TAIL_ENTITY_ID_FIELD = tail_id
+RELATION_ID_FIELD = relation_id
+ENTITY_ID_FIELD = entity_id
+benchmark_filename = None
+
+Other Hyper Parameters: 
+worker = 0
+wandb_project = recbole
+shuffle = True
+require_pow = False
+enable_amp = False
+enable_scaler = False
+transform = mask_itemseq
+n_layers = 2
+n_heads = 2
+hidden_size = 64
+inner_size = 256
+hidden_dropout_prob = 0.2
+attn_dropout_prob = 0.2
+hidden_act = gelu
+layer_norm_eps = 1e-12
+initializer_range = 0.02
+mask_ratio = 0.2
+loss_type = CE
+ft_ratio = 0.5
+numerical_features = []
+discretization = None
+kg_reverse_r = False
+entity_kg_num_interval = [0,inf)
+relation_kg_num_interval = [0,inf)
+MODEL_TYPE = ModelType.SEQUENTIAL
+neg_sampling = None
+embedding_size = 64
+num_layers = 2
+num_heads = 2
+dropout_prob = 0.2
+MODEL_INPUT_TYPE = InputType.POINTWISE
+eval_type = EvaluatorType.RANKING
+single_spec = True
+local_rank = 0
+device = cuda
+valid_neg_sample_args = {'distribution': 'uniform', 'sample_num': 'none'}
+test_neg_sample_args = {'distribution': 'uniform', 'sample_num': 'none'}
+
+
+Sun 12 Oct 2025 21:32:04 INFO  ecommerce
+The number of users: 2573
+Average actions of users: 7.003499222395023
+The number of items: 96
+Average actions of items: 189.61052631578949
+The number of inters: 18013
+The sparsity of the dataset: 92.70752364295893%
+Remain Fields: ['user_id', 'item_id', 'timestamp', 'label']
+Sun 12 Oct 2025 21:32:04 INFO  [Training]: train_batch_size = [1024] train_neg_sample_args: [{'distribution': 'none', 'sample_num': 'none', 'alpha': 'none', 'dynamic': False, 'candidate_num': 0}]
+Sun 12 Oct 2025 21:32:04 INFO  [Evaluation]: eval_batch_size = [1024] eval_args: [{'split': {'RS': [0.8, 0.1, 0.1]}, 'order': 'TO', 'group_by': 'user', 'mode': {'valid': 'full', 'test': 'full'}}]
+Sun 12 Oct 2025 21:32:04 INFO  BERT4Rec(
+  (item_embedding): Embedding(97, 64, padding_idx=0)
+  (position_embedding): Embedding(50, 64)
+  (trm_encoder): TransformerEncoder(
+    (layer): ModuleList(
+      (0-1): 2 x TransformerLayer(
+        (multi_head_attention): MultiHeadAttention(
+          (query): Linear(in_features=64, out_features=64, bias=True)
+          (key): Linear(in_features=64, out_features=64, bias=True)
+          (value): Linear(in_features=64, out_features=64, bias=True)
+          (softmax): Softmax(dim=-1)
+          (attn_dropout): Dropout(p=0.2, inplace=False)
+          (dense): Linear(in_features=64, out_features=64, bias=True)
+          (LayerNorm): LayerNorm((64,), eps=1e-12, elementwise_affine=True)
+          (out_dropout): Dropout(p=0.2, inplace=False)
+        )
+        (feed_forward): FeedForward(
+          (dense_1): Linear(in_features=64, out_features=256, bias=True)
+          (dense_2): Linear(in_features=256, out_features=64, bias=True)
+          (LayerNorm): LayerNorm((64,), eps=1e-12, elementwise_affine=True)
+          (dropout): Dropout(p=0.2, inplace=False)
+        )
+      )
+    )
+  )
+  (LayerNorm): LayerNorm((64,), eps=1e-12, elementwise_affine=True)
+  (dropout): Dropout(p=0.2, inplace=False)
+  (output_ffn): Linear(in_features=64, out_features=64, bias=True)
+  (output_gelu): GELU(approximate='none')
+  (output_ln): LayerNorm((64,), eps=1e-12, elementwise_affine=True)
+)
+Trainable parameters: 113888
+Sun 12 Oct 2025 21:32:05 INFO  FLOPs: 5194664.0
+Sun 12 Oct 2025 21:32:07 INFO  epoch 0 training [time: 1.36s, train loss: 49.8797]
+Sun 12 Oct 2025 21:32:07 INFO  epoch 0 evaluating [time: 0.17s, valid_score: 0.055400]
+Sun 12 Oct 2025 21:32:07 INFO  valid result: 
+recall@5 : 0.0939    recall@10 : 0.1778    mrr@5 : 0.0444    mrr@10 : 0.0554    ndcg@5 : 0.0566    ndcg@10 : 0.0835    hit@5 : 0.0939    hit@10 : 0.1778    precision@5 : 0.0188    precision@10 : 0.0178
+Sun 12 Oct 2025 21:32:07 INFO  Saving current: saved/BERT4Rec-Oct-12-2025_21-32-05.pth
+Sun 12 Oct 2025 21:32:08 INFO  epoch 1 training [time: 1.18s, train loss: 48.9205]
+Sun 12 Oct 2025 21:32:08 INFO  epoch 1 evaluating [time: 0.10s, valid_score: 0.081000]
+Sun 12 Oct 2025 21:32:08 INFO  valid result: 
+recall@5 : 0.1547    recall@10 : 0.2632    mrr@5 : 0.0663    mrr@10 : 0.081    ndcg@5 : 0.0878    ndcg@10 : 0.1231    hit@5 : 0.1547    hit@10 : 0.2632    precision@5 : 0.0309    precision@10 : 0.0263
+Sun 12 Oct 2025 21:32:08 INFO  Saving current: saved/BERT4Rec-Oct-12-2025_21-32-05.pth
+Sun 12 Oct 2025 21:32:09 INFO  epoch 2 training [time: 1.26s, train loss: 46.6359]
+Sun 12 Oct 2025 21:32:10 INFO  epoch 2 evaluating [time: 0.11s, valid_score: 0.304500]
+Sun 12 Oct 2025 21:32:10 INFO  valid result: 
+recall@5 : 0.4604    recall@10 : 0.5939    mrr@5 : 0.2874    mrr@10 : 0.3045    ndcg@5 : 0.3302    ndcg@10 : 0.3726    hit@5 : 0.4604    hit@10 : 0.5939    precision@5 : 0.0921    precision@10 : 0.0594
+Sun 12 Oct 2025 21:32:10 INFO  Saving current: saved/BERT4Rec-Oct-12-2025_21-32-05.pth
+Sun 12 Oct 2025 21:32:11 INFO  epoch 3 training [time: 1.15s, train loss: 42.6820]
+Sun 12 Oct 2025 21:32:11 INFO  epoch 3 evaluating [time: 0.10s, valid_score: 0.487300]
+Sun 12 Oct 2025 21:32:11 INFO  valid result: 
+recall@5 : 0.6495    recall@10 : 0.7302    mrr@5 : 0.476    mrr@10 : 0.4873    ndcg@5 : 0.5191    ndcg@10 : 0.5457    hit@5 : 0.6495    hit@10 : 0.7302    precision@5 : 0.1299    precision@10 : 0.073
+Sun 12 Oct 2025 21:32:11 INFO  Saving current: saved/BERT4Rec-Oct-12-2025_21-32-05.pth
+Sun 12 Oct 2025 21:32:12 INFO  epoch 4 training [time: 1.17s, train loss: 39.0230]
+Sun 12 Oct 2025 21:32:12 INFO  epoch 4 evaluating [time: 0.11s, valid_score: 0.613100]
+Sun 12 Oct 2025 21:32:12 INFO  valid result: 
+recall@5 : 0.717    recall@10 : 0.7698    mrr@5 : 0.6061    mrr@10 : 0.6131    ndcg@5 : 0.634    ndcg@10 : 0.651    hit@5 : 0.717    hit@10 : 0.7698    precision@5 : 0.1434    precision@10 : 0.077
+Sun 12 Oct 2025 21:32:12 INFO  Saving current: saved/BERT4Rec-Oct-12-2025_21-32-05.pth
+Sun 12 Oct 2025 21:32:13 INFO  epoch 5 training [time: 1.18s, train loss: 35.6042]
+Sun 12 Oct 2025 21:32:13 INFO  epoch 5 evaluating [time: 0.15s, valid_score: 0.687600]
+Sun 12 Oct 2025 21:32:13 INFO  valid result: 
+recall@5 : 0.7472    recall@10 : 0.791    mrr@5 : 0.6819    mrr@10 : 0.6876    ndcg@5 : 0.6983    ndcg@10 : 0.7124    hit@5 : 0.7472    hit@10 : 0.791    precision@5 : 0.1494    precision@10 : 0.0791
+Sun 12 Oct 2025 21:32:13 INFO  Saving current: saved/BERT4Rec-Oct-12-2025_21-32-05.pth
+Sun 12 Oct 2025 21:32:15 INFO  epoch 6 training [time: 1.27s, train loss: 32.3441]
+Sun 12 Oct 2025 21:32:15 INFO  epoch 6 evaluating [time: 0.15s, valid_score: 0.708600]
+Sun 12 Oct 2025 21:32:15 INFO  valid result: 
+recall@5 : 0.7774    recall@10 : 0.8184    mrr@5 : 0.7033    mrr@10 : 0.7086    ndcg@5 : 0.7219    ndcg@10 : 0.735    hit@5 : 0.7774    hit@10 : 0.8184    precision@5 : 0.1555    precision@10 : 0.0818
+Sun 12 Oct 2025 21:32:15 INFO  Saving current: saved/BERT4Rec-Oct-12-2025_21-32-05.pth
+Sun 12 Oct 2025 21:32:16 INFO  epoch 7 training [time: 1.16s, train loss: 29.5253]
+Sun 12 Oct 2025 21:32:16 INFO  epoch 7 evaluating [time: 0.11s, valid_score: 0.726600]
+Sun 12 Oct 2025 21:32:16 INFO  valid result: 
+recall@5 : 0.784    recall@10 : 0.8226    mrr@5 : 0.7216    mrr@10 : 0.7266    ndcg@5 : 0.7373    ndcg@10 : 0.7496    hit@5 : 0.784    hit@10 : 0.8226    precision@5 : 0.1568    precision@10 : 0.0823
+Sun 12 Oct 2025 21:32:16 INFO  Saving current: saved/BERT4Rec-Oct-12-2025_21-32-05.pth
+Sun 12 Oct 2025 21:32:17 INFO  epoch 8 training [time: 1.17s, train loss: 26.8125]
+Sun 12 Oct 2025 21:32:17 INFO  epoch 8 evaluating [time: 0.12s, valid_score: 0.753900]
+Sun 12 Oct 2025 21:32:17 INFO  valid result: 
+recall@5 : 0.7939    recall@10 : 0.8274    mrr@5 : 0.7495    mrr@10 : 0.7539    ndcg@5 : 0.7607    ndcg@10 : 0.7714    hit@5 : 0.7939    hit@10 : 0.8274    precision@5 : 0.1588    precision@10 : 0.0827
+Sun 12 Oct 2025 21:32:17 INFO  Saving current: saved/BERT4Rec-Oct-12-2025_21-32-05.pth
+Sun 12 Oct 2025 21:32:19 INFO  epoch 9 training [time: 1.15s, train loss: 24.2079]
+Sun 12 Oct 2025 21:32:19 INFO  epoch 9 evaluating [time: 0.11s, valid_score: 0.777400]
+Sun 12 Oct 2025 21:32:19 INFO  valid result: 
+recall@5 : 0.8165    recall@10 : 0.8396    mrr@5 : 0.7745    mrr@10 : 0.7774    ndcg@5 : 0.785    ndcg@10 : 0.7923    hit@5 : 0.8165    hit@10 : 0.8396    precision@5 : 0.1633    precision@10 : 0.084
+Sun 12 Oct 2025 21:32:19 INFO  Saving current: saved/BERT4Rec-Oct-12-2025_21-32-05.pth
+Sun 12 Oct 2025 21:32:20 INFO  epoch 10 training [time: 1.23s, train loss: 22.0596]
+Sun 12 Oct 2025 21:32:20 INFO  epoch 10 evaluating [time: 0.10s, valid_score: 0.770600]
+Sun 12 Oct 2025 21:32:20 INFO  valid result: 
+recall@5 : 0.808    recall@10 : 0.8368    mrr@5 : 0.7669    mrr@10 : 0.7706    ndcg@5 : 0.7772    ndcg@10 : 0.7863    hit@5 : 0.808    hit@10 : 0.8368    precision@5 : 0.1616    precision@10 : 0.0837
+Sun 12 Oct 2025 21:32:21 INFO  epoch 11 training [time: 1.16s, train loss: 20.2187]
+Sun 12 Oct 2025 21:32:21 INFO  epoch 11 evaluating [time: 0.11s, valid_score: 0.780900]
+Sun 12 Oct 2025 21:32:21 INFO  valid result: 
+recall@5 : 0.8123    recall@10 : 0.8434    mrr@5 : 0.7769    mrr@10 : 0.7809    ndcg@5 : 0.7857    ndcg@10 : 0.7957    hit@5 : 0.8123    hit@10 : 0.8434    precision@5 : 0.1625    precision@10 : 0.0843
+Sun 12 Oct 2025 21:32:21 INFO  Saving current: saved/BERT4Rec-Oct-12-2025_21-32-05.pth
+Sun 12 Oct 2025 21:32:22 INFO  epoch 12 training [time: 1.16s, train loss: 18.1631]
+Sun 12 Oct 2025 21:32:23 INFO  epoch 12 evaluating [time: 0.11s, valid_score: 0.800000]
+Sun 12 Oct 2025 21:32:23 INFO  valid result: 
+recall@5 : 0.8292    recall@10 : 0.8528    mrr@5 : 0.797    mrr@10 : 0.8    ndcg@5 : 0.805    ndcg@10 : 0.8125    hit@5 : 0.8292    hit@10 : 0.8528    precision@5 : 0.1658    precision@10 : 0.0853
+Sun 12 Oct 2025 21:32:23 INFO  Saving current: saved/BERT4Rec-Oct-12-2025_21-32-05.pth
+Sun 12 Oct 2025 21:32:24 INFO  epoch 13 training [time: 1.15s, train loss: 16.4592]
+Sun 12 Oct 2025 21:32:24 INFO  epoch 13 evaluating [time: 0.11s, valid_score: 0.816400]
+Sun 12 Oct 2025 21:32:24 INFO  valid result: 
+recall@5 : 0.8382    recall@10 : 0.8618    mrr@5 : 0.8134    mrr@10 : 0.8164    ndcg@5 : 0.8196    ndcg@10 : 0.8271    hit@5 : 0.8382    hit@10 : 0.8618    precision@5 : 0.1676    precision@10 : 0.0862
+Sun 12 Oct 2025 21:32:24 INFO  Saving current: saved/BERT4Rec-Oct-12-2025_21-32-05.pth
+Sun 12 Oct 2025 21:32:25 INFO  epoch 14 training [time: 1.24s, train loss: 15.4938]
+Sun 12 Oct 2025 21:32:25 INFO  epoch 14 evaluating [time: 0.11s, valid_score: 0.825100]
+Sun 12 Oct 2025 21:32:25 INFO  valid result: 
+recall@5 : 0.8439    recall@10 : 0.8642    mrr@5 : 0.8225    mrr@10 : 0.8251    ndcg@5 : 0.8278    ndcg@10 : 0.8343    hit@5 : 0.8439    hit@10 : 0.8642    precision@5 : 0.1688    precision@10 : 0.0864
+Sun 12 Oct 2025 21:32:25 INFO  Saving current: saved/BERT4Rec-Oct-12-2025_21-32-05.pth
+Sun 12 Oct 2025 21:32:26 INFO  epoch 15 training [time: 1.16s, train loss: 14.4669]
+Sun 12 Oct 2025 21:32:26 INFO  epoch 15 evaluating [time: 0.10s, valid_score: 0.827100]
+Sun 12 Oct 2025 21:32:26 INFO  valid result: 
+recall@5 : 0.8458    recall@10 : 0.8646    mrr@5 : 0.8247    mrr@10 : 0.8271    ndcg@5 : 0.83    ndcg@10 : 0.8359    hit@5 : 0.8458    hit@10 : 0.8646    precision@5 : 0.1692    precision@10 : 0.0865
+Sun 12 Oct 2025 21:32:26 INFO  Saving current: saved/BERT4Rec-Oct-12-2025_21-32-05.pth
+Sun 12 Oct 2025 21:32:28 INFO  epoch 16 training [time: 1.17s, train loss: 13.5872]
+Sun 12 Oct 2025 21:32:28 INFO  epoch 16 evaluating [time: 0.11s, valid_score: 0.828400]
+Sun 12 Oct 2025 21:32:28 INFO  valid result: 
+recall@5 : 0.8462    recall@10 : 0.866    mrr@5 : 0.8256    mrr@10 : 0.8284    ndcg@5 : 0.8307    ndcg@10 : 0.8372    hit@5 : 0.8462    hit@10 : 0.866    precision@5 : 0.1692    precision@10 : 0.0866
+Sun 12 Oct 2025 21:32:28 INFO  Saving current: saved/BERT4Rec-Oct-12-2025_21-32-05.pth
+Sun 12 Oct 2025 21:32:29 INFO  epoch 17 training [time: 1.17s, train loss: 13.9059]
+Sun 12 Oct 2025 21:32:29 INFO  epoch 17 evaluating [time: 0.12s, valid_score: 0.831000]
+Sun 12 Oct 2025 21:32:29 INFO  valid result: 
+recall@5 : 0.8481    recall@10 : 0.8679    mrr@5 : 0.8284    mrr@10 : 0.831    ndcg@5 : 0.8334    ndcg@10 : 0.8397    hit@5 : 0.8481    hit@10 : 0.8679    precision@5 : 0.1696    precision@10 : 0.0868
+Sun 12 Oct 2025 21:32:29 INFO  Saving current: saved/BERT4Rec-Oct-12-2025_21-32-05.pth
+Sun 12 Oct 2025 21:32:30 INFO  epoch 18 training [time: 1.25s, train loss: 13.3691]
+Sun 12 Oct 2025 21:32:30 INFO  epoch 18 evaluating [time: 0.10s, valid_score: 0.835400]
+Sun 12 Oct 2025 21:32:30 INFO  valid result: 
+recall@5 : 0.8519    recall@10 : 0.8693    mrr@5 : 0.8332    mrr@10 : 0.8354    ndcg@5 : 0.8379    ndcg@10 : 0.8434    hit@5 : 0.8519    hit@10 : 0.8693    precision@5 : 0.1704    precision@10 : 0.0869
+Sun 12 Oct 2025 21:32:30 INFO  Saving current: saved/BERT4Rec-Oct-12-2025_21-32-05.pth
+Sun 12 Oct 2025 21:32:32 INFO  epoch 19 training [time: 1.15s, train loss: 13.1310]
+Sun 12 Oct 2025 21:32:32 INFO  epoch 19 evaluating [time: 0.11s, valid_score: 0.836100]
+Sun 12 Oct 2025 21:32:32 INFO  valid result: 
+recall@5 : 0.8514    recall@10 : 0.8693    mrr@5 : 0.8337    mrr@10 : 0.8361    ndcg@5 : 0.8381    ndcg@10 : 0.8439    hit@5 : 0.8514    hit@10 : 0.8693    precision@5 : 0.1703    precision@10 : 0.0869
+Sun 12 Oct 2025 21:32:32 INFO  Saving current: saved/BERT4Rec-Oct-12-2025_21-32-05.pth
+Sun 12 Oct 2025 21:32:33 INFO  epoch 20 training [time: 1.15s, train loss: 13.1166]
+Sun 12 Oct 2025 21:32:33 INFO  epoch 20 evaluating [time: 0.12s, valid_score: 0.836500]
+Sun 12 Oct 2025 21:32:33 INFO  valid result: 
+recall@5 : 0.8547    recall@10 : 0.8717    mrr@5 : 0.8343    mrr@10 : 0.8365    ndcg@5 : 0.8394    ndcg@10 : 0.8448    hit@5 : 0.8547    hit@10 : 0.8717    precision@5 : 0.1709    precision@10 : 0.0872
+Sun 12 Oct 2025 21:32:33 INFO  Saving current: saved/BERT4Rec-Oct-12-2025_21-32-05.pth
+Sun 12 Oct 2025 21:32:34 INFO  epoch 21 training [time: 1.16s, train loss: 13.2052]
+Sun 12 Oct 2025 21:32:34 INFO  epoch 21 evaluating [time: 0.11s, valid_score: 0.841900]
+Sun 12 Oct 2025 21:32:34 INFO  valid result: 
+recall@5 : 0.8533    recall@10 : 0.8731    mrr@5 : 0.8393    mrr@10 : 0.8419    ndcg@5 : 0.8428    ndcg@10 : 0.8492    hit@5 : 0.8533    hit@10 : 0.8731    precision@5 : 0.1707    precision@10 : 0.0873
+Sun 12 Oct 2025 21:32:34 INFO  Saving current: saved/BERT4Rec-Oct-12-2025_21-32-05.pth
+Sun 12 Oct 2025 21:32:36 INFO  epoch 22 training [time: 1.26s, train loss: 12.5705]
+Sun 12 Oct 2025 21:32:36 INFO  epoch 22 evaluating [time: 0.11s, valid_score: 0.844100]
+Sun 12 Oct 2025 21:32:36 INFO  valid result: 
+recall@5 : 0.8585    recall@10 : 0.8731    mrr@5 : 0.8422    mrr@10 : 0.8441    ndcg@5 : 0.8462    ndcg@10 : 0.8509    hit@5 : 0.8585    hit@10 : 0.8731    precision@5 : 0.1717    precision@10 : 0.0873
+Sun 12 Oct 2025 21:32:36 INFO  Saving current: saved/BERT4Rec-Oct-12-2025_21-32-05.pth
+Sun 12 Oct 2025 21:32:37 INFO  epoch 23 training [time: 1.15s, train loss: 11.6529]
+Sun 12 Oct 2025 21:32:37 INFO  epoch 23 evaluating [time: 0.11s, valid_score: 0.846700]
+Sun 12 Oct 2025 21:32:37 INFO  valid result: 
+recall@5 : 0.8585    recall@10 : 0.875    mrr@5 : 0.8446    mrr@10 : 0.8467    ndcg@5 : 0.848    ndcg@10 : 0.8533    hit@5 : 0.8585    hit@10 : 0.875    precision@5 : 0.1717    precision@10 : 0.0875
+Sun 12 Oct 2025 21:32:37 INFO  Saving current: saved/BERT4Rec-Oct-12-2025_21-32-05.pth
+Sun 12 Oct 2025 21:32:38 INFO  epoch 24 training [time: 1.14s, train loss: 11.7304]
+Sun 12 Oct 2025 21:32:38 INFO  epoch 24 evaluating [time: 0.10s, valid_score: 0.840800]
+Sun 12 Oct 2025 21:32:38 INFO  valid result: 
+recall@5 : 0.8571    recall@10 : 0.8717    mrr@5 : 0.8389    mrr@10 : 0.8408    ndcg@5 : 0.8434    ndcg@10 : 0.8481    hit@5 : 0.8571    hit@10 : 0.8717    precision@5 : 0.1714    precision@10 : 0.0872
+Sun 12 Oct 2025 21:32:39 INFO  epoch 25 training [time: 1.18s, train loss: 12.6770]
+Sun 12 Oct 2025 21:32:39 INFO  epoch 25 evaluating [time: 0.13s, valid_score: 0.845500]
+Sun 12 Oct 2025 21:32:39 INFO  valid result: 
+recall@5 : 0.8594    recall@10 : 0.8712    mrr@5 : 0.844    mrr@10 : 0.8455    ndcg@5 : 0.8478    ndcg@10 : 0.8516    hit@5 : 0.8594    hit@10 : 0.8712    precision@5 : 0.1719    precision@10 : 0.0871
+Sun 12 Oct 2025 21:32:41 INFO  epoch 26 training [time: 1.27s, train loss: 11.7388]
+Sun 12 Oct 2025 21:32:41 INFO  epoch 26 evaluating [time: 0.12s, valid_score: 0.848100]
+Sun 12 Oct 2025 21:32:41 INFO  valid result: 
+recall@5 : 0.8594    recall@10 : 0.8755    mrr@5 : 0.846    mrr@10 : 0.8481    ndcg@5 : 0.8494    ndcg@10 : 0.8545    hit@5 : 0.8594    hit@10 : 0.8755    precision@5 : 0.1719    precision@10 : 0.0875
+Sun 12 Oct 2025 21:32:41 INFO  Saving current: saved/BERT4Rec-Oct-12-2025_21-32-05.pth
+Sun 12 Oct 2025 21:32:42 INFO  epoch 27 training [time: 1.18s, train loss: 11.3133]
+Sun 12 Oct 2025 21:32:42 INFO  epoch 27 evaluating [time: 0.11s, valid_score: 0.847900]
+Sun 12 Oct 2025 21:32:42 INFO  valid result: 
+recall@5 : 0.8585    recall@10 : 0.8764    mrr@5 : 0.8455    mrr@10 : 0.8479    ndcg@5 : 0.8488    ndcg@10 : 0.8546    hit@5 : 0.8585    hit@10 : 0.8764    precision@5 : 0.1717    precision@10 : 0.0876
+Sun 12 Oct 2025 21:32:43 INFO  epoch 28 training [time: 1.16s, train loss: 9.9068]
+Sun 12 Oct 2025 21:32:43 INFO  epoch 28 evaluating [time: 0.14s, valid_score: 0.842900]
+Sun 12 Oct 2025 21:32:43 INFO  valid result: 
+recall@5 : 0.8552    recall@10 : 0.8731    mrr@5 : 0.8404    mrr@10 : 0.8429    ndcg@5 : 0.8441    ndcg@10 : 0.85    hit@5 : 0.8552    hit@10 : 0.8731    precision@5 : 0.171    precision@10 : 0.0873
+Sun 12 Oct 2025 21:32:45 INFO  epoch 29 training [time: 1.16s, train loss: 10.3510]
+Sun 12 Oct 2025 21:32:45 INFO  epoch 29 evaluating [time: 0.10s, valid_score: 0.844800]
+Sun 12 Oct 2025 21:32:45 INFO  valid result: 
+recall@5 : 0.858    recall@10 : 0.8731    mrr@5 : 0.8428    mrr@10 : 0.8448    ndcg@5 : 0.8466    ndcg@10 : 0.8515    hit@5 : 0.858    hit@10 : 0.8731    precision@5 : 0.1716    precision@10 : 0.0873
+Sun 12 Oct 2025 21:32:46 INFO  epoch 30 training [time: 1.25s, train loss: 11.6479]
+Sun 12 Oct 2025 21:32:46 INFO  epoch 30 evaluating [time: 0.14s, valid_score: 0.845800]
+Sun 12 Oct 2025 21:32:46 INFO  valid result: 
+recall@5 : 0.8561    recall@10 : 0.875    mrr@5 : 0.8432    mrr@10 : 0.8458    ndcg@5 : 0.8465    ndcg@10 : 0.8526    hit@5 : 0.8561    hit@10 : 0.875    precision@5 : 0.1712    precision@10 : 0.0875
+Sun 12 Oct 2025 21:32:47 INFO  epoch 31 training [time: 1.17s, train loss: 10.3617]
+Sun 12 Oct 2025 21:32:47 INFO  epoch 31 evaluating [time: 0.11s, valid_score: 0.845700]
+Sun 12 Oct 2025 21:32:47 INFO  valid result: 
+recall@5 : 0.859    recall@10 : 0.8759    mrr@5 : 0.8436    mrr@10 : 0.8457    ndcg@5 : 0.8474    ndcg@10 : 0.8528    hit@5 : 0.859    hit@10 : 0.8759    precision@5 : 0.1718    precision@10 : 0.0876
+Sun 12 Oct 2025 21:32:49 INFO  epoch 32 training [time: 1.17s, train loss: 11.0976]
+Sun 12 Oct 2025 21:32:49 INFO  epoch 32 evaluating [time: 0.13s, valid_score: 0.847400]
+Sun 12 Oct 2025 21:32:49 INFO  valid result: 
+recall@5 : 0.8604    recall@10 : 0.8778    mrr@5 : 0.8452    mrr@10 : 0.8474    ndcg@5 : 0.849    ndcg@10 : 0.8545    hit@5 : 0.8604    hit@10 : 0.8778    precision@5 : 0.1721    precision@10 : 0.0878
+Sun 12 Oct 2025 21:32:50 INFO  epoch 33 training [time: 1.21s, train loss: 10.9917]
+Sun 12 Oct 2025 21:32:50 INFO  epoch 33 evaluating [time: 0.12s, valid_score: 0.847200]
+Sun 12 Oct 2025 21:32:50 INFO  valid result: 
+recall@5 : 0.8599    recall@10 : 0.8755    mrr@5 : 0.8453    mrr@10 : 0.8472    ndcg@5 : 0.8489    ndcg@10 : 0.8538    hit@5 : 0.8599    hit@10 : 0.8755    precision@5 : 0.172    precision@10 : 0.0875
+Sun 12 Oct 2025 21:32:51 INFO  epoch 34 training [time: 1.19s, train loss: 11.0963]
+Sun 12 Oct 2025 21:32:51 INFO  epoch 34 evaluating [time: 0.12s, valid_score: 0.849800]
+Sun 12 Oct 2025 21:32:51 INFO  valid result: 
+recall@5 : 0.8637    recall@10 : 0.8755    mrr@5 : 0.8483    mrr@10 : 0.8498    ndcg@5 : 0.8521    ndcg@10 : 0.8558    hit@5 : 0.8637    hit@10 : 0.8755    precision@5 : 0.1727    precision@10 : 0.0875
+Sun 12 Oct 2025 21:32:51 INFO  Saving current: saved/BERT4Rec-Oct-12-2025_21-32-05.pth
+Sun 12 Oct 2025 21:32:53 INFO  epoch 35 training [time: 1.29s, train loss: 11.5347]
+Sun 12 Oct 2025 21:32:53 INFO  epoch 35 evaluating [time: 0.13s, valid_score: 0.850800]
+Sun 12 Oct 2025 21:32:53 INFO  valid result: 
+recall@5 : 0.8632    recall@10 : 0.8792    mrr@5 : 0.8488    mrr@10 : 0.8508    ndcg@5 : 0.8524    ndcg@10 : 0.8574    hit@5 : 0.8632    hit@10 : 0.8792    precision@5 : 0.1726    precision@10 : 0.0879
+Sun 12 Oct 2025 21:32:53 INFO  Saving current: saved/BERT4Rec-Oct-12-2025_21-32-05.pth
+Sun 12 Oct 2025 21:32:54 INFO  epoch 36 training [time: 1.23s, train loss: 10.7596]
+Sun 12 Oct 2025 21:32:54 INFO  epoch 36 evaluating [time: 0.12s, valid_score: 0.850000]
+Sun 12 Oct 2025 21:32:54 INFO  valid result: 
+recall@5 : 0.8618    recall@10 : 0.8774    mrr@5 : 0.8479    mrr@10 : 0.85    ndcg@5 : 0.8514    ndcg@10 : 0.8564    hit@5 : 0.8618    hit@10 : 0.8774    precision@5 : 0.1724    precision@10 : 0.0877
+Sun 12 Oct 2025 21:32:55 INFO  epoch 37 training [time: 1.25s, train loss: 11.2865]
+Sun 12 Oct 2025 21:32:56 INFO  epoch 37 evaluating [time: 0.12s, valid_score: 0.852300]
+Sun 12 Oct 2025 21:32:56 INFO  valid result: 
+recall@5 : 0.8618    recall@10 : 0.8774    mrr@5 : 0.8504    mrr@10 : 0.8523    ndcg@5 : 0.8532    ndcg@10 : 0.8581    hit@5 : 0.8618    hit@10 : 0.8774    precision@5 : 0.1724    precision@10 : 0.0877
+Sun 12 Oct 2025 21:32:56 INFO  Saving current: saved/BERT4Rec-Oct-12-2025_21-32-05.pth
+Sun 12 Oct 2025 21:32:57 INFO  epoch 38 training [time: 1.21s, train loss: 10.3474]
+Sun 12 Oct 2025 21:32:57 INFO  epoch 38 evaluating [time: 0.12s, valid_score: 0.852300]
+Sun 12 Oct 2025 21:32:57 INFO  valid result: 
+recall@5 : 0.8642    recall@10 : 0.8769    mrr@5 : 0.8506    mrr@10 : 0.8523    ndcg@5 : 0.854    ndcg@10 : 0.8581    hit@5 : 0.8642    hit@10 : 0.8769    precision@5 : 0.1728    precision@10 : 0.0877
+Sun 12 Oct 2025 21:32:57 INFO  Saving current: saved/BERT4Rec-Oct-12-2025_21-32-05.pth
+Sun 12 Oct 2025 21:32:58 INFO  epoch 39 training [time: 1.27s, train loss: 11.3963]
+Sun 12 Oct 2025 21:32:58 INFO  epoch 39 evaluating [time: 0.12s, valid_score: 0.851500]
+Sun 12 Oct 2025 21:32:58 INFO  valid result: 
+recall@5 : 0.8623    recall@10 : 0.8807    mrr@5 : 0.8492    mrr@10 : 0.8515    ndcg@5 : 0.8524    ndcg@10 : 0.8583    hit@5 : 0.8623    hit@10 : 0.8807    precision@5 : 0.1725    precision@10 : 0.0881
+Sun 12 Oct 2025 21:32:59 INFO  epoch 40 training [time: 1.20s, train loss: 9.7658]
+Sun 12 Oct 2025 21:33:00 INFO  epoch 40 evaluating [time: 0.11s, valid_score: 0.849700]
+Sun 12 Oct 2025 21:33:00 INFO  valid result: 
+recall@5 : 0.8637    recall@10 : 0.8788    mrr@5 : 0.8477    mrr@10 : 0.8497    ndcg@5 : 0.8517    ndcg@10 : 0.8565    hit@5 : 0.8637    hit@10 : 0.8788    precision@5 : 0.1727    precision@10 : 0.0879
+Sun 12 Oct 2025 21:33:01 INFO  epoch 41 training [time: 1.22s, train loss: 9.4362]
+Sun 12 Oct 2025 21:33:01 INFO  epoch 41 evaluating [time: 0.12s, valid_score: 0.848400]
+Sun 12 Oct 2025 21:33:01 INFO  valid result: 
+recall@5 : 0.8613    recall@10 : 0.8769    mrr@5 : 0.8463    mrr@10 : 0.8484    ndcg@5 : 0.8501    ndcg@10 : 0.8551    hit@5 : 0.8613    hit@10 : 0.8769    precision@5 : 0.1723    precision@10 : 0.0877
+Sun 12 Oct 2025 21:33:02 INFO  epoch 42 training [time: 1.21s, train loss: 10.4349]
+Sun 12 Oct 2025 21:33:02 INFO  epoch 42 evaluating [time: 0.12s, valid_score: 0.851600]
+Sun 12 Oct 2025 21:33:02 INFO  valid result: 
+recall@5 : 0.8623    recall@10 : 0.8807    mrr@5 : 0.8493    mrr@10 : 0.8516    ndcg@5 : 0.8526    ndcg@10 : 0.8583    hit@5 : 0.8623    hit@10 : 0.8807    precision@5 : 0.1725    precision@10 : 0.0881
+Sun 12 Oct 2025 21:33:04 INFO  epoch 43 training [time: 1.32s, train loss: 10.6904]
+Sun 12 Oct 2025 21:33:04 INFO  epoch 43 evaluating [time: 0.13s, valid_score: 0.851800]
+Sun 12 Oct 2025 21:33:04 INFO  valid result: 
+recall@5 : 0.8618    recall@10 : 0.8788    mrr@5 : 0.8496    mrr@10 : 0.8518    ndcg@5 : 0.8527    ndcg@10 : 0.858    hit@5 : 0.8618    hit@10 : 0.8788    precision@5 : 0.1724    precision@10 : 0.0879
+Sun 12 Oct 2025 21:33:05 INFO  epoch 44 training [time: 1.21s, train loss: 10.8159]
+Sun 12 Oct 2025 21:33:05 INFO  epoch 44 evaluating [time: 0.12s, valid_score: 0.852200]
+Sun 12 Oct 2025 21:33:05 INFO  valid result: 
+recall@5 : 0.8632    recall@10 : 0.8807    mrr@5 : 0.85    mrr@10 : 0.8522    ndcg@5 : 0.8533    ndcg@10 : 0.8588    hit@5 : 0.8632    hit@10 : 0.8807    precision@5 : 0.1726    precision@10 : 0.0881
+Sun 12 Oct 2025 21:33:06 INFO  epoch 45 training [time: 1.20s, train loss: 10.4434]
+Sun 12 Oct 2025 21:33:06 INFO  epoch 45 evaluating [time: 0.12s, valid_score: 0.850700]
+Sun 12 Oct 2025 21:33:06 INFO  valid result: 
+recall@5 : 0.8618    recall@10 : 0.8788    mrr@5 : 0.8485    mrr@10 : 0.8507    ndcg@5 : 0.8518    ndcg@10 : 0.8572    hit@5 : 0.8618    hit@10 : 0.8788    precision@5 : 0.1724    precision@10 : 0.0879
+Sun 12 Oct 2025 21:33:08 INFO  epoch 46 training [time: 1.21s, train loss: 10.4058]
+Sun 12 Oct 2025 21:33:08 INFO  epoch 46 evaluating [time: 0.25s, valid_score: 0.851400]
+Sun 12 Oct 2025 21:33:08 INFO  valid result: 
+recall@5 : 0.8613    recall@10 : 0.8778    mrr@5 : 0.8493    mrr@10 : 0.8514    ndcg@5 : 0.8522    ndcg@10 : 0.8575    hit@5 : 0.8613    hit@10 : 0.8778    precision@5 : 0.1723    precision@10 : 0.0878
+Sun 12 Oct 2025 21:33:09 INFO  epoch 47 training [time: 1.22s, train loss: 9.9792]
+Sun 12 Oct 2025 21:33:09 INFO  epoch 47 evaluating [time: 0.11s, valid_score: 0.850100]
+Sun 12 Oct 2025 21:33:09 INFO  valid result: 
+recall@5 : 0.8608    recall@10 : 0.8745    mrr@5 : 0.8483    mrr@10 : 0.8501    ndcg@5 : 0.8515    ndcg@10 : 0.8559    hit@5 : 0.8608    hit@10 : 0.8745    precision@5 : 0.1722    precision@10 : 0.0875
+Sun 12 Oct 2025 21:33:10 INFO  epoch 48 training [time: 1.20s, train loss: 10.5233]
+Sun 12 Oct 2025 21:33:10 INFO  epoch 48 evaluating [time: 0.12s, valid_score: 0.851800]
+Sun 12 Oct 2025 21:33:10 INFO  valid result: 
+recall@5 : 0.8618    recall@10 : 0.8774    mrr@5 : 0.8498    mrr@10 : 0.8518    ndcg@5 : 0.8528    ndcg@10 : 0.8578    hit@5 : 0.8618    hit@10 : 0.8774    precision@5 : 0.1724    precision@10 : 0.0877
+Sun 12 Oct 2025 21:33:12 INFO  epoch 49 training [time: 1.23s, train loss: 10.0691]
+Sun 12 Oct 2025 21:33:12 INFO  epoch 49 evaluating [time: 0.12s, valid_score: 0.851700]
+Sun 12 Oct 2025 21:33:12 INFO  valid result: 
+recall@5 : 0.8646    recall@10 : 0.8802    mrr@5 : 0.8498    mrr@10 : 0.8517    ndcg@5 : 0.8535    ndcg@10 : 0.8584    hit@5 : 0.8646    hit@10 : 0.8802    precision@5 : 0.1729    precision@10 : 0.088
+Sun 12 Oct 2025 21:33:12 INFO  Finished training, best eval result in epoch 38
+Sun 12 Oct 2025 21:33:12 INFO  Loading model structure and parameters from saved/BERT4Rec-Oct-12-2025_21-32-05.pth
+Sun 12 Oct 2025 21:33:13 INFO  The running environment of this training is as follows:
++-------------+----------------+
+| Environment |     Usage      |
++=============+================+
+| CPU         |     3.00 %     |
++-------------+----------------+
+| GPU         | 1.08 G/3.68 G  |
++-------------+----------------+
+| Memory      | 1.56 G/15.33 G |
++-------------+----------------+
+Sun 12 Oct 2025 21:33:13 INFO  best valid : OrderedDict({'recall@5': 0.8642, 'recall@10': 0.8769, 'mrr@5': 0.8506, 'mrr@10': 0.8523, 'ndcg@5': 0.854, 'ndcg@10': 0.8581, 'hit@5': 0.8642, 'hit@10': 0.8769, 'precision@5': 0.1728, 'precision@10': 0.0877})
+Sun 12 Oct 2025 21:33:13 INFO  test result: OrderedDict({'recall@5': 0.9755, 'recall@10': 0.9826, 'mrr@5': 0.9563, 'mrr@10': 0.9572, 'ndcg@5': 0.9612, 'ndcg@10': 0.9635, 'hit@5': 0.9755, 'hit@10': 0.9826, 'precision@5': 0.1951, 'precision@10': 0.0983})

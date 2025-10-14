@@ -55,6 +55,17 @@ const sanitiseMetadata = (metadata: Record<string, unknown> | null | undefined) 
   }
 };
 
+const normaliseProductId = (value: unknown): string | null => {
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    return String(Math.trunc(value));
+  }
+  if (typeof value === 'string') {
+    const trimmed = value.trim();
+    return trimmed.length ? trimmed : null;
+  }
+  return null;
+};
+
 export async function logInteractions(
   events: InteractionEventPayload[],
 ): Promise<void> {
@@ -70,7 +81,7 @@ export async function logInteractions(
       eventType: event.eventType,
       userId: event.userId ?? null,
       sessionId: event.sessionId ?? sessionId,
-      productId: event.productId ?? null,
+      productId: normaliseProductId(event.productId),
       occurredAt: event.occurredAt ?? new Date().toISOString(),
       metadata: sanitiseMetadata(event.metadata),
     }));

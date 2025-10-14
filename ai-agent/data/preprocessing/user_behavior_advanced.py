@@ -1,123 +1,196 @@
+"""Extract user behaviour from Postgres into a CSV."""
+
+from __future__ import annotations
+
+import io
+import os
+import subprocess
+import time
 from pathlib import Path
+from typing import Dict
+
 import pandas as pd
-import random
-from datetime import datetime, timedelta
-import uuid
+
+try:
+    import psycopg
+    from psycopg.rows import dict_row
+except ImportError:  # pragma: no cover - optional dependency
+    psycopg = None  # type: ignore[assignment]
+    dict_row = None  # type: ignore[assignment]
 
 BASE_DIR = Path(__file__).resolve().parents[2]
 RAW_DIR = BASE_DIR / "data" / "raw"
+RAW_DIR.mkdir(parents=True, exist_ok=True)
 
-# === 1️⃣ Đọc và làm sạch dữ liệu ===
-df = pd.read_csv(RAW_DIR / "reviews.csv")[["product_id", "star"]]
-df = df.dropna(subset=["product_id", "star"])
-df["product_id"] = df["product_id"].astype(int)
-df["star"] = df["star"].astype(int)
+OUTPUT_FILE = RAW_DIR / "user_behavior_interactions.csv"
+MAX_RETRIES = int(os.getenv("AI_PG_RETRIES", "6"))
+RETRY_DELAY_SECONDS = int(os.getenv("AI_PG_RETRY_DELAY", "10"))
+CONNECT_TIMEOUT_SECONDS = int(os.getenv("AI_PG_CONNECT_TIMEOUT", "5"))
+BOOT_TIMEOUT_SECONDS = int(os.getenv("AI_PG_BOOT_TIMEOUT", str(max(90, MAX_RETRIES * RETRY_DELAY_SECONDS))))
 
-num_users = 4000
-df["user_id"] = [random.randint(1, num_users) for _ in range(len(df))]
+QUERY = """
+SELECT
+    "sessionId" AS session_id,
+    "userId" AS user_id,
+    "productId" AS product_id,
+    "eventType" AS event_type,
+    "occurredAt" AS occurred_at
+FROM ai_interaction_events
+WHERE "userId" IS NOT NULL
+  AND "productId" IS NOT NULL
+ORDER BY "occurredAt" ASC
+"""
 
-# === 2️⃣ Thời gian hợp lý ===
-def next_time(base_time, star):
-    if star >= 5:
-        delta = timedelta(minutes=random.randint(1, 5))
-    elif star == 4:
-        delta = timedelta(minutes=random.randint(5, 30))
-    elif star == 3:
-        delta = timedelta(minutes=random.randint(30, 120))
+
+def build_conn_info() -> Dict[str, str]:
+    return {
+        "host": os.getenv("AI_PG_HOST", os.getenv("DB_HOST", "localhost")),
+        "port": os.getenv("AI_PG_PORT", os.getenv("DB_PORT", "5432")),
+        "dbname": os.getenv("AI_PG_DB", os.getenv("DB_NAME", "secondhand_ai")),
+        "user": os.getenv("AI_PG_USER", os.getenv("DB_USERNAME", "nemmer")),
+        "password": os.getenv("AI_PG_PASSWORD", os.getenv("DB_PASSWORD", "nemmer")),
+    }
+
+
+def export_via_psql(conn: Dict[str, str]) -> pd.DataFrame:
+    psql_cmd = os.getenv("PSQL_COMMAND", "psql")
+    conn_str = f"host={conn['host']} port={conn['port']} user={conn['user']} dbname={conn['dbname']}"
+    env = os.environ.copy()
+    env["PGPASSWORD"] = conn["password"]
+
+    copy_sql = f"COPY ({QUERY}) TO STDOUT WITH CSV HEADER"
+    try:
+        process = subprocess.run(
+            [psql_cmd, conn_str, "-c", copy_sql],
+            env=env,
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+    except FileNotFoundError as exc:
+        raise RuntimeError("Không tìm thấy lệnh psql. Vui lòng cài đặt PostgreSQL client.") from exc
+    except subprocess.CalledProcessError as exc:
+        raise RuntimeError(f"Không thể thực thi truy vấn Postgres: {exc.stderr}") from exc
+
+    if not process.stdout.strip():
+        return pd.DataFrame(columns=["user_id", "product_id", "event_type", "occurred_at"])
+
+    return pd.read_csv(io.StringIO(process.stdout))
+
+
+def export_via_psycopg(conn: Dict[str, str]) -> pd.DataFrame:
+    if psycopg is None or dict_row is None:
+        raise ImportError("psycopg chưa được cài đặt.")
+
+    with psycopg.connect(
+        host=conn["host"],
+        port=int(conn["port"]),
+        dbname=conn["dbname"],
+        user=conn["user"],
+        password=conn["password"],
+        connect_timeout=CONNECT_TIMEOUT_SECONDS,
+        row_factory=dict_row,
+    ) as connection:
+        with connection.cursor() as cursor:
+            cursor.execute(QUERY)
+            rows = cursor.fetchall()
+
+    if not rows:
+        return pd.DataFrame(columns=["session_id", "user_id", "product_id", "event_type", "occurred_at"])
+
+    return pd.DataFrame(rows)
+
+
+def main() -> None:
+    print("🔄 Đang trích xuất data từ Postgres...")
+    conn = build_conn_info()
+    df: pd.DataFrame
+    last_error: Exception | None = None
+
+    if psycopg is not None:
+        deadline = time.time() + BOOT_TIMEOUT_SECONDS
+        wait_attempt = 1
+        while True:
+            try:
+                with psycopg.connect(
+                    host=conn["host"],
+                    port=int(conn["port"]),
+                    dbname=conn["dbname"],
+                    user=conn["user"],
+                    password=conn["password"],
+                    connect_timeout=CONNECT_TIMEOUT_SECONDS,
+                ) as connection:
+                    with connection.cursor() as cursor:
+                        cursor.execute("SELECT 1")
+                        cursor.fetchone()
+                break
+            except Exception as ready_error:  # noqa: BLE001
+                remaining = deadline - time.time()
+                if remaining <= 0:
+                    raise RuntimeError(
+                        f"Postgres không sẵn sàng sau {BOOT_TIMEOUT_SECONDS}s: {ready_error}"
+                    ) from ready_error
+                wait_for = min(RETRY_DELAY_SECONDS, max(1, int(remaining)))
+                print(
+                    f"⏳ Postgres chưa sẵn sàng (lần {wait_attempt}): {ready_error}. "
+                    f"Chờ {wait_for}s rồi thử lại...",
+                    flush=True,
+                )
+                time.sleep(wait_for)
+                wait_attempt += 1
+
+    for attempt in range(1, MAX_RETRIES + 1):
+        try:
+            df = export_via_psycopg(conn)
+            print("🐘 Đã trích xuất bằng psycopg.")
+            break
+        except Exception as psy_error:  # noqa: BLE001
+            last_error = psy_error
+            print(f"⚠️  psycopg lỗi ({attempt}/{MAX_RETRIES}): {psy_error}")
+            try:
+                df = export_via_psql(conn)
+                print("📤 Đã fallback sang psql CLI.")
+                break
+            except Exception as psql_error:  # noqa: BLE001
+                combined = RuntimeError(
+                    f"psycopg lỗi: {psy_error}; psql lỗi: {psql_error}"
+                )
+                last_error = combined
+                if attempt < MAX_RETRIES:
+                    wait_for = RETRY_DELAY_SECONDS * attempt
+                    print(f"⏳ Chờ {wait_for}s rồi thử lại...")
+                    time.sleep(wait_for)
+                else:
+                    raise combined
     else:
-        delta = timedelta(minutes=random.randint(10, 60))
-    return base_time + delta
+        if last_error:
+            raise last_error
+        raise RuntimeError("Không thể trích xuất dữ liệu từ Postgres sau nhiều lần thử.")
 
-# === 3️⃣ Tạo session id ===
-def gen_session_id():
-    return uuid.uuid4().hex[:8]
+    if df.empty:
+        print("⚠️  Không có dữ liệu khả dụng trong ai_interaction_events")
+        OUTPUT_FILE.write_text("", encoding="utf-8")
+        return
 
-# === 4️⃣ Sinh hành vi (đã tăng xác suất mua) ===
-def generate_behavior(row):
-    behaviors = []
-    user_id = int(row["user_id"])
-    product_id = int(row["product_id"])
-    star = int(row["star"])
-    session_id = gen_session_id()
-    base_time = datetime(2024, 1, 1) + timedelta(days=random.randint(0, 120))
-    t = base_time
+    df = df.dropna(subset=["session_id", "user_id", "product_id", "event_type", "occurred_at"])
+    df["session_id"] = df["session_id"].astype(str)
+    df["user_id"] = df["user_id"].astype(str)
+    df["product_id"] = df["product_id"].astype(str)
+    timestamps = pd.to_datetime(df["occurred_at"], utc=True, errors="coerce")
+    df = df.assign(timestamp=timestamps.dt.tz_convert(None).dt.tz_localize(None))
+    df = df.drop(columns=["occurred_at"]).sort_values(by=["session_id", "timestamp"])  # type: ignore[arg-type]
 
-    if star >= 5:
-        pattern = random.choices([
-            ["view", "click", "add_to_cart", "purchase"],
-            ["view", "out", "view", "click", "add_to_cart", "purchase"],
-            ["view", "click", "add_to_cart", "purchase", "purchase"]
-        ], weights=[0.55, 0.35, 0.10])[0]
-    elif star == 4:
-        pattern = random.choices([
-            ["view", "click", "add_to_cart", "purchase"],
-            ["view", "click", "add_to_cart", "reject"],
-            ["view", "out", "view", "click", "add_to_cart"]
-        ], weights=[0.65, 0.20, 0.15])[0]
-    elif star == 3:
-        pattern = random.choices([
-            ["view", "click"],
-            ["view", "out", "view", "click"]
-        ], weights=[0.7, 0.3])[0]
-    else:
-        pattern = random.choices([
-            ["view", "reject"],
-            ["view", "click", "reject"],
-            ["view", "out", "view", "reject"]
-        ], weights=[0.5, 0.3, 0.2])[0]
+    df = df[["session_id", "user_id", "product_id", "timestamp", "event_type"]]
 
-    for ev in pattern:
-        behaviors.append({
-            "session_id": session_id,
-            "user_id": user_id,
-            "product_id": product_id,
-            "timestamp": t.strftime("%Y-%m-%d %H:%M:%S"),
-            "event_type": ev
-        })
-        t = next_time(t, star)
+    df.to_csv(OUTPUT_FILE, index=False, encoding="utf-8")
 
-    # User quay lại sau vài ngày (có 30 % mua lại)
-    if star >= 4 and random.random() < 0.30:
-        session_id = gen_session_id()
-        t += timedelta(days=random.randint(1, 5))
-        subpattern = random.choices([
-            ["view", "click", "purchase"],
-            ["view", "click", "add_to_cart", "purchase"]
-        ], weights=[0.4, 0.6])[0]
-        for ev in subpattern:
-            behaviors.append({
-                "session_id": session_id,
-                "user_id": user_id,
-                "product_id": product_id,
-                "timestamp": t.strftime("%Y-%m-%d %H:%M:%S"),
-                "event_type": ev
-            })
-            t = next_time(t, star)
+    print(f"✅ Đã tạo file {OUTPUT_FILE}")
+    print("Tổng số event:", len(df))
+    print("Số user:", df['user_id'].nunique())
+    print("Số sản phẩm:", df['product_id'].nunique())
+    print("Các loại event:", df['event_type'].value_counts(normalize=True).round(3).to_dict())
+    print(df.head(10))
 
-    return behaviors
 
-# === 5️⃣ Sinh toàn bộ dữ liệu ===
-all_behaviors = []
-purchase_count = {}
-
-for _, row in df.iterrows():
-    uid, pid = int(row["user_id"]), int(row["product_id"])
-    key = (uid, pid)
-    if row["star"] >= 5:
-        if purchase_count.get(key, 0) >= 2:
-            continue
-        purchase_count[key] = purchase_count.get(key, 0) + 1
-    all_behaviors.extend(generate_behavior(row))
-
-df_behavior = pd.DataFrame(all_behaviors).sort_values(by=["user_id", "timestamp"])
-
-# === 6️⃣ Lưu file ===
-output_path = RAW_DIR / "user_behavior_40purchase.csv"
-df_behavior.to_csv(output_path, index=False, encoding="utf-8")
-
-print(f"✅ Đã tạo file {output_path}")
-print("Tổng số event:", len(df_behavior))
-print("Số user:", df_behavior['user_id'].nunique())
-print("Số sản phẩm:", df_behavior['product_id'].nunique())
-print("Các loại event:", df_behavior['event_type'].value_counts(normalize=True).round(3).to_dict())
-print(df_behavior.head(10))
+if __name__ == "__main__":
+    main()

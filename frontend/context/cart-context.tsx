@@ -52,6 +52,19 @@ export const CartContext = createContext<CartContextType>({
   total: 0,
 });
 
+const resolveProductIdentifier = (product: Product | undefined | null, fallback?: string) => {
+  if (product?.productId != null) {
+    return String(product.productId);
+  }
+  if (product?.legacyId != null) {
+    return String(product.legacyId);
+  }
+  if (fallback && /^\d+$/.test(fallback)) {
+    return fallback;
+  }
+  return product?.id ?? fallback ?? '';
+};
+
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState(false);
@@ -95,11 +108,15 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }
     setLoading(true);
     try {
+      const resolvedProductId = resolveProductIdentifier(product);
+      const numericProductId = /^\d+$/.test(resolvedProductId) ? resolvedProductId : null;
+      const serviceProductId = numericProductId ?? product.id;
+
       const response = await client.mutate({
         mutation: ADD_TO_CART,
         variables: {
           input: {
-            productId: product.id,
+            productId: serviceProductId,
             quantity,
           },
         },
@@ -108,11 +125,14 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       void logInteraction({
         eventType: 'add_to_cart',
         userId: user?.id,
-        productId: product.id,
+        productId: numericProductId ?? undefined,
         metadata: {
           quantity,
           price: product.price,
           cartItemId: response.data?.addToCart?.id,
+          productId: numericProductId ?? resolvedProductId ?? null,
+          numericProductId,
+          sourceId: product.id,
         },
       });
       await fetchCart();

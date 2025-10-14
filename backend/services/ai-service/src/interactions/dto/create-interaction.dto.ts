@@ -10,6 +10,7 @@ import {
   Length,
   Matches,
 } from 'class-validator';
+import { Transform } from 'class-transformer';
 import { InteractionEventType } from '../../entities/interaction-event.entity';
 
 const EVENT_TYPES: InteractionEventType[] = [
@@ -25,9 +26,17 @@ const EVENT_TYPES: InteractionEventType[] = [
 
 export class CreateInteractionDto {
   @IsOptional()
-  @IsString()
-  @Matches(/^[\w-]+$/, {
-    message: 'userId chỉ được chứa ký tự chữ, số, "-" hoặc "_"',
+  @Transform(({ value }) => {
+    if (value === undefined || value === null || value === '') {
+      return undefined;
+    }
+    if (typeof value === 'number' && Number.isFinite(value)) {
+      return String(Math.trunc(value));
+    }
+    return String(value);
+  })
+  @Matches(/^\d+$/, {
+    message: 'userId phải là số hợp lệ',
   })
   userId?: string;
 

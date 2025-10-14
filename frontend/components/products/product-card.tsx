@@ -40,7 +40,15 @@ const ProductCard = ({ product }: ProductCardProps) => {
   const rating = product.averageRating ?? product.rating ?? 0;
   const reviewCount = product.reviewCount ?? product.reviews?.length ?? 0;
   const availableStock = product.stock ?? 0;
-  const categoryLabel = product.displayCategory || product.category || 'Đang cập nhật';
+  const badgeLabel =
+    product.productId != null
+      ? `ID #${product.productId}`
+      : product.legacyId != null
+        ? `ID #${product.legacyId}`
+        : product.categoryName ||
+          product.displayCategory ||
+          product.category ||
+          'Đang cập nhật';
 
   useEffect(() => {
     setCardImage(product.image || product.images?.[0] || DEFAULT_PRODUCT_IMAGE);
@@ -104,7 +112,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
             </DialogContent>
           </Dialog>
         
-        <Badge variant="secondary" className="absolute top-2 right-2">{categoryLabel}</Badge>
+        <Badge variant="secondary" className="absolute top-2 right-2">{badgeLabel}</Badge>
         {availableStock < 5 && (
           <Badge variant="destructive" className="absolute top-10 right-2">Sắp hết hàng</Badge>
         )}

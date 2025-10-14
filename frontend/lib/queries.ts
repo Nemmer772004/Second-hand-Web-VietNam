@@ -11,6 +11,7 @@ export const GET_PRODUCTS = gql`
       price
       productId
       category
+      categoryName
       displayCategory
       image
       images
@@ -44,6 +45,7 @@ export const GET_PRODUCT_BY_ID = gql`
       price
       productId
       category
+      categoryName
       displayCategory
       image
       images
@@ -88,6 +90,7 @@ export const GET_PRODUCTS_BY_CATEGORY = gql`
       price
       productId
       category
+      categoryName
       image
       images
       brand
@@ -145,6 +148,8 @@ export const GET_CART = gql`
       productId
       product {
         id
+        productId
+        legacyId
         name
         price
         image
@@ -168,6 +173,8 @@ export const ADD_TO_CART = gql`
       price
       product {
         id
+        productId
+        legacyId
         name
         price
         image
@@ -428,4 +435,3 @@ export const CREATE_PRODUCT_REVIEW = gql`
     }
   }
 `;
-

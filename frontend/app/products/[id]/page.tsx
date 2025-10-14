@@ -50,7 +50,15 @@ function ProductDetailPage({ params }: { params: { id: string } }) {
 
   const primaryImage = galleryImages[0] ?? DEFAULT_PRODUCT_IMAGE;
   const availableStock = product?.stock ?? 0;
-  const categoryLabel = product?.displayCategory || product?.category || 'Đang cập nhật';
+  const badgeLabel =
+    product?.productId != null
+      ? `ID #${product.productId}`
+      : product?.legacyId != null
+        ? `ID #${product.legacyId}`
+        : product?.categoryName ||
+          product?.displayCategory ||
+          product?.category ||
+          'Đang cập nhật';
   const brandLabel = product?.brand;
 
   const { data: relatedData } = useQuery(GET_PRODUCTS_BY_CATEGORY, {
@@ -162,14 +170,23 @@ function ProductDetailPage({ params }: { params: { id: string } }) {
 
     loggedViewProductIdRef.current = product.id;
 
+    const loggedProductId =
+      product.productId != null
+        ? String(product.productId)
+        : product.legacyId != null
+          ? String(product.legacyId)
+          : product.id;
+
     void logInteraction({
       eventType: 'view',
       userId: user?.id,
-      productId: product.id,
+      productId: loggedProductId,
       metadata: {
         name: product.name,
         price: product.price,
         category: product.category,
+        productId: loggedProductId,
+        sourceId: product.id,
       },
     });
   }, [product?.id, product?.name, product?.price, product?.category, user?.id]);
@@ -261,7 +278,7 @@ function ProductDetailPage({ params }: { params: { id: string } }) {
               }}
             />
             <Badge variant="secondary" className="absolute top-2 right-2">
-              {categoryLabel}
+              {badgeLabel}
             </Badge>
             {availableStock < 5 && (
               <Badge variant="destructive" className="absolute top-12 right-2">

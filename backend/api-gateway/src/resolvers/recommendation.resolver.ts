@@ -150,11 +150,13 @@ export class RecommendationResolver {
       };
     }
 
-    const id =
-      this.normaliseId(raw.id) ||
-      this.normaliseId(raw._id) ||
+    const productId =
       this.normaliseId(raw.productId) ||
       this.normaliseId(raw.product_id);
+
+    const databaseId =
+      this.normaliseId(raw.id) ||
+      this.normaliseId(raw._id);
 
     const priceNumber =
       typeof raw.price === 'number'
@@ -164,9 +166,9 @@ export class RecommendationResolver {
         : undefined;
 
     return {
-      productId: id || this.normaliseId(raw.productId) || this.normaliseId(raw.product_id),
+      productId: productId || databaseId,
       productName: raw.name || fallbackName,
-      productSlug: raw.slug || raw.legacyId || undefined,
+      productSlug: raw.slug || raw.legacyId || databaseId || undefined,
       image:
         (Array.isArray(raw.images) && raw.images.length > 0 && raw.images[0]) ||
         raw.image ||

@@ -5,7 +5,7 @@ import { UserProfile } from '../entities/user-profile.entity.js';
 const AUTH_SERVICE_BASE = (process.env.AUTH_SERVICE_URL || 'http://localhost:3006/auth').replace(/\/$/, '');
 
 type AuthUser = {
-  id: string;
+  id: number;
   email: string;
   name: string;
   avatar?: string | null;
@@ -166,7 +166,12 @@ export const getUserById = async (req: Request, res: Response) => {
 
 export const getUserByAuthId = async (req: Request, res: Response) => {
   try {
-    const user = await userRepository().findOne({ where: { authId: req.params.authId } });
+    const authId = Number.parseInt(req.params.authId, 10);
+    if (!Number.isInteger(authId)) {
+      return res.status(400).json({ message: 'Invalid authId' });
+    }
+
+    const user = await userRepository().findOne({ where: { authId } });
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
@@ -328,7 +333,7 @@ export const syncProfile = async (req: Request, res: Response) => {
   try {
     const { authUser, profile: profilePayload } = req.body || {};
 
-    if (!authUser?.id || !authUser?.email) {
+    if (authUser?.id === undefined || !authUser?.email) {
       return res.status(400).json({ message: 'Invalid auth user payload' });
     }
 

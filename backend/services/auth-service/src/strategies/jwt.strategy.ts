@@ -4,6 +4,13 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { AuthService } from '../auth.service';
 
+interface JwtPayload {
+  sub: number;
+  email: string;
+  name: string;
+  isAdmin: boolean;
+}
+
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(
@@ -17,8 +24,13 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  async validate(payload: any) {
-    const user = await this.authService.findById(payload.sub);
+  async validate(payload: JwtPayload) {
+    const userId = Number(payload.sub);
+    if (!Number.isInteger(userId)) {
+      throw new UnauthorizedException('Invalid token');
+    }
+
+    const user = await this.authService.findById(userId);
     if (!user) {
       throw new UnauthorizedException('Invalid token');
     }

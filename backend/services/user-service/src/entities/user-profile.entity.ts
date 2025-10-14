@@ -14,8 +14,8 @@ export class UserProfile {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  @Column({ type: 'uuid', nullable: true })
-  authId!: string | null;
+  @Column({ type: 'integer', nullable: true })
+  authId!: number | null;
 
   @Column({ type: 'varchar', length: 255 })
   email!: string;

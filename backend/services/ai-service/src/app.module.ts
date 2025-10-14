@@ -7,6 +7,7 @@ import { SessionSequence } from './entities/session-sequence.entity';
 import { RlEpisodeStep } from './entities/rl-episode-step.entity';
 import { InteractionsModule } from './interactions/interactions.module';
 import { HealthController } from './health.controller';
+import { UserMapping } from './entities/user-mapping.entity';
 
 @Module({
   imports: [
@@ -27,7 +28,7 @@ import { HealthController } from './health.controller';
         autoLoadEntities: true,
         synchronize: config.get<boolean>('AI_PG_SYNC', true),
         logging: config.get<boolean>('AI_PG_LOGGING', false),
-        entities: [AIRecommendation, InteractionEvent, SessionSequence, RlEpisodeStep],
+        entities: [AIRecommendation, InteractionEvent, SessionSequence, RlEpisodeStep, UserMapping],
       }),
     }),
     InteractionsModule,

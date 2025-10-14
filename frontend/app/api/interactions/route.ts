@@ -38,9 +38,16 @@ const normaliseEvent = (raw: IncomingEvent) => {
     }
   }
 
+  const userId =
+    typeof raw.userId === 'number' && Number.isFinite(raw.userId)
+      ? String(Math.trunc(raw.userId))
+      : typeof raw.userId === 'string'
+      ? raw.userId.trim()
+      : null;
+
   return {
     eventType: raw.eventType,
-    userId: typeof raw.userId === 'string' ? raw.userId : null,
+    userId: userId && userId.length ? userId : null,
     sessionId: typeof raw.sessionId === 'string' ? raw.sessionId : null,
     productId: typeof raw.productId === 'string' ? raw.productId : null,
     occurredAt,

@@ -24,10 +24,11 @@ RAW_DATA_DIR = BASE_DIR / "data" / "raw"
 
 DEFAULT_MODEL_PATTERN = "BERT4Rec-*.pth"
 DEFAULT_TOPK = int(os.environ.get("CHATBOT_TOPK", "5"))
+RELOAD_TOKEN = os.environ.get("CHATBOT_RELOAD_TOKEN")
 
 
 class RecommendationItem(BaseModel):
-    item_id: str
+    item_id: int
     item_name: str
     score: Optional[float] = None
 
@@ -54,6 +55,10 @@ ARTIFACTS: Dict[str, object] = {}
 TORCH_INFERENCE_LOCK = torch.multiprocessing.Lock()
 MODEL_READY = False
 MODEL_STATUS = "initializing"
+
+
+class ReloadRequest(BaseModel):
+    token: Optional[str] = None
 
 
 def resolve_checkpoint() -> Path:
@@ -165,6 +170,17 @@ def load_artifacts():
     }
 
 
+def refresh_artifacts() -> Dict[str, object]:
+    global ARTIFACTS, MODEL_READY, MODEL_STATUS
+    with TORCH_INFERENCE_LOCK:
+        artifacts = load_artifacts()
+        ARTIFACTS = artifacts
+        MODEL_READY = True
+        MODEL_STATUS = f"model_loaded:{artifacts.get('checkpoint_path')}"
+    logger.info("Reloaded chatbot model from %s", ARTIFACTS.get("checkpoint_path"))
+    return artifacts
+
+
 @app.on_event("startup")
 def startup_event():
     global ARTIFACTS, MODEL_READY, MODEL_STATUS
@@ -187,6 +203,30 @@ def startup_event():
         MODEL_STATUS = f"load_failed:{exc}"
         ARTIFACTS = {}
         logger.exception("Failed to load chatbot model")
+
+
+@app.post("/internal/reload")
+def reload_endpoint(request: ReloadRequest):
+    if RELOAD_TOKEN and request.token != RELOAD_TOKEN:
+        raise HTTPException(status_code=403, detail="Token không hợp lệ.")
+    try:
+        artifacts = refresh_artifacts()
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+    except Exception as exc:  # noqa: BLE001
+        logger.exception("Reload chatbot thất bại")
+        raise HTTPException(status_code=500, detail=f"Không thể reload: {exc}") from exc
+
+    checkpoint = artifacts.get("checkpoint_path")
+    dataset = artifacts.get("dataset")
+    users = getattr(dataset, "user_num", None)
+    items = getattr(dataset, "item_num", None)
+    return {
+        "status": "ok",
+        "checkpoint": str(checkpoint) if checkpoint else None,
+        "users": users,
+        "items": items,
+    }
 
 
 def simple_reply(message: str) -> str:
@@ -242,7 +282,10 @@ def recommend_for_user(user_token: str, topk: int) -> List[RecommendationItem]:
     if not interacted_items:
         raise ValueError("Chưa có lịch sử để gợi ý sản phẩm.")
 
-    max_len = int(config.get("MAX_ITEM_LIST_LENGTH", config["seq_len"]))
+    try:
+        max_len = int(config["MAX_ITEM_LIST_LENGTH"])
+    except KeyError:
+        max_len = int(config["seq_len"])
     seq = interacted_items[-max_len:]
     seq_tensor = torch.tensor([seq], device=model.device)
     seq_len_tensor = torch.tensor([len(seq)], device=model.device)
@@ -268,10 +311,16 @@ def recommend_for_user(user_token: str, topk: int) -> List[RecommendationItem]:
         if item_internal in seen_items:
             continue
         item_token = dataset.id2token(iid_field, [item_internal])[0]
-        item_name = product_map.get(str(item_token), f"Sản phẩm {item_token}")
+        item_token_str = str(item_token)
+        item_name = product_map.get(item_token_str, f"Sản phẩm {item_token_str}")
+        try:
+            item_id = int(item_token_str)
+        except ValueError:
+            logger.warning("Item token %s không phải số nguyên, bỏ qua gợi ý này.", item_token_str)
+            continue
         recommendations.append(
             RecommendationItem(
-                item_id=str(item_token),
+                item_id=item_id,
                 item_name=item_name,
                 score=round(float(score), 4),
             ),

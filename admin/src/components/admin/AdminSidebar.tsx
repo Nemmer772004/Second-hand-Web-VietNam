@@ -10,6 +10,7 @@ const menuItems = [
   { href: '/orders', label: 'Đơn hàng', icon: '🧾' },
   { href: '/users', label: 'Người dùng', icon: '👥' },
   { href: '/recommendations', label: 'Gợi ý realtime', icon: '🤖' },
+  { href: '/ai-training', label: 'Lịch sử huấn luyện AI', icon: '🧠' },
 ];
 
 function AdminSidebar() {

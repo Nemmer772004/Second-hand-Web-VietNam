@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useMutation } from '@apollo/client';
 import { CartContext } from '@/context/cart-context';
+import type { CartItem } from '@/lib/types';
 import { useAuth } from '@/context/auth-context';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -35,7 +36,20 @@ export default function CartPage() {
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
-  }
+  };
+
+  const resolveItemProductId = (item: CartItem) => {
+    if (item.product?.productId != null) {
+      return String(item.product.productId);
+    }
+    if (item.product?.legacyId != null) {
+      return String(item.product.legacyId);
+    }
+    if (item.productId && /^\d+$/.test(item.productId)) {
+      return item.productId;
+    }
+    return item.product?.id ?? item.productId;
+  };
 
   const handleCheckout = async () => {
     if (!user) {
@@ -56,16 +70,24 @@ export default function CartPage() {
 
     try {
       setOrderError(null);
-      const orderItemsPayload = cart.map((item) => ({
-        cartItemId: item.id,
-        productId: item.productId,
-        productName: item.product?.name,
-        quantity: item.quantity,
-        unitPrice: item.product?.price ?? 0,
-        lineTotal: (item.product?.price ?? 0) * item.quantity,
-      }));
+      const orderItemsPayload = cart.map((item) => {
+        const resolvedProductId = resolveItemProductId(item);
+        const numericProductId =
+          resolvedProductId && /^\d+$/.test(resolvedProductId) ? resolvedProductId : null;
+
+        return {
+          cartItemId: item.id,
+          productId: numericProductId ?? resolvedProductId ?? null,
+          numericProductId,
+          sourceId: item.productId,
+          productName: item.product?.name,
+          quantity: item.quantity,
+          unitPrice: item.product?.price ?? 0,
+          lineTotal: (item.product?.price ?? 0) * item.quantity,
+        };
+      });
       const orderItemsInput = orderItemsPayload.map((item) => ({
-        productId: item.productId,
+        productId: item.numericProductId ?? item.productId ?? item.sourceId,
         quantity: item.quantity,
       }));
 
@@ -82,9 +104,15 @@ export default function CartPage() {
       });
       const createdOrder = result.data?.createOrder;
 
+      const primaryProductId =
+        orderItemsPayload.find((item) => item.numericProductId)?.numericProductId ??
+        orderItemsPayload[0]?.productId ??
+        null;
+
       void logInteraction({
         eventType: 'purchase',
         userId: user.id,
+        productId: primaryProductId,
         metadata: {
           orderId: createdOrder?.id,
           totalAmount: createdOrder?.totalAmount ?? total,
@@ -93,6 +121,7 @@ export default function CartPage() {
           shippingFee: shipping,
           itemCount: orderItemsPayload.length,
           items: orderItemsPayload,
+          primaryNumericProductId: primaryProductId,
           shippingAddressProvided: Boolean(shippingAddress.trim()),
           noteProvided: Boolean(note.trim()),
         },

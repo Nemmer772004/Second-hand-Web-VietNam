@@ -184,6 +184,35 @@ body {
   grid-template-columns: minmax(0, 360px) minmax(0, 1fr);
 }
 
+.admin-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.admin-meta__row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.admin-meta__label {
+  font-weight: 600;
+  color: var(--admin-text-muted);
+  font-size: 14px;
+}
+
+.admin-meta__value {
+  font-size: 14px;
+  text-align: right;
+  word-break: break-word;
+}
+
+.admin-text--danger {
+  color: var(--admin-danger);
+}
+
 .admin-btn {
   display: inline-flex;
   align-items: center;
@@ -318,6 +347,82 @@ body {
   font-weight: 600;
   background: var(--admin-surface-muted);
   color: var(--admin-text-muted);
+}
+
+.admin-log-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.admin-log-list__item {
+  border: 1px solid var(--admin-divider);
+  border-radius: 12px;
+  padding: 14px 16px;
+  background: #fff;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
+}
+
+.admin-log-list__meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+  font-size: 13px;
+  color: var(--admin-text-muted);
+}
+
+.admin-log-list__timestamp {
+  font-weight: 600;
+}
+
+.admin-log-list__level {
+  text-transform: uppercase;
+  font-size: 11px;
+  letter-spacing: 0.6px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--admin-surface-muted);
+}
+
+.admin-log-list__level--info {
+  color: var(--admin-primary);
+}
+
+.admin-log-list__level--warning {
+  color: #d97706;
+}
+
+.admin-log-list__level--error {
+  color: var(--admin-danger);
+}
+
+.admin-log-list__message {
+  margin: 0;
+  font-size: 14px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.admin-toolbar {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.admin-log-output {
+  width: 100%;
+  max-height: 320px;
+  overflow: auto;
+  font-size: 13px;
+  background: #0f172a;
+  color: #f1f5f9;
+  padding: 16px;
+  border-radius: 12px;
 }
 
 .admin-spinner {

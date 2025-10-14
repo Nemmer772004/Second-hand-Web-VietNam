@@ -6,6 +6,13 @@ import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { RegisterDto, LoginDto } from './dto/auth.dto';
 
+interface AuthPayload {
+  sub: number;
+  email: string;
+  name: string;
+  isAdmin: boolean;
+}
+
 @Injectable()
 export class AuthService {
   constructor(
@@ -20,7 +27,7 @@ export class AuthService {
     return rest;
   }
 
-  private buildAuthPayload(user: Omit<User, 'password'>) {
+  private buildAuthPayload(user: Omit<User, 'password'>): AuthPayload {
     return {
       sub: user.id,
       email: user.email,
@@ -118,7 +125,7 @@ export class AuthService {
     return this.buildAuthResponse(savedUser);
   }
 
-  async findById(id: string): Promise<Omit<User, 'password'> | null> {
+  async findById(id: number): Promise<Omit<User, 'password'> | null> {
     const user = await this.userRepository.findOne({ where: { id } });
     return user ? this.sanitizeUser(user) : null;
   }

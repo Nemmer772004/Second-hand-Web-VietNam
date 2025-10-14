@@ -1,13 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import {
-  InteractionEvent,
-  InteractionEventType,
-} from '../entities/interaction-event.entity';
+import { InteractionEvent, InteractionEventType } from '../entities/interaction-event.entity';
 import { SessionSequence } from '../entities/session-sequence.entity';
 import { RlEpisodeStep } from '../entities/rl-episode-step.entity';
 import { CreateInteractionDto } from './dto/create-interaction.dto';
+import { UserMapping } from '../entities/user-mapping.entity';
 
 type NormalisedEvent = {
   userId: string | null;
@@ -35,6 +33,8 @@ export class InteractionsService {
     recommendation: 0.02,
   };
 
+  private readonly userIdCache = new Map<string, string>();
+
   constructor(
     @InjectRepository(InteractionEvent)
     private readonly interactionsRepository: Repository<InteractionEvent>,
@@ -42,6 +42,8 @@ export class InteractionsService {
     private readonly sessionSequenceRepository: Repository<SessionSequence>,
     @InjectRepository(RlEpisodeStep)
     private readonly rlEpisodeStepRepository: Repository<RlEpisodeStep>,
+    @InjectRepository(UserMapping)
+    private readonly userMappingRepository: Repository<UserMapping>,
   ) {}
 
   async logInteraction(payload: CreateInteractionDto) {
@@ -63,6 +65,12 @@ export class InteractionsService {
     normalised.sort(
       (a, b) => a.occurredAt.getTime() - b.occurredAt.getTime(),
     );
+
+    for (const event of normalised) {
+      if (event.userId) {
+        event.userId = await this.resolveNumericUserId(event.userId);
+      }
+    }
 
     const grouped = this.groupBySessionKey(normalised);
     const savedAll: InteractionEvent[] = [];
@@ -115,16 +123,15 @@ export class InteractionsService {
         ? payload.metadata
         : null;
 
+    const productId = this.resolveProductId(payload, metadata);
+
     return {
       userId:
         typeof payload.userId === 'string' && payload.userId.trim().length
           ? payload.userId.trim()
           : null,
       sessionId,
-      productId:
-        typeof payload.productId === 'string' && payload.productId.trim().length
-          ? payload.productId.trim()
-          : null,
+      productId,
       eventType: payload.eventType,
       metadata,
       occurredAt,
@@ -135,6 +142,91 @@ export class InteractionsService {
           ? Math.max(1, Math.floor(payload.stepNumber))
           : null,
     };
+  }
+
+  private resolveProductId(
+    payload: CreateInteractionDto,
+    metadata: Record<string, any> | null,
+  ): string | null {
+    const candidates: Array<unknown> = [];
+
+    if (payload.productId != null) {
+      candidates.push(payload.productId);
+    }
+
+    if (metadata) {
+      if (metadata.numericProductId != null) {
+        candidates.push(metadata.numericProductId);
+      }
+      if (metadata.productId != null) {
+        candidates.push(metadata.productId);
+      }
+      if (Array.isArray(metadata.items)) {
+        for (const item of metadata.items) {
+          if (item?.numericProductId != null) {
+            candidates.push(item.numericProductId);
+          }
+          if (item?.productId != null) {
+            candidates.push(item.productId);
+          }
+        }
+      }
+    }
+
+    for (const candidate of candidates) {
+      const value = String(candidate ?? '').trim();
+      if (!value) {
+        continue;
+      }
+      if (/^\d+$/.test(value)) {
+        return value;
+      }
+    }
+
+    for (const candidate of candidates) {
+      const value = String(candidate ?? '').trim();
+      if (value) {
+        return value;
+      }
+    }
+
+    return null;
+  }
+
+  private async resolveNumericUserId(raw: string): Promise<string> {
+    if (/^\d+$/.test(raw)) {
+      return raw;
+    }
+
+    const cached = this.userIdCache.get(raw);
+    if (cached) {
+      return cached;
+    }
+
+    const existing = await this.userMappingRepository.findOne({ where: { uuid: raw } });
+    if (existing) {
+      const numeric = String(existing.numericId);
+      this.userIdCache.set(raw, numeric);
+      return numeric;
+    }
+
+    const nextNumericId = await this.generateNextNumericUserId();
+    const created = await this.userMappingRepository.save(
+      this.userMappingRepository.create({ uuid: raw, numericId: nextNumericId }),
+    );
+    const numeric = String(created.numericId);
+    this.userIdCache.set(raw, numeric);
+    return numeric;
+  }
+
+  private async generateNextNumericUserId(): Promise<number> {
+    const { max } = await this.userMappingRepository
+      .createQueryBuilder('mapping')
+      .select('MAX(mapping.numericId)', 'max')
+      .getRawOne<{ max: string | null }>();
+
+    const currentMax = Number(max) || 4000;
+    return currentMax + 1;
   }
 
   private resolveReward(payload: CreateInteractionDto): number {
