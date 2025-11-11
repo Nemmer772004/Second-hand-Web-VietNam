@@ -1,4 +1,27 @@
 services:
+  postgres:
+    image: postgres:15
+    container_name: postgres-ai
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: secondhand_ai
+      POSTGRES_USER: nemmer
+      POSTGRES_PASSWORD: nemmer
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-postgres.sql:/docker-entrypoint-initdb.d/init-postgres.sql:ro
+      - ./backend/services/ai-service/db/init.sql:/docker-entrypoint-initdb.d/init-ai.sql:ro
+    networks:
+      - studio_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nemmer"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+      
   mongodb:
     image: mongo:latest
     container_name: mongodb
@@ -6,7 +29,7 @@ services:
       - "27017:27017"
     volumes:
       - mongodb_data:/data/db
-      - /home/nemmer/Nemmer-Workflow/Project/Second-hand-Web-VietNam/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+      - ./init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
     environment:
       - MONGO_INITDB_ROOT_USERNAME=admin
       - MONGO_INITDB_ROOT_PASSWORD=adminpassword
@@ -19,38 +42,6 @@ services:
       timeout: 10s
       retries: 5
       start_period: 40s
-  
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    ports:
-      - "9002:9002"
-    environment:
-      - NODE_ENV=development
-      - NEXT_PUBLIC_API_URL=http://localhost:4000
-      - PORT=9002
-    depends_on:
-      - api-gateway
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
-    networks:
-      - studio_network
-
-  admin:
-    build:
-      context: ./admin
-      dockerfile: Dockerfile
-    ports:
-      - "3005:3005"
-    environment:
-      - NODE_ENV=development
-      - NEXT_PUBLIC_API_URL=http://localhost:4000
-    depends_on:
-      - api-gateway
-    networks:
-      - studio_network
 
   api-gateway:
     build:
@@ -110,7 +101,6 @@ services:
       retries: 5
       start_period: 30s
 
-
   product-service:
     build:
       context: ./backend/services/product-service
@@ -128,7 +118,8 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-    depends_on: []
+    depends_on:
+      - mongodb
     networks:
       - studio_network
     restart: unless-stopped
@@ -142,7 +133,8 @@ services:
     environment:
       - PORT=3002
       - MONGODB_URI=mongodb://admin:adminpassword@mongodb:27017/luxhome?authSource=admin
-    depends_on: []
+    depends_on:
+      - mongodb
     networks:
       - studio_network
     healthcheck:
@@ -194,6 +186,7 @@ services:
       - AUTH_SERVICE_URL=http://auth-service:3006/auth
     depends_on:
       - auth-service
+      - postgres
     networks:
       - studio_network
     healthcheck:
@@ -258,28 +251,6 @@ services:
       timeout: 5s
       retries: 5
       start_period: 30s
-
-  postgres:
-    image: postgres:15
-    container_name: postgres-ai
-    restart: unless-stopped
-    environment:
-      POSTGRES_DB: secondhand_ai
-      POSTGRES_USER: nemmer
-      POSTGRES_PASSWORD: nemmer
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./backend/services/ai-service/db/init.sql:/docker-entrypoint-initdb.d/init-ai.sql:ro
-    networks:
-      - studio_network
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U nemmer"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 20s
 
 networks:
   studio_network:

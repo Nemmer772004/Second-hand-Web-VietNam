@@ -1,214 +1,185 @@
-<h1 align="center">Second-hand Web VietNam</h1>
+- <div align="center">
+<h1># 🤖 Hệ Thống AI-Agent Cho Nền Tảng Đồ Cũ</h1>
+</div>
+<div align="center">
+  <img src="docs/2.png" alt="Second-hand Platform" width="220"/>
+  <img src="docs/data.png" alt="AI Agent Pipeline" width="260"/>
+</div>
+
+<div align="center">
+
+[![Được phát triển bởi Project-A](https://img.shields.io/badge/Được%20phát%20triển%20bởi-Project--A-blue?style=for-the-badge)](#)  
+[![Module AI-Agent](https://img.shields.io/badge/Module-AI--Agent-green?style=for-the-badge)](#ai-agent)  
+[![Kết hợp Chatbot & Gợi ý](https://img.shields.io/badge/Chatbot%20%2B%20Recommendation-red?style=for-the-badge)](#-tính-năng-chính)
+
+</div>
+
+<h3 align="center">🔬 Tăng Trải Nghiệm Mua Bán Đồ Cũ Bằng AI Hội Thoại & Cá Nhân Hoá</h3>
+
 <p align="center">
-  Nền tảng thương mại điện tử chuyên biệt cho thị trường đồ đã qua sử dụng tại Việt Nam.<br/>
-  Monorepo kết hợp Next.js hiện đại và hệ thống Microservices NestJS, tối ưu trải nghiệm người dùng & quản trị.
+  <strong>Trợ lý AI điều phối hội thoại, tìm kiếm ngữ nghĩa và gợi ý sản phẩm theo hành vi trên nền tảng Second-hand Web VietNam.</strong>
 </p>
 
 <p align="center">
-  <a href="https://nextjs.org/"><img src="https://img.shields.io/badge/Next.js_14-000000?style=for-the-badge&logo=nextdotjs&logoColor=white" alt="Next.js"/></a>
-  <a href="https://nestjs.com/"><img src="https://img.shields.io/badge/NestJS-Microservices-E0234E?style=for-the-badge&logo=nestjs&logoColor=white" alt="NestJS"/></a>
-  <a href="https://graphql.org/"><img src="https://img.shields.io/badge/GraphQL-Build%20BFF-E10098?style=for-the-badge&logo=graphql&logoColor=white" alt="GraphQL"/></a>
-  <a href="https://www.mongodb.com/"><img src="https://img.shields.io/badge/MongoDB-NoSQL-47A248?style=for-the-badge&logo=mongodb&logoColor=white" alt="MongoDB"/></a>
-  <a href="https://www.postgresql.org/"><img src="https://img.shields.io/badge/PostgreSQL-336791?style=for-the-badge&logo=postgresql&logoColor=white" alt="PostgreSQL"/></a>
-</p>
-
----
-
-## Mục Lục
-- [Tổng Quan](#tổng-quan)
-- [Điểm Nổi Bật](#điểm-nổi-bật)
-- [Sơ Đồ Hệ Thống](#sơ-đồ-hệ-thống)
-- [Giao Diện Tham Khảo](#giao-diện-tham-khảo)
-- [Công Nghệ Chủ Đạo](#công-nghệ-chủ-đạo)
-- [Cấu Trúc Monorepo](#cấu-trúc-monorepo)
-- [Thiết Lập Môi Trường](#thiết-lập-môi-trường)
-- [Vận Hành & Phát Triển](#vận-hành--phát-triển)
-- [Kiểm Thử](#kiểm-thử)
-- [Định Hướng Tiếp Theo](#định-hướng-tiếp-theo)
-
----
-
-## Tổng Quan
-- **Tầm nhìn**: Xây dựng chợ đồ cũ kiểu mới — minh bạch, an toàn, cá nhân hóa trải nghiệm mua bán.
-- **Kiến trúc**: Monorepo gồm ứng dụng khách (`frontend`), dashboard quản trị (`admin`) và cụm microservices NestJS giao tiếp qua API Gateway GraphQL.
-- **Khả năng mở rộng**: Mỗi service độc lập vòng đời, có thể scale theo nhu cầu nghiệp vụ; hỗ trợ tích hợp AI và tác vụ realtime.
-
----
-
-## Điểm Nổi Bật
-- **UI/UX hiện đại**: Next.js 14 App Router (TypeScript) với TailwindCSS & Radix UI, tối ưu SEO & tốc độ tải.
-- **Quản trị thông minh**: Dashboard Next.js 13 hiển thị thống kê, quản lý sản phẩm/đơn hàng/người dùng nhanh chóng.
-- **Chốt giao dịch thông minh**: Genkit SDK (Gemini) gợi ý sản phẩm, gợi ý kịch bản tương tác dựa trên hành vi người dùng.
-- **Bảo mật xuyên suốt**: JWT end-to-end, phân quyền theo domain, hỗ trợ refresh token và audit log (qua auth-service).
-- **Hạ tầng linh hoạt**: Docker Compose phục vụ dev; dễ chuyển hóa thành deployment container hóa từng service.
-
----
-
-## Sơ Đồ Hệ Thống
-<p align="center">
-  <img src="access/images/So_do_tong_quat_he_thong.png" alt="Sơ đồ tổng quát hệ thống" width="100%"/>
-</p>
-
-Luồng xử lý chính:
-1. Người dùng truy cập `frontend` (cổng `9002`) hoặc quản trị viên truy cập `admin` (cổng `3005`).
-2. Request GraphQL/REST được gửi tới API Gateway (NestJS) và xác thực bằng JWT.
-3. Gateway định tuyến sang microservice tương ứng qua TCP/gRPC hoặc REST nội bộ.
-4. Microservice xử lý nghiệp vụ với MongoDB/PostgreSQL, sau đó trả dữ liệu về gateway.
-5. Gateway hợp nhất phản hồi cho client; các tác vụ AI/realtime chạy nền qua `ai-service`.
-
----
-
-## Giao Diện Tham Khảo
-<p align="center">
-  <img src="access/images/Trang_chu_user.png" alt="Trang chủ người dùng" width="85%"/>
-</p>
-<p align="center">
-  <img src="access/images/Trang_chu_admin.png" alt="Trang chủ admin" width="85%"/>
+  <a href="#-kiến-trúc">Kiến trúc</a> •
+  <a href="#-tính-năng-chính">Tính năng</a> •
+  <a href="#-công-nghệ-sử-dụng">Công nghệ</a> •
+  <a href="#-cài-đặt">Cài đặt</a> •
+  <a href="#-bắt-đầu">Bắt đầu</a> •
+  <a href="#-tài-liệu">Tài liệu</a>
 </p>
 
 ---
 
-## Công Nghệ Chủ Đạo
-<p align="center">
-  <a href="https://nextjs.org/"><img src="https://img.shields.io/badge/Next.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white" alt="Next.js"/></a>
-  <a href="https://react.dev/"><img src="https://img.shields.io/badge/React-18-61DAFB?style=for-the-badge&logo=react&logoColor=082032" alt="React"/></a>
-  <a href="https://www.apollographql.com/docs/react/"><img src="https://img.shields.io/badge/Apollo_Client-311C87?style=for-the-badge&logo=apollographql&logoColor=white" alt="Apollo Client"/></a>
-  <a href="https://nestjs.com/"><img src="https://img.shields.io/badge/NestJS-GraphQL-E0234E?style=for-the-badge&logo=nestjs&logoColor=white" alt="NestJS"/></a>
-  <a href="https://www.mongodb.com/"><img src="https://img.shields.io/badge/MongoDB-47A248?style=for-the-badge&logo=mongodb&logoColor=white" alt="MongoDB"/></a>
-  <a href="https://www.postgresql.org/"><img src="https://img.shields.io/badge/PostgreSQL-336791?style=for-the-badge&logo=postgresql&logoColor=white" alt="PostgreSQL"/></a>
+## 🏗️ Kiến trúc
 
-</p>
+<div align="center">
+  <img src="docs/data.png" alt="Kiến trúc AI Agent" width="820"/>
+</div>
 
----
+Hệ thống AI-Agent được triển khai theo kiến trúc nhiều tầng trong thư mục `ai-agent/`:
 
-## Cấu Trúc Monorepo
-```
-.
-├── frontend/                # Next.js 14 App Router (khách hàng)
-├── admin/                   # Next.js 13 dashboard quản trị
-├── backend/
-│   ├── api-gateway/         # NestJS BFF GraphQL Gateway
-│   └── services/
-│       ├── product-service/ # Quản lý sản phẩm (NestJS + Mongoose)
-│       ├── category-service/
-│       ├── order-service/
-│       ├── user-service/
-│       ├── cart-service/
-│       ├── auth-service/    # JWT/AuthN/AuthZ (TypeORM/PostgreSQL)
-│       ├── ai-service/      # Nền tảng AI/ML
-│       └── contact-service/
-├── docs/                    # Tài liệu kiến trúc & luồng dữ liệu
-├── tests/                   # Bộ kiểm thử tự động (pytest + Selenium)
-├── docker-compose.yml       # Khởi tạo cụm dịch vụ
-├── init-mongo.js            # Seed MongoDB cục bộ
-└── README.md
-```
+1. **💬 Lớp Hội Thoại (FastAPI Gateway)**: Endpoint `/chat` nhận tin nhắn, phân loại nhu cầu, trả lời tức thì hoặc kích hoạt pipeline gợi ý; `/health` & `/internal/reload` dùng giám sát và xoay vòng checkpoint.
+2. **🧭 Tool Router & Policy**: `pipelines/tool_router/` và `pipelines/decision_policy/` điều phối giữa chatbot LLM, BERT4Rec, RAG search và các tool khác dựa trên intent.
+3. **🧠 Core AI**:
+   - `recommender/` chứa data chuẩn hoá RecBole, cấu hình `configs/bert4rec.yaml` và script huấn luyện `train_bert4rec.py`.
+   - `pipelines/rag_search/` tích hợp LangChain + VectorDB (Qdrant) để truy xuất tri thức (FAQ, mô tả sản phẩm).
+   - `pipelines/behavior_analyzer/` xử lý log hành vi để tái huấn luyện hoặc kích hoạt chiến dịch.
+4. **📦 Data Plane**: `data/raw/`, `data/preprocessing/` sinh dữ liệu mô phỏng, chuẩn hoá catalog, xây interaction theo chuẩn RecBole; checkpoint lưu tại `recommender/saved/`.
 
 ---
 
-## Thiết Lập Môi Trường
-1. **Chuẩn bị**: Cài Node.js ≥ 18, Yarn (hoặc npm) và Python (cho e2e).
-2. **Cài phụ thuộc**: Chạy `yarn install` tại thư mục gốc để khởi tạo workspace.
-3. **Biến môi trường**:
+## ✨ Tính năng chính
+
+### 🧠 Chatbot đa năng
+- **Hiểu intent & fallback thông minh**: nhận biết yêu cầu gợi ý, đặt hàng, bảo hành; khi mô hình chưa sẵn sàng sẽ trả lời lịch sự và hướng dẫn tiếp.
+- **Macro trả lời nhanh**: `simple_reply()` xử lý FAQ phổ biến (vận chuyển, thanh toán, bảo hành) để giảm tải LLM.
+- **Tái nạp nóng**: endpoint `/internal/reload` cho phép cập nhật checkpoint mới mà không cần khởi động lại dịch vụ.
+
+### 🎯 Gợi ý cá nhân hoá
+- **BERT4Rec trên hành vi dọc TMĐT**: tận dụng lịch sử tương tác (sequence) để dự đoán top-k sản phẩm kế tiếp.
+- **Map sản phẩm động**: tự đồng bộ tên hiển thị từ `products.csv` trong `recommender/dataset/` hoặc `data/raw/`.
+- **Giới hạn độ dài linh hoạt**: đọc `MAX_ITEM_LIST_LENGTH`/`seq_len` từ cấu hình để tối ưu inference trên CPU.
+
+### 📚 Kết hợp tri thức & quan sát
+- **RAG search**: nền tảng LangChain + Qdrant (placeholder) cho phép mở rộng sang tóm tắt mô tả sản phẩm, FAQ.
+- **Behavior analyzer**: kênh nhận phản hồi `/api/chatbot/feedback` (từ service khác) để ghi log, chuẩn bị retrain.
+- **Decision policy**: đặt luật tự động gửi gợi ý (ví dụ: khi user bỏ giỏ, khi phát hiện chủ đề tìm kiếm cụ thể).
+
+---
+
+## 🔧 Công nghệ sử dụng
+
+<div align="center">
+
+### Ngôn ngữ & Framework
+[![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)  
+[![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)  
+[![RecBole](https://img.shields.io/badge/RecBole-orange?style=for-the-badge)](https://recbole.io/)  
+[![PyTorch](https://img.shields.io/badge/PyTorch-EE4C2C?style=for-the-badge&logo=pytorch&logoColor=white)](https://pytorch.org/)
+
+### Máy học & Tìm kiếm
+[![LangChain](https://img.shields.io/badge/LangChain-1A194D?style=for-the-badge)](https://www.langchain.com/)  
+[![Qdrant](https://img.shields.io/badge/Qdrant-FF4D5A?style=for-the-badge&logo=qdrant&logoColor=white)](https://qdrant.tech/)  
+[![Pandas](https://img.shields.io/badge/Pandas-150458?style=for-the-badge&logo=pandas&logoColor=white)](https://pandas.pydata.org/)
+
+### Vận hành
+[![Uvicorn](https://img.shields.io/badge/Uvicorn-2C8EBB?style=for-the-badge)](https://www.uvicorn.org/)  
+[![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)  
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
+
+</div>
+
+---
+
+## 📥 Cài đặt
+
+### 🛠️ Yêu cầu trước khi cài đặt
+- 🐍 **Python** `>=3.10` và `pip`
+- 💾 **Dung lượng trống** `~5GB` cho dataset + checkpoint RecBole
+- 💻 **CPU hỗ trợ AVX** (khuyến nghị GPU dành cho huấn luyện)
+- 📦 **Poetry/Pip + Virtualenv** hoặc Docker
+- 🔑 **Biến môi trường** (tuỳ chọn): `CHATBOT_MODEL_DIR`, `CHATBOT_MODEL_PATH`, `CHATBOT_TOPK`, `CHATBOT_RELOAD_TOKEN`
+
+### ⚙️ Thiết lập dự án
+
+1. **Clone kho và vào thư mục gốc**:
    ```bash
-   cp admin/.env.example admin/.env
-   # Tạo .env tương ứng cho frontend và từng service theo hướng dẫn nội bộ
+   git clone https://github.com/<your-org>/Second-hand-Web-VietNam.git
+   cd Second-hand-Web-VietNam
    ```
-4. **Cơ sở dữ liệu**:
-   - MongoDB cho các domain service (product, order, user, cart...).
-   - PostgreSQL (khuyến nghị) cho auth-service khi dùng TypeORM.
-5. **Dịch vụ phụ trợ**: Redis/RabbitMQ, email, storage… cấu hình theo nhu cầu triển khai.
+2. **Tạo môi trường ảo**:
+   ```bash
+   python -m venv .venv
+   source .venv/bin/activate  # Windows: .venv\Scripts\activate
+   ```
+3. **Cài đặt phụ thuộc cho AI-Agent**:
+   ```bash
+   pip install --upgrade pip
+   pip install -r ai-agent/requirements.txt
+   ```
+4. **Cấu hình biến môi trường**:
+   ```bash
+   cp ai-agent/.env.example ai-agent/.env  # nếu có
+   export CHATBOT_MODEL_DIR="ai-agent/recommender/saved"
+   export CHATBOT_TOPK=5
+   ```
+5. **Chuẩn bị dữ liệu hành vi & catalog**:
+   ```bash
+   python ai-agent/data/preprocessing/normalize_catalog_data.py
+   python ai-agent/data/preprocessing/user_behavior_advanced.py
+   python ai-agent/data/preprocessing/prepare_interactions_for_recbole.py
+   ```
+6. **Huấn luyện mô hình BERT4Rec**:
+   ```bash
+   python ai-agent/recommender/train_bert4rec.py \
+     --config_files ai-agent/recommender/configs/bert4rec.yaml
+   ```
+   Checkpoint mới sẽ được lưu vào `ai-agent/recommender/saved/`.
 
 ---
 
-## Vận Hành & Phát Triển
-### Chạy với Yarn Workspaces
+## 🚀 Bắt đầu
+
+### ⚡ Khởi động nhanh dịch vụ FastAPI
 ```bash
-# Cài phụ thuộc chung
-yarn install
-
-# API Gateway
-yarn workspace api-gateway start:dev
-
-# Microservices (chạy tab riêng)
-yarn workspace product-service start:dev
-yarn workspace category-service start:dev
-yarn workspace order-service start:dev
-yarn workspace user-service start:dev
-yarn workspace cart-service start:dev
-# (auth-service, ai-service, contact-service khởi động tương tự khi cần)
-
-# Ứng dụng Next.js
-yarn workspace frontend dev
-yarn workspace luxhome-admin dev
+uvicorn ai_agent.services.api.app:app --host 0.0.0.0 --port 8008
 ```
-> Lưu ý: auth-service và ai-service yêu cầu thiết lập credential/database riêng trước khi chạy.
+- Tham số `CHATBOT_MODEL_PATH` cho phép chỉ định trực tiếp file `.pth`.
+- Có thể tích hợp vào Docker Compose thông qua service `ai-agent` hoặc script `./start.sh ai-agent`.
 
-### Chạy với Docker Compose
-```bash
-docker compose up --build
-```
-- MongoDB: `27017`
-- API Gateway: `4000`
-- Frontend: `9002`
-- Admin: `3005`
-- Microservices: `3001 – 3007`
+### 📥 Thêm dữ liệu & tái huấn luyện
+1. Đặt catalog mới trong `ai-agent/data/raw/products.csv` và log tương tác trong `data/raw/interactions.csv`.
+2. Chạy lại chuỗi preprocessing (bước 5).
+3. Huấn luyện tiếp tục với checkpoint cũ bằng cách đặt `--pretrain_path`.
+4. Gọi `POST /internal/reload` kèm `token` để nạp model mới vào dịch vụ đang chạy.
 
-### Chatbot Service (FastAPI)
-- Kích hoạt môi trường Python tại `Chatbot/venv` (hoặc tạo mới) và cài phụ thuộc:
-  ```bash
-  pip install -r Chatbot/service/requirements.txt
-  ```
-- Khởi động dịch vụ inference:
-  ```bash
-  cd Chatbot
-  python -m service.app  # mặc định mở cổng 8008
-  ```
-- Có thể tùy chỉnh thông số qua biến môi trường:
-  - `CHATBOT_MODEL_PATH`: đường dẫn file `.pth` cụ thể nếu không dùng checkpoint mới nhất.
-  - `CHATBOT_PORT`: cổng chạy FastAPI (mặc định `8008`).
-  - `CHATBOT_TOPK`: số sản phẩm đề xuất mặc định.
-- Frontend đọc cấu hình `CHATBOT_SERVICE_URL` (mặc định `http://localhost:8008`) để proxy `POST /api/chatbot`. Thêm biến này vào `.env.local` nếu deploy khác máy.
-
-### AI Service (NestJS + PostgreSQL)
-- Service `backend/services/ai-service` lưu toàn bộ hành vi phiên vào bảng PostgreSQL.
-  ```bash
-  # ví dụ file .env cho ai-service
-  AI_PG_HOST=localhost
-  AI_PG_PORT=5432
-  AI_PG_USER=postgres
-  AI_PG_PASSWORD=postgres
-  AI_PG_DB=secondhand_ai
-  PORT=3008           # REST
-  MS_PORT=3018        # TCP microservice dùng cho API Gateway
-  ```
-- Chạy development:
-  ```bash
-  yarn workspace ai-service start:dev
-  ```
-- API REST:
-  - `POST /interactions` ghi một hành vi (view/click/add_to_cart/purchase/chat/recommendation...).
-  - `POST /interactions/bulk` ghi nhiều hành vi cùng lúc.
-- API Gateway đã thêm mutation GraphQL `recordInteraction` và `recordInteractions` để các client khác (dashboard, automation) có thể đẩy dữ liệu dễ dàng.
-- Frontend (`/api/chatbot`) tự động gọi `POST /interactions/bulk` để lưu:
-  - Tin nhắn khách hàng gửi tới chatbot (`eventType = chat`).
-  - Danh sách sản phẩm được chatbot gợi ý (`eventType = recommendation`).
-- Cấu hình Next.js:
-  - `AI_SERVICE_URL` trỏ tới REST endpoint (mặc định `http://localhost:3008`).
-  - Token người dùng được lấy từ session và đính kèm trong payload.
-- Docker Compose hiện mount script `backend/services/ai-service/db/init.sql` vào Postgres để tạo sẵn bảng `ai_interaction_events` và `ai_recommendations` ngay lần khởi động đầu tiên.
-
-### Triển khai Production
-- Container hóa từng service; quản lý secret/connection string qua biến môi trường hoặc secret manager.
-- CI/CD khuyến nghị: lint → typecheck → test → build → deploy (staging/production).
-- Giám sát: tích hợp ELK/Cloud Logging, metric/tracing bằng OpenTelemetry khi cần.
+### 🌐 API chính
+- `POST /chat`: `{ "message": "...", "user_id": "123", "top_k": 5 }`
+- `GET /health`: kiểm tra trạng thái model (`modelReady`, `details`).
+- `POST /internal/reload`: reload checkpoint (yêu cầu `CHATBOT_RELOAD_TOKEN` nếu cấu hình).
 
 ---
 
-## Kiểm Thử
-- **Lint & Format**: `yarn workspace <package> lint` (ESLint + Prettier).
-- **Typecheck**: `yarn workspace frontend typecheck`, Nest CLI build cho backend.
-- **E2E**: `pytest -m selenium` (cần Selenium Grid/ChromeDriver); Page Object tại `tests/e2e/pages`.
-- **Genkit Sandbox**: `yarn workspace frontend genkit:dev` để thử nghiệm luồng gợi ý AI.
+## 📜 Poster Dự Án
+
+<div align="center">
+  <img src="docs/case.png" alt="Poster / Use-case AI Agent" width="600"/>
+</div>
 
 ---
+
+## 📚 Tài liệu
+- 📖 `ai-agent/docs/ARCHITECTURE.md` – mô tả mapping các module.
+- 🏗️ `ai-agent/recommender/configs/bert4rec.yaml` – thông số RecBole.
+- 🧪 `tests/` (đang cập nhật) – dự kiến chứa contract test cho API chatbot.
+
+---
+
+## 📝 Giấy phép
+© 2024 Project-A. Nội dung chỉ sử dụng trong nội bộ Second-hand Web VietNam trừ khi được cấp phép khác.
+
+<div align="center">
+  Được thực hiện với 💚 bởi đội AI-Agent • Project-A  
+  [Website](#) • [GitHub](https://github.com/Trinhvhao) • [Liên hệ](mailto:contact@example.com)
+</div>

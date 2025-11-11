@@ -1,22 +1,23 @@
 {
   "lock": {
-    "held": true,
-    "owner_pid": 176722,
+    "held": false,
+    "owner_pid": null,
     "context": "scheduler",
-    "acquired_at": "2025-10-12T20:42:09.534506+00:00",
-    "released_at": "2025-10-12T20:41:39.534033+00:00"
+    "acquired_at": "2025-10-26T19:21:28.819816+00:00",
+    "released_at": "2025-10-26T19:21:30.799443+00:00",
+    "stale_removed_at": "2025-10-26T00:55:16.356575+00:00"
   },
-  "updated_at": "2025-10-12T21:12:15.720497+00:00",
-  "status": "running",
-  "last_run_started_at": "2025-10-12T20:42:09.534750+00:00",
-  "last_error": null,
-  "last_run_finished_at": "2025-10-12T20:41:39.533502+00:00",
+  "updated_at": "2025-10-26T19:21:30.802577+00:00",
+  "status": "failed",
+  "last_run_started_at": "2025-10-26T19:21:28.820260+00:00",
+  "last_error": "Command failed (1): /home/nemmer/Documents/Project-A/Second-hand-Web-VietNam/ai-agent/venv/bin/python train_bert4rec.py",
+  "last_run_finished_at": "2025-10-26T19:21:30.799686+00:00",
   "scheduler": {
     "active": true,
-    "interval_seconds": 20,
-    "started_at": "2025-10-12T21:12:15.718964+00:00"
+    "interval_seconds": 200,
+    "started_at": "2025-10-26T16:56:35.135618+00:00"
   },
-  "next_scheduled_at": "2025-10-12T21:12:15.720345+00:00",
+  "next_scheduled_at": "2025-10-26T19:24:50.802218+00:00",
   "last_success_at": "2025-10-12T20:41:39.533502+00:00",
   "dataset": {
     "version": "20251012-204012",

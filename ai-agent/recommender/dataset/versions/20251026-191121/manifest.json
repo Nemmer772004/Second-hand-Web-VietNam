@@ -1,0 +1,19 @@
+{
+  "version": "20251026-191121",
+  "generated_at": "2025-10-26T19:11:21.482516+00:00",
+  "rows": 18301,
+  "users": 2609,
+  "items": 96,
+  "positive_labels": 2981,
+  "file": "/home/nemmer/Documents/Project-A/Second-hand-Web-VietNam/ai-agent/recommender/dataset/versions/20251026-191121/ecommerce.inter",
+  "source": [
+    "/home/nemmer/Documents/Project-A/Second-hand-Web-VietNam/ai-agent/data/raw/user_behavior_interactions.csv",
+    "/home/nemmer/Documents/Project-A/Second-hand-Web-VietNam/ai-agent/data/raw/interactions.csv"
+  ],
+  "header": [
+    "user_id:token",
+    "item_id:token",
+    "timestamp:float",
+    "label:float"
+  ]
+}

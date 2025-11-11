@@ -1,0 +1,254 @@
+services:
+  postgres:
+    image: postgres:15
+    container_name: postgres-ai
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: secondhand_ai
+      POSTGRES_USER: nemmer
+      POSTGRES_PASSWORD: nemmer
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-postgres.sql:/docker-entrypoint-initdb.d/init-postgres.sql:ro
+      - ./backend/services/ai-service/db/init.sql:/docker-entrypoint-initdb.d/init-ai.sql:ro
+    networks:
+      - studio_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nemmer"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+      
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+      - ./init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=adminpassword
+      - MONGO_INITDB_DATABASE=luxhome
+    networks:
+      - studio_network
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+  
+
+    environment:
+      - PORT=4000
+      - AUTH_SERVICE_URL=http://auth-service:3006
+      - AUTH_SERVICE_HOST=auth-service
+      - AUTH_SERVICE_PORT=3006
+      - AUTH_SERVICE_INTERNAL_URL=http://auth-service:3006
+      - PRODUCT_SERVICE_URL=http://product-service:3001
+      - CATEGORY_SERVICE_URL=http://category-service:3002
+      - ORDER_SERVICE_URL=http://order-service:3003
+      - USER_SERVICE_URL=http://user-service:3004
+      - CART_SERVICE_URL=http://cart-service:3007
+      - CART_SERVICE_PORT=3017
+      - CORS_ORIGIN=http://localhost:9002,http://localhost:3005
+      - JWT_SECRET=your_jwt_secret_key
+      - MONGODB_URI=mongodb://admin:adminpassword@mongodb:27017/luxhome?authSource=admin
+    depends_on:
+      - product-service
+      - category-service
+      - order-service
+      - user-service
+      - cart-service
+      - auth-service
+      - ai-service
+    networks:
+      - studio_network
+
+  auth-service:
+    build:
+      context: ./backend/services/auth-service
+      dockerfile: Dockerfile
+    ports:
+      - "3006:3006"
+    environment:
+      - PORT=3006
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USERNAME=nemmer
+      - DB_PASSWORD=nemmer
+      - DB_NAME=studio_auth
+      - JWT_SECRET=your_jwt_secret_key
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - studio_network
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3006/auth/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+
+  product-service:
+    build:
+      context: ./backend/services/product-service
+      dockerfile: Dockerfile
+    ports:
+      - "3001:3001"
+    environment:
+      - PORT=3001
+      - MONGODB_URI=mongodb://admin:adminpassword@mongodb:27017/luxhome?authSource=admin
+      - JWT_SECRET=your_jwt_secret_key
+      - CORS_ORIGIN=http://localhost:9002,http://localhost:3005,http://localhost:4000
+      - NODE_ENV=development
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3001/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    depends_on: []
+    networks:
+      - studio_network
+    restart: unless-stopped
+
+  category-service:
+    build:
+      context: ./backend/services/category-service
+      dockerfile: Dockerfile
+    ports:
+      - "3002:3002"
+    environment:
+      - PORT=3002
+      - MONGODB_URI=mongodb://admin:adminpassword@mongodb:27017/luxhome?authSource=admin
+    depends_on: []
+    networks:
+      - studio_network
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3002/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  order-service:
+    build:
+      context: ./backend/services/order-service
+      dockerfile: Dockerfile
+    ports:
+      - "3003:3003"
+    environment:
+      - PORT=3003
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USERNAME=nemmer
+      - DB_PASSWORD=nemmer
+      - DB_NAME=secondhand_ai
+      - ORDER_PG_DB=secondhand_ai
+      - ORDER_PG_SYNC=true
+      - MONGODB_URI=mongodb://admin:adminpassword@mongodb:27017/luxhome?authSource=admin
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - studio_network
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3003/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  user-service:
+    build:
+      context: ./backend/services/user-service
+      dockerfile: Dockerfile
+    ports:
+      - "3004:3004"
+    environment:
+      - PORT=3004
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USERNAME=nemmer
+      - DB_PASSWORD=nemmer
+      - DB_NAME=secondhand_ai
+      - AUTH_SERVICE_URL=http://auth-service:3006/auth
+    depends_on:
+      - auth-service
+    networks:
+      - studio_network
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3004/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  cart-service:
+    build:
+      context: ./backend/services/cart-service
+      dockerfile: Dockerfile
+    ports:
+      - "3007:3007"
+    environment:
+      - PORT=3007
+      - MS_PORT=3017
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USERNAME=nemmer
+      - DB_PASSWORD=nemmer
+      - DB_NAME=secondhand_ai
+      - PRODUCT_SERVICE_HOST=product-service
+      - PRODUCT_SERVICE_PORT=3001
+      - NODE_ENV=development
+    depends_on:
+      postgres:
+        condition: service_healthy
+      product-service:
+        condition: service_healthy
+    networks:
+      - studio_network
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3007/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  ai-service:
+    build:
+      context: ./backend/services/ai-service
+      dockerfile: Dockerfile
+    ports:
+      - "3008:3008"
+    environment:
+      - PORT=3008
+      - MS_PORT=3018
+      - AI_PG_HOST=postgres
+      - AI_PG_PORT=5432
+      - AI_PG_USER=nemmer
+      - AI_PG_PASSWORD=nemmer
+      - AI_PG_DB=secondhand_ai
+      - AI_PG_SYNC=true
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - studio_network
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3008/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+networks:
+  studio_network:
+    driver: bridge
+
+volumes:
+  mongodb_data:
+  postgres_data:

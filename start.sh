@@ -59,6 +59,27 @@ log_section() {
   echo ""
 }
 
+ensure_port_free() {
+  local port="$1"
+  if [[ -z "$port" ]]; then
+    return
+  fi
+
+  local pids=""
+  if command -v lsof >/dev/null 2>&1; then
+    pids="$(lsof -ti tcp:"$port" 2>/dev/null || true)"
+  elif command -v ss >/dev/null 2>&1; then
+    pids="$(ss -ltnp 2>/dev/null | awk -v p=":$port" '$4 ~ p {gsub(/pid=/,""); split($NF,a,","); for (i in a) if (a[i] ~ /^[0-9]+$/) print a[i]}' | sort -u)"
+  fi
+
+  if [[ -n "$pids" ]]; then
+    echo "⚠️  Giải phóng cổng ${port} (PID: ${pids})..."
+    # shellcheck disable=SC2086
+    kill $pids 2>/dev/null || true
+    sleep 1
+  fi
+}
+
 start_service() {
   local label="$1"
   shift
@@ -117,7 +138,7 @@ if ! yarn --cwd backend/services/user-service build >"${LOG_DIR}/user-service-bu
 fi
 
 if [[ -n "$PYTHON_CMD" ]]; then
-  RETRAIN_INTERVAL="${AI_RETRAIN_INTERVAL:-20}"
+  RETRAIN_INTERVAL="${AI_RETRAIN_INTERVAL:-200}"
   RETRAIN_KEEP="${AI_RETRAIN_KEEP_VERSIONS:-6}"
 
   start_service "ai-retrain-scheduler" \
@@ -234,17 +255,27 @@ start_service "api-gateway" \
   MONGODB_URI='mongodb://admin:adminpassword@localhost:27017/luxhome?authSource=admin' \
   yarn --cwd backend/api-gateway start:dev
 
+ensure_port_free 9002
 start_service "frontend" \
   env \
   NEXT_PUBLIC_API_URL='http://localhost:4000/graphql' \
   CHATBOT_SERVICE_URL='http://localhost:8008' \
   AI_SERVICE_URL='http://localhost:3008' \
   PRODUCT_SERVICE_URL='http://localhost:3001' \
+  WATCHPACK_POLLING=true \
+  WATCHPACK_POLLING_INTERVAL=1000 \
+  CHOKIDAR_USEPOLLING=1 \
+  CHOKIDAR_INTERVAL=1000 \
   yarn --cwd frontend dev
 
+ensure_port_free 3005
 start_service "admin" \
   env \
   NEXT_PUBLIC_API_URL='http://localhost:4000/graphql' \
+  WATCHPACK_POLLING=true \
+  WATCHPACK_POLLING_INTERVAL=1000 \
+  CHOKIDAR_USEPOLLING=1 \
+  CHOKIDAR_INTERVAL=1000 \
   npm run dev --prefix admin
 
 echo ""
