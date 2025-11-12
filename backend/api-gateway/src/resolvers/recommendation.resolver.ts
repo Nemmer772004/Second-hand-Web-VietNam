@@ -6,6 +6,7 @@ import {
   Field,
   Float,
   Int,
+  Context,
 } from '@nestjs/graphql';
 import { Inject } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
@@ -183,10 +184,21 @@ export class RecommendationResolver {
   async recommendations(
     @Args('userId') userId: string,
     @Args('topK', { type: () => Int, nullable: true }) topK?: number,
+    @Context('req') req?: any,
   ): Promise<RecommendationResultType> {
     const trimmedUserId = this.normaliseId(userId);
     if (!trimmedUserId) {
       throw new Error('userId không được để trống');
+    }
+
+    // Authorization check: user chỉ có thể get recommendations của chính họ, admin có thể get của ai
+    const currentUser = req?.user;
+    if (!currentUser) {
+      throw new Error('Bạn phải đăng nhập để xem gợi ý sản phẩm');
+    }
+
+    if (currentUser.id !== trimmedUserId && !currentUser.isAdmin) {
+      throw new Error('Bạn chỉ có thể xem gợi ý sản phẩm của chính mình');
     }
 
     const limit = topK && topK > 0 ? Math.min(topK, 20) : DEFAULT_TOPK;

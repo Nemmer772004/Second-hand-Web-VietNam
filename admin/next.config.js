@@ -29,6 +29,15 @@ const nextConfig = {
         port: '',
         pathname: '/**',
       }
+      ,
+      {
+        protocol: 'https',
+        hostname: 'nads.1cdn.vn',
+        port: '',
+        pathname: '/**',
+      }
     ],
   }
 }
+
+module.exports = nextConfig;

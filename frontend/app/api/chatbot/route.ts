@@ -1,7 +1,9 @@
 import { NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
 
 const CHATBOT_SERVICE_URL = (process.env.CHATBOT_SERVICE_URL || 'http://localhost:8008').replace(/\/$/, '');
 const AI_SERVICE_URL = (process.env.AI_SERVICE_URL || 'http://localhost:3008').replace(/\/$/, '');
+const AUTH_SERVICE_URL = (process.env.AUTH_SERVICE_INTERNAL_URL || process.env.AUTH_SERVICE_URL || 'http://localhost:3006').replace(/\/$/, '');
 
 const PRODUCT_SERVICE_URL = (() => {
   const explicit = process.env.PRODUCT_SERVICE_URL;
@@ -12,6 +14,26 @@ const PRODUCT_SERVICE_URL = (() => {
   const port = process.env.PRODUCT_SERVICE_PORT || '3001';
   return `http://${host}:${port}`;
 })();
+
+async function verifyToken(token: string): Promise<{ id: string; email: string } | null> {
+  if (!token) {
+    return null;
+  }
+  try {
+    const res = await fetch(`${AUTH_SERVICE_URL}/auth/profile`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    if (!res.ok) {
+      return null;
+    }
+    return res.json();
+  } catch (error) {
+    console.warn('Token verification failed:', error);
+    return null;
+  }
+}
 
 async function fetchProductDetail(productId: string) {
   const trimmed = String(productId ?? '').trim();
@@ -37,6 +59,35 @@ export async function POST(request: Request) {
     const body = await request.json().catch(() => ({}));
     const { message, userId, topK, sessionId } = body ?? {};
 
+    // Extract token from cookies
+    const token = cookies().get('auth_token')?.value;
+    
+    if (!token) {
+      return NextResponse.json(
+        { message: 'Bạn phải đăng nhập để sử dụng chatbot.' },
+        { status: 401 },
+      );
+    }
+
+    // Verify token and get authenticated user
+    const authUser = await verifyToken(token);
+    if (!authUser) {
+      return NextResponse.json(
+        { message: 'Token không hợp lệ hoặc đã hết hạn.' },
+        { status: 401 },
+      );
+    }
+
+    // Ensure user can only request recommendations for themselves
+    if (userId && userId !== authUser.id) {
+      return NextResponse.json(
+        { message: 'Bạn chỉ có thể xem gợi ý sản phẩm của chính mình.' },
+        { status: 403 },
+      );
+    }
+
+    const finalUserId = userId || authUser.id;
+
     if (!message || typeof message !== 'string') {
       return NextResponse.json(
         { message: 'Tin nhắn là bắt buộc.' },
@@ -49,7 +100,7 @@ export async function POST(request: Request) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         message,
-        user_id: userId,
+        user_id: finalUserId,
         top_k: topK,
       }),
     });
@@ -99,7 +150,7 @@ export async function POST(request: Request) {
       const events: any[] = [];
 
       events.push({
-        userId,
+        userId: finalUserId,
         sessionId,
         eventType: 'chat',
         metadata: {
@@ -109,7 +160,7 @@ export async function POST(request: Request) {
 
       if (Array.isArray(data?.recommendations) && data.recommendations.length > 0) {
         events.push({
-          userId,
+          userId: finalUserId,
           sessionId,
           eventType: 'recommendation',
           metadata: {

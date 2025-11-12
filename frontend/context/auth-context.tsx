@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useState, useCallback, useEffect, ReactNode } from 'react';
 import { toast } from '@/hooks/use-toast';
+import { logInteraction } from '@/lib/interaction-tracker';
 
 interface User {
   id: string;
@@ -70,13 +71,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
 
         const data = await response.json();
-        if (data?.user) {
-          persistUser({
-            ...data.user,
-            isAdmin: Boolean(data.user.isAdmin),
+        if (!data.user) {
+          throw new Error('Không thể đăng nhập. Vui lòng thử lại.');
+        }
+
+        const sessionUser = {
+          ...data.user,
+          isAdmin: Boolean(data.user.isAdmin),
+        };
+
+        persistUser(sessionUser);
+
+        // Seed a lightweight interaction for new/returning user so recommender can
+        // generate personalized suggestions faster. Use a popular product id (1)
+        // as a harmless seed event.
+        try {
+          void logInteraction({
+            eventType: 'view',
+            userId: sessionUser.id,
+            productId: '1',
           });
-        } else {
-          persistUser(null);
+        } catch (err) {
+          console.warn('Seed interaction failed:', err);
         }
       } catch (err) {
         console.warn('Không thể tải trạng thái đăng nhập hiện tại', err);
@@ -161,10 +177,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         throw new Error('Không thể đăng ký. Vui lòng thử lại.');
       }
 
-      persistUser({
+      const sessionUser = {
         ...data.user,
         isAdmin: Boolean(data.user.isAdmin),
-      });
+      };
+
+      persistUser(sessionUser);
+
+      // Seed an initial interaction for the newly registered user to reduce cold-start.
+      try {
+        void logInteraction({
+          eventType: 'view',
+          userId: sessionUser.id,
+          productId: '1',
+        });
+      } catch (err) {
+        console.warn('Seed interaction failed:', err);
+      }
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Đăng ký thất bại';
       setError(message);

@@ -435,3 +435,22 @@ export const CREATE_PRODUCT_REVIEW = gql`
     }
   }
 `;
+
+export const GET_RECOMMENDATIONS = gql`
+  query GetRecommendations($userId: String!, $topK: Int) {
+    recommendations(userId: $userId, topK: $topK) {
+      userId
+      reply
+      generatedAt
+      items {
+        productId
+        productName
+        productSlug
+        image
+        price
+        score
+      }
+    }
+  }
+`;
+

@@ -334,6 +334,40 @@ def recommend_for_user(user_token: str, topk: int) -> List[RecommendationItem]:
     return recommendations
 
 
+def popular_items(topk: int) -> List[RecommendationItem]:
+    """
+    Return top-k popular items based on frequency in the interaction dataset.
+    This is a safe fallback when a user is unknown or has no history.
+    """
+    if not MODEL_READY or not ARTIFACTS:
+        # If model/dataset isn't ready, return empty list so caller can handle it
+        return []
+
+    dataset = ARTIFACTS.get("dataset")
+    iid_field = ARTIFACTS.get("iid_field")
+    product_map: Dict[str, str] = ARTIFACTS.get("product_map", {})
+
+    try:
+        # Use pandas value_counts on the item id column to find most frequent
+        counts = pd.Series(dataset.inter_feat[iid_field]).astype(str).value_counts()
+    except Exception:
+        return []
+
+    results: List[RecommendationItem] = []
+    for token in counts.index.astype(str):
+        try:
+            item_id = int(token)
+        except Exception:
+            # skip non-integer tokens
+            continue
+        item_name = product_map.get(token, f"Sản phẩm {token}")
+        results.append(RecommendationItem(item_id=item_id, item_name=item_name, score=None))
+        if len(results) >= topk:
+            break
+
+    return results
+
+
 @app.get("/health")
 def health_check():
     return {
@@ -374,6 +408,19 @@ def chat(request: ChatRequest):
                 model_ready=False,
             )
         except ValueError as exc:
+            # If user not found or has no history, fallback to popular items so FE still shows suggestions
+            logger.info("recommend_for_user failed: %s; falling back to popular items", exc)
+            suggestions = popular_items(topk)
+            if suggestions:
+                lines = [
+                    f"Gợi ý dành cho bạn (phổ biến):",
+                    *[
+                        f"{idx + 1}. {item.item_name} (ID: {item.item_id})"
+                        for idx, item in enumerate(suggestions)
+                    ],
+                ]
+                reply = "\n".join(lines)
+                return ChatResponse(reply=reply, recommendations=suggestions, model_ready=MODEL_READY)
             return ChatResponse(reply=str(exc), model_ready=MODEL_READY)
         except Exception as exc:
             raise HTTPException(status_code=500, detail=f"Không thể gợi ý lúc này: {exc}") from exc

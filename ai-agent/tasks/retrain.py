@@ -207,12 +207,12 @@ def trigger_chatbot_reload(manifest: Dict[str, Any]) -> None:
 def run_step(command: Iterable[str], cwd: Path) -> str:
   LOGGER.info("Running: %s (cwd=%s)", " ".join(command), cwd)
   result = subprocess.run(
-      command,
-      cwd=str(cwd),
-      stdout=subprocess.PIPE,
-      stderr=subprocess.STDOUT,
-      text=True,
-      check=False,
+    list(command),
+    cwd=str(cwd),
+    stdout=subprocess.PIPE,
+    stderr=subprocess.STDOUT,
+    text=True,
+    check=False,
   )
   LOGGER.info("%s", result.stdout.strip())
   if result.returncode != 0:

@@ -1,35 +1,36 @@
 {
   "lock": {
-    "held": false,
-    "owner_pid": null,
+    "held": true,
+    "owner_pid": 113411,
     "context": "scheduler",
-    "acquired_at": "2025-10-26T19:21:28.819816+00:00",
-    "released_at": "2025-10-26T19:21:30.799443+00:00",
-    "stale_removed_at": "2025-10-26T00:55:16.356575+00:00"
+    "acquired_at": "2025-11-12T04:35:36.170499+00:00",
+    "released_at": "2025-11-12T04:35:16.168120+00:00",
+    "stale_removed_at": "2025-11-12T04:07:38.690529+00:00"
   },
-  "updated_at": "2025-10-26T19:21:30.802577+00:00",
-  "status": "failed",
-  "last_run_started_at": "2025-10-26T19:21:28.820260+00:00",
-  "last_error": "Command failed (1): /home/nemmer/Documents/Project-A/Second-hand-Web-VietNam/ai-agent/venv/bin/python train_bert4rec.py",
-  "last_run_finished_at": "2025-10-26T19:21:30.799686+00:00",
+  "updated_at": "2025-11-12T04:35:36.170779+00:00",
+  "status": "running",
+  "last_run_started_at": "2025-11-12T04:35:36.170748+00:00",
+  "last_error": null,
+  "last_run_finished_at": "2025-11-12T04:35:16.167677+00:00",
   "scheduler": {
     "active": true,
-    "interval_seconds": 200,
-    "started_at": "2025-10-26T16:56:35.135618+00:00"
+    "interval_seconds": 20,
+    "started_at": "2025-11-12T03:44:54.376863+00:00",
+    "stopped_at": "2025-11-12T02:29:50.716532+00:00"
   },
-  "next_scheduled_at": "2025-10-26T19:24:50.802218+00:00",
-  "last_success_at": "2025-10-12T20:41:39.533502+00:00",
+  "next_scheduled_at": "2025-11-12T04:35:36.170082+00:00",
+  "last_success_at": "2025-11-12T04:35:16.167677+00:00",
   "dataset": {
-    "version": "20251012-204012",
-    "generated_at": "2025-10-12T20:40:12.873690+00:00",
-    "rows": 18368,
+    "version": "20251112-043349",
+    "generated_at": "2025-11-12T04:33:49.808453+00:00",
+    "rows": 18317,
     "users": 2609,
-    "items": 106,
-    "positive_labels": 2995,
-    "file": "/home/nemmer/Nemmer-Workflow/Project/Second-hand-Web-VietNam/ai-agent/recommender/dataset/versions/20251012-204012/ecommerce.inter",
+    "items": 96,
+    "positive_labels": 2983,
+    "file": "/home/nemmer/Documents/Project-A/Second-hand-Web-VietNam/ai-agent/recommender/dataset/versions/20251112-043349/ecommerce.inter",
     "source": [
-      "/home/nemmer/Nemmer-Workflow/Project/Second-hand-Web-VietNam/ai-agent/data/raw/user_behavior_interactions.csv",
-      "/home/nemmer/Nemmer-Workflow/Project/Second-hand-Web-VietNam/ai-agent/data/raw/interactions.csv"
+      "/home/nemmer/Documents/Project-A/Second-hand-Web-VietNam/ai-agent/data/raw/user_behavior_interactions.csv",
+      "/home/nemmer/Documents/Project-A/Second-hand-Web-VietNam/ai-agent/data/raw/interactions.csv"
     ],
     "header": [
       "user_id:token",
@@ -39,9 +40,9 @@
     ]
   },
   "model": {
-    "version": "Oct-13-2025_03-40-16",
-    "saved_at": "2025-10-12T20:41:31.669724+00:00",
-    "file": "/home/nemmer/Nemmer-Workflow/Project/Second-hand-Web-VietNam/ai-agent/recommender/saved/versions/BERT4Rec-Oct-13-2025_03-40-16.pth",
-    "current_link": "/home/nemmer/Nemmer-Workflow/Project/Second-hand-Web-VietNam/ai-agent/recommender/saved/current.pth"
+    "version": "Nov-12-2025_11-33-53",
+    "saved_at": "2025-11-12T04:35:12.253263+00:00",
+    "file": "/home/nemmer/Documents/Project-A/Second-hand-Web-VietNam/ai-agent/recommender/saved/versions/BERT4Rec-Nov-12-2025_11-33-53.pth",
+    "current_link": "/home/nemmer/Documents/Project-A/Second-hand-Web-VietNam/ai-agent/recommender/saved/current.pth"
   }
 }

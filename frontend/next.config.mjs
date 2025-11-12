@@ -18,6 +18,7 @@ const nextConfig = {
       { protocol: 'https', hostname: 'picsum.photos', port: '', pathname: '/**' },
       { protocol: 'https', hostname: 'storage.googleapis.com', port: '', pathname: '/**' },
       { protocol: 'https', hostname: 'cdn2.fptshop.com.vn', port: '', pathname: '/**' },
+  { protocol: 'https', hostname: 'nads.1cdn.vn', port: '', pathname: '/**' },
       { protocol: 'https', hostname: '*.fptshop.com.vn', port: '', pathname: '/**' },
       { protocol: 'https', hostname: '*.googleapis.com', port: '', pathname: '/**' },
       { protocol: 'https', hostname: '*.amazonaws.com', port: '', pathname: '/**' },

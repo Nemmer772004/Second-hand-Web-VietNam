@@ -75,6 +75,7 @@ const FloatingSupportButtons = () => {
       const response = await fetch('/api/chatbot', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           message: value,
           userId: user?.id,
