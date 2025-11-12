@@ -3,8 +3,8 @@
 <h1># 🤖 AI-Agent — Chatbot & Recommendation</h1>
 </div>
 <div align="center">
-   <img src="docs/images/logo.png" alt="Logo Đại Học Đại Nam" width="200"/>
-   <img src="docs/images/AIoTLab_logo.png" alt="Logo AIoTLab" width="170"/>
+   <img src="images/logo.png" alt="Logo Đại Học Đại Nam" width="200"/>
+   <img src="images/AIoTLab_logo.png" alt="Logo AIoTLab" width="170"/>
 </div>
 
 <div align="center">
